@@ -1,0 +1,10 @@
+NOTE_OFF_EVENTS = list(range(0x80, 0x90))
+NOTE_ON_EVENTS = list(range(0x90, 0xa0))
+POLYPHONIC_KEY_EVENTS = list(range(0xa0, 0xb0))
+CONTROLLER_CHANGE_EVENTS = list(range(0xb0, 0xc0)) # Also channel mode messages
+PROGRAM_CHANGE_EVENTS = list(range(0xc0, 0xd0))
+CHANNEL_KEY_EVENTS = list(range(0xd0, 0xe0))
+PITCH_BEND_EVENTS = list(range(0xe0, 0xf0))
+F0_SYSEX_EVENT = 0xf0
+F7_SYSEX_EVENT = 0xf7
+META_EVENT = 0xff
