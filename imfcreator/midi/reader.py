@@ -1,3 +1,4 @@
+import os
 import struct
 from .constants import *
 
@@ -5,118 +6,125 @@ from .constants import *
 class MidiReader:
     """Reads a MIDI file."""
     def __init__(self):
-        pass
+        self.file_format = None
+        self.division = None
+        self.f = None
+        self._running_status = None
+        # self.num_tracks = None
+        self.tracks = []
 
     def load(self, filename):
-            with open(filename, "rb") as f:
-                # Check header
-                chunks = self._read_chunks(f)
-                header = chunks.next()
-                if header.type != "MThd":
-                    raise IOError("Not a MIDI file.")
-                if header.length != 6:
-                    raise IOError("Invalid MIDI header length.")
-                # Parse header data.
-                file_format = read_uint16(header.data[0:2])
-                if file_format not in (0, 1):
-                    raise IOError("Unsupported MIDI file format: {}".format(file_format))
-                num_tracks = read_uint16(header.data[2:4])
-                division = read_uint16(header.data[4:6])
-                print(file_format, num_tracks, division)
-                # Parse other chunks.
-                for chunk in chunks:
-                    if chunk.type == "MTrk":
-                        for events in self._read_events(chunk.data):
-                            pass
+        """Loads a MIDI file into the reader object."""
+        with open(filename, "rb") as f:
+            self.f = f
+            # Start chunk generator.
+            # Note that the generator does not process the chunk data. That must be handled separately.
+            chunk_headers = self._iterchunkheader()
+            chunk_name, chunk_length = chunk_headers.next()
+            if chunk_name != "MThd":
+                raise IOError("Not a MIDI file.")
+            if chunk_length != 6:
+                raise IOError("Invalid MIDI header length: {}".format(chunk_length))
+            self.file_format, num_tracks, self.division = struct.unpack(">HHH", f.read(6))
+            # if self.file_format not in (0, 1):
+            #     raise IOError("Unsupported MIDI file format: {}".format(self.file_format))
+            # print(self.file_format, num_tracks, self.division)
+            # Process remaining chunks.
+            for chunk_name, chunk_length in chunk_headers:
+                # print(chunk_name, chunk_length)
+                if chunk_name == "MTrk":
+                    # print("Reading " + chunk_name)
+                    for event in self._read_events(chunk_length):
+                        # print(event)
+                        pass
+                else:
+                    # Skip any other chunk types that might appear.
+                    f.seek(chunk_length, os.SEEK_CUR)
 
-    def _read_chunks(self, f):
-        """A generator for reading the """
-        while True:
-            chunk = self._read_chunk(f)
-            if chunk is None:
-                break
-            yield chunk
-
-    def _read_chunk(self, f):
-        """Reads a chunk from the f.
-
-        Returns a MidiChunk or None if the end of file is reached.
+    def _iterchunkheader(self):
+        """A generator that assumes that the internal file object is positioned
+        at the start of chunk header information.
         """
-        chunk_type = f.read(4)
-        if chunk_type == "":
-            return None
-        chunk_length = read_uint32(f.read(4))
-        chunk_data = f.read(chunk_length)
-        return MidiChunk(type_name=chunk_type, length=chunk_length, data=chunk_data)
-
-    def _read_events(self, data):
-        """Reads and parses events from data."""
-        buf = iterbytes(data)
         while True:
-            event = self._read_event(buf)
+            chunk_name = self.f.read(4)
+            if chunk_name == "":
+                return
+            chunk_length = struct.unpack(">I", self.f.read(4))[0]
+            yield chunk_name, chunk_length
+
+    def _read_events(self, length):
+        """A generator that assumes that the internal file object is positioned
+        at the start of an event delta time.
+        """
+        end_tell = self.f.tell() + length
+        while self.f.tell() < end_tell:
+            event = self._read_event()
             if event is None:
                 return
             yield event
 
-    def _read_event(self, buf):
+    def _next_byte(self):
+        """Read the next byte as an ordinal."""
+        return ord(self.f.read(1))
+
+    def _read_event(self):
+        """Reads a MIDI event at the current file position."""
         # Read delta length
-        delta_time = self._read_var_length(buf)
-        print(delta_time)
+        delta_time = self._read_var_length()
         # Event code.
-        event_type = buf.next()
-        print("event_type: {:x}".format(event_type))
+        event_type = self._next_byte()
+        # Check for running status.
+        if event_type & 0x80 == 0:
+            assert event_type is not None
+            self.f.seek(-1, os.SEEK_CUR)
+            event_type = self._running_status
+        # print("Event 0x{:x} at 0x{:x}".format(event_type, self.f.tell() - 1))
         meta_type = None
         event_data = None
         if event_type in (F0_SYSEX_EVENT, F7_SYSEX_EVENT):
-            data_length = self._read_var_length(buf)
+            data_length = self._read_var_length()
         elif event_type == META_EVENT:
-            meta_type = buf.next()
-            data_length = self._read_var_length(buf)
+            meta_type = self._next_byte()
+            data_length = self._read_var_length()
         elif event_type in NOTE_OFF_EVENTS \
                 or event_type in NOTE_ON_EVENTS \
                 or event_type in POLYPHONIC_KEY_EVENTS \
                 or event_type in CONTROLLER_CHANGE_EVENTS \
                 or event_type in PITCH_BEND_EVENTS:
+            self._running_status = event_type
             data_length = 2
         elif event_type in PROGRAM_CHANGE_EVENTS \
             or event_type in CHANNEL_KEY_EVENTS:
+            self._running_status = event_type
             data_length = 1
         else:
-            raise IOError("Unsupported event type: 0x{:x}".format(event_type))
+            raise IOError("Unsupported event type: 0x{:x} at 0x{:x}".format(event_type, self.f.tell() - 1) )
         if data_length > 0:
-            event_data = [buf.next() for x in range(data_length)]
+            event_data = self.f.read(data_length)  # [f.next() for b in range(data_length)]
         return MidiEvent(delta_time, event_type, data_length, event_data, meta_type)
 
-    def _read_var_length(self, buf):
+    def _read_var_length(self):
+        """Reads a length using MIDI's variable length format."""
         length = 0
-        b = buf.next()
+        b = self._next_byte()
         while b & 0x80:
             length *= 0x80 + (b & 0x7f)
-            b = buf.next()
+            b = self._next_byte()
         return length + b
 
 
-class MidiChunk(object):
-    """Represents a chunk within a MIDI file."""
-    def __init__(self, type_name, length, data):
-        self._type_name = type_name
-        self._length = length
-        self._data = data
+class MidiTrack:
+    def __init__(self):
+        self._events = []
 
-    @property
-    def type(self):
-        return self._type_name
+    def add_event(self, event):
+        self._events.append(event)
 
-    @property
-    def length(self):
-        return self._length
-
-    @property
-    def data(self):
-        return self._data
+    def __iter__(self):
+        return self._events.__iter__()
 
 
-class MidiEvent(object):
+class MidiEvent:
     """Represents an event within a MIDI file."""
     def __init__(self, delta, event_type, data_length, data, meta_type=None):
         self._delta = delta
@@ -146,31 +154,20 @@ class MidiEvent(object):
     def meta_type(self):
         return self._meta_type
 
+    def __repr__(self):
+        return "Event 0x{:x}, delta: {}, data_length: {}".format(self._event_type, self.delta, self._data_length)
 
+
+# #
+# # Helper functions
+# #
+# def read_uint32(f):
+#     return struct.unpack(">I", f.read(4))[0]
 #
-# Helper functions
 #
-def read_uint32(value):
-    return struct.unpack(">I", value)[0]
-
-
-def read_uint16(value):
-    return struct.unpack(">H", value)[0]
-
-
-def read_byte(value):
-    return struct.unpack("B", value)[0]
-
-
-# def read_var_length(f):
-#     value = 0
-#     b = read_byte(f.read(1))
-#     while b & 0x80:
-#         value *= 0x80 + (b & 0x7f)
-#         b = read_byte(f.read(1))
-#     return value + b
-
-
-def iterbytes(data):
-    for index in range(len(data)):
-        yield ord(data[index])
+# def read_uint16(f):
+#     return struct.unpack(">H", f.read(2))[0]
+#
+#
+# def read_byte(f):
+#     return struct.unpack("B", value)[0]
