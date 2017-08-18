@@ -25,7 +25,7 @@ class MainApplication(tix.Tk):
         self.play_button.image = Resources.getimage('play.gif')
         self.play_button.config(image=self.play_button.image)
         self.play_button.pack(side='left')
-        self.player.onstatechanged += self.onplayerstatechanged
+        self.player.onstatechanged.add_handler(self.onplayerstatechanged)
 
     def toggle_play(self):
         if self.player.state == ImfPlayer.PLAYING:
