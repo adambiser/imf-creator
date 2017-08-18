@@ -17,8 +17,7 @@ class MidiReader:
         """Loads a MIDI file into the reader object."""
         with open(filename, "rb") as f:
             self.f = f
-            # Start chunk generator.
-            # Note that the generator does not process the chunk data. That must be handled separately.
+            # Start the chunk header generator. The data within the chunk must be handled separately.
             chunk_headers = self._iterchunkheader()
             chunk_name, chunk_length = chunk_headers.next()
             if chunk_name != "MThd":
@@ -31,12 +30,10 @@ class MidiReader:
             # print(self.file_format, num_tracks, self.division)
             # Process remaining chunks.
             for chunk_name, chunk_length in chunk_headers:
-                # print(chunk_name, chunk_length)
                 if chunk_name == "MTrk":
-                    # print("Reading " + chunk_name)
-                    for event in self._read_events(chunk_length):
-                        # print(event)
-                        pass
+                    track = MidiTrack()
+                    map(track.add_event, self._read_events(chunk_length))
+                    self.tracks.append(track)
                 else:
                     # Skip any other chunk types that might appear.
                     f.seek(chunk_length, os.SEEK_CUR)
@@ -69,32 +66,39 @@ class MidiReader:
 
     def _read_event(self):
         """Reads a MIDI event at the current file position."""
-        # Read delta length
         delta_time = self._read_var_length()
-        # Event code.
+        # Read the event type.
         event_type = self._next_byte()
         # Check for running status.
         if event_type & 0x80 == 0:
             assert event_type is not None
             self.f.seek(-1, os.SEEK_CUR)
             event_type = self._running_status
+        else:
+            # New status event. Clear the running status now.
+            # It will get reassigned later if necessary.
+            self._running_status = None
+        #
         # print("Event 0x{:x} at 0x{:x}".format(event_type, self.f.tell() - 1))
         meta_type = None
         event_data = None
+        # Read event data and return a MidiEvent object.
         if event_type in (F0_SYSEX_EVENT, F7_SYSEX_EVENT):
             data_length = self._read_var_length()
         elif event_type == META_EVENT:
             meta_type = self._next_byte()
             data_length = self._read_var_length()
-        elif event_type in NOTE_OFF_EVENTS \
-                or event_type in NOTE_ON_EVENTS \
-                or event_type in POLYPHONIC_KEY_EVENTS \
-                or event_type in CONTROLLER_CHANGE_EVENTS \
-                or event_type in PITCH_BEND_EVENTS:
+        elif event_type & 0xf0 in (
+                NOTE_OFF_EVENT,
+                NOTE_ON_EVENT,
+                POLYPHONIC_KEY_EVENT,
+                CONTROLLER_CHANGE_EVENT,
+                PITCH_BEND_EVENT):
             self._running_status = event_type
             data_length = 2
-        elif event_type in PROGRAM_CHANGE_EVENTS \
-            or event_type in CHANNEL_KEY_EVENTS:
+        elif event_type & 0xf0 in (
+                PROGRAM_CHANGE_EVENT,
+                CHANNEL_KEY_EVENT):
             self._running_status = event_type
             data_length = 1
         else:
@@ -114,11 +118,16 @@ class MidiReader:
 
 
 class MidiTrack:
+    """Represents a MIDI track within a file and stores the events for the track."""
     def __init__(self):
         self._events = []
 
     def add_event(self, event):
         self._events.append(event)
+
+    @property
+    def num_events(self):
+        return len(self._events)
 
     def __iter__(self):
         return self._events.__iter__()
@@ -127,35 +136,24 @@ class MidiTrack:
 class MidiEvent:
     """Represents an event within a MIDI file."""
     def __init__(self, delta, event_type, data_length, data, meta_type=None):
-        self._delta = delta
-        self._event_type = event_type
-        self._data_length = data_length
-        self._data = data
+        self.delta = delta
+        if NOTE_OFF_EVENT <= event_type < F0_SYSEX_EVENT:
+            self.event_type = event_type & 0xf0
+            self.channel = event_type & 0xf
+        else:
+            self.event_type = event_type
+            self.channel = None
+        self.data_length = data_length
+        self.data = data
         if event_type == META_EVENT:
-            self._meta_type = meta_type
-
-    @property
-    def delta(self):
-        return self._delta
-
-    @property
-    def type(self):
-        return self._event_type
-
-    @property
-    def data_length(self):
-        return self._data_length
-
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def meta_type(self):
-        return self._meta_type
+            self.meta_type = meta_type
 
     def __repr__(self):
-        return "Event 0x{:x}, delta: {}, data_length: {}".format(self._event_type, self.delta, self._data_length)
+        return "Event 0x{:x}, channel: {}, delta: {}, data_length: {}".format(
+            self.event_type,
+            self.channel,
+            self.delta,
+            self.data_length)
 
 
 # #
