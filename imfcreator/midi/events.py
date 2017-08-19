@@ -70,21 +70,26 @@ class MidiEvent:
             elif meta_type_name == "set_tempo":
                 args["speed"] = (stream._next_byte() << 16) + (stream._next_byte() << 8) + stream._next_byte()
                 args["bpm"] = 60000000 / args["speed"]  # 60 seconds as microseconds
-            # elif meta_type_name == "smtpe_offset":
-            #     # TODO Convert data.
-            #       hh mm ss fr     hours/minutes/seconds/frames in SMTPE format
-            #       ff 	            Fractional frame, in hundreth's of a frame
-            # elif meta_type_name == "time_signature":
-            #     # TODO Convert data.
-            #       nn/2^dd     eg: 6/8 would be specified using nn=6, dd=3
-            #       nn 	Time signature, numerator
-            #       dd 	Time signature, denominator expressed as a power of 2. eg a denominator of 4 is expressed as dd=2
-            #       cc 	MIDI Clocks per metronome tick
-            #       bb 	Number of 1/32 notes per 24 MIDI clocks (8 is standard)
-            # elif meta_type_name == "key_signature":
-            #     # TODO Convert data.
-            #       sf  number of sharps or flats, -7 = 7 flats, 0 = key of C, +7 = 7 sharps
-            #       mi  0 = major key, 1 = minor key
+            elif meta_type_name == "smtpe_offset":
+                args.update({
+                    "hours": stream._next_byte(),
+                    "minutes": stream._next_byte(),
+                    "seconds": stream._next_byte(),
+                    "frames": stream._next_byte(),
+                    "fractional_frames": stream._next_byte(),
+                })
+            elif meta_type_name == "time_signature":
+                args.update({
+                    "numerator": stream._next_byte(),
+                    "denominator": 2 ** stream._next_byte(),  # given in powers of 2.
+                    "midi_clocks_per_metronome_tick": stream._next_byte(),
+                    "number_of_32nd_notes_per_beat": stream._next_byte(),  # almost always 8
+                })
+            elif meta_type_name == "key_signature":
+                keys = ["Cb", "Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#", "C#", "G#", "D#", "A#"]
+                sharps_flats = stream._next_byte()
+                major_minor = stream._next_byte()
+                args["key"] = keys[sharps_flats + 7 + major_minor * 3] + "m" * major_minor
             # elif meta_type_name == "sequencer_specific":
             #     # TODO Convert data.
             #       id      1 or 3 bytes representing the Manufacturer's ID
