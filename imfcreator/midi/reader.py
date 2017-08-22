@@ -33,7 +33,7 @@ class MidiReader:
                 # Process remaining chunks.
                 for chunk_name, chunk_length in chunk_headers:
                     if chunk_name == "MTrk":
-                        track = MidiTrack()
+                        track = MidiTrack(len(self.tracks))
                         map(track.add_event, self._read_events(chunk_length))
                         self.tracks.append(track)
                         self._running_status = None
@@ -42,6 +42,40 @@ class MidiReader:
                         f.seek(chunk_length, os.SEEK_CUR)
             finally:
                 self.f = None
+
+    def convert_to_format_0(self):
+        # First, calculate the time from the start of the file for each event.
+        events = []
+        for track in self.tracks:
+            time = 0
+            for event in track:
+                # if event.type == "meta" and event.meta_type == "end_of_track":
+                #     continue
+                time += event.delta
+                event.time_from_start = time
+                events.append(event)
+        # Second, combine tracks and sort by time from start.
+        events = sorted(events, key=lambda event: (
+            event.time_from_start,
+            1 if event.type == "note_on" and event.velocity > 0 else 0,
+            event.channel if hasattr(event, "channel") else -1,
+        ))
+        # Remove all "end of track" events and add the last one to the end of the event list.
+        end_of_track = filter(lambda event: event.type == "meta" and event.meta_type == "end_of_track", events)
+        for event in end_of_track:
+            events.remove(event)
+        time = 0
+        events.append(end_of_track[-1])
+        # Remove all track name events.
+        for event in filter(lambda event: event.type == "meta" and event.meta_type == "track_name", events):
+            events.remove(event)
+        time = 0
+        # Adjust delta time to be time from previous event.
+        for event in events:
+            event.delta = event.time_from_start - time
+            assert event.delta >= 0
+            time = event.time_from_start
+            del event.time_from_start
 
     def _iterchunkheader(self):
         """A generator that assumes that the internal file object is positioned
@@ -106,9 +140,10 @@ class MidiReader:
 
 class MidiTrack:
     """Represents a MIDI track within a file and stores the events for the track."""
-    def __init__(self):
+    def __init__(self, number):
         self._events = []
         self.name = None
+        self.number = number
 
     def add_event(self, event):
         if event.type == "meta" and event.meta_type == "track_name":
