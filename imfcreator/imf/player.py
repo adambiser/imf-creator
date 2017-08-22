@@ -94,14 +94,16 @@ class ImfPlayer:
 
     def reset_opl(self):
         """Resets OPL player values back to defaults."""
-        for x in range(1, 8):
-            self.writereg(VOLUME_MSG + MODIFIERS[x], 0xf)
-            self.writereg(VOLUME_MSG + CARRIERS[x], 0xf)
-            self.writereg(BLOCK_MSG + x, KEY_OFF_MASK)
-            self.writereg(ATTACK_DECAY_MSG + MODIFIERS[x], 0xf)
-            self.writereg(ATTACK_DECAY_MSG + CARRIERS[x], 0xf)
-            self.writereg(SUSTAIN_RELEASE_MSG + MODIFIERS[x], 0xf)
-            self.writereg(SUSTAIN_RELEASE_MSG + CARRIERS[x], 0xf)
+        # for x in range(1, 8):
+        #     self.writereg(VOLUME_MSG + MODIFIERS[x], 0xf)
+        #     self.writereg(VOLUME_MSG + CARRIERS[x], 0xf)
+        #     self.writereg(BLOCK_MSG + x, KEY_OFF_MASK)
+        #     self.writereg(ATTACK_DECAY_MSG + MODIFIERS[x], 0xf)
+        #     self.writereg(ATTACK_DECAY_MSG + CARRIERS[x], 0xf)
+        #     self.writereg(SUSTAIN_RELEASE_MSG + MODIFIERS[x], 0xf)
+        #     self.writereg(SUSTAIN_RELEASE_MSG + CARRIERS[x], 0xf)
+        for reg in range(255):
+            self.writereg(reg, 0)
 
     def rewind(self):
         """Sets the playback position back to the beginning."""
@@ -199,7 +201,6 @@ class ImfPlayer:
         else:
             self.rewind()
             self.onstatechanged(state=ImfPlayer.STOPPED)
-            # self.reset_opl()
             return None, pyaudio.paComplete
         # return self.buffer, pyaudio.paContinue if self.position < len(self.commands) else pyaudio.paComplete
 
@@ -227,7 +228,6 @@ class ImfPlayer:
     def stop(self):
         """Stops the PyAudio stream and resets the playback position."""
         self._stream.stop_stream()
-        # self.reset_opl()
         self.rewind()
         self.onstatechanged(state=ImfPlayer.STOPPED)
 
