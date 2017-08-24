@@ -31,7 +31,8 @@ class ImfPlayer:
         self._stream = None  # Created later.
         self._opl = pyopl.opl(freq=freq, sampleSize=ImfPlayer.SAMPLE_SIZE, channels=ImfPlayer.CHANNELS)
         # reset
-        self._commands = []
+        # self._commands = []
+        self._song = None
         # rewind
         self._position = 0
         self._delay = 0
@@ -52,19 +53,9 @@ class ImfPlayer:
             start=start,  # Don't start playing immediately!
             stream_callback=self._callback)
 
-    def remove_all_commands(self):
-        """Resets the command list and rewinds."""
-        self._commands = []
+    def set_song(self, song):
+        self._song = song
         self.rewind()
-
-    def add_command(self, reg, value, ticks):
-        """Adds a command to the list of commands."""
-        self._commands.append((reg, value, ticks))
-
-    @property
-    def num_commands(self):
-        """Returns the number of commands."""
-        return len(self._commands)
 
     def seek(self, offset, whence=0):
         """Moves the play position to the command at the given offset."""
@@ -73,10 +64,10 @@ class ImfPlayer:
         elif whence == 1:
             new_position = self._position + offset
         elif whence == 2:
-            new_position = len(self._commands) + offset
+            new_position = self._song.num_commands + offset
         else:
             raise ValueError("Invalid argument")
-        new_position = _clamp(new_position, 0, len(self._commands) - 1)
+        new_position = _clamp(new_position, 0, self._song.num_commands - 1)
         if self._position == new_position:
             return
         # Process commands between old and new positions. If the new position is before the old,
@@ -94,14 +85,6 @@ class ImfPlayer:
 
     def reset_opl(self):
         """Resets OPL player values back to defaults."""
-        # for x in range(1, 8):
-        #     self.writereg(VOLUME_MSG + MODIFIERS[x], 0xf)
-        #     self.writereg(VOLUME_MSG + CARRIERS[x], 0xf)
-        #     self.writereg(BLOCK_MSG + x, KEY_OFF_MASK)
-        #     self.writereg(ATTACK_DECAY_MSG + MODIFIERS[x], 0xf)
-        #     self.writereg(ATTACK_DECAY_MSG + CARRIERS[x], 0xf)
-        #     self.writereg(SUSTAIN_RELEASE_MSG + MODIFIERS[x], 0xf)
-        #     self.writereg(SUSTAIN_RELEASE_MSG + CARRIERS[x], 0xf)
         for reg in range(255):
             self.writereg(reg, 0)
 
@@ -128,44 +111,11 @@ class ImfPlayer:
 
         The delay is also incremented if the command has a ticks value.
         """
-        reg, value, ticks = self._commands[self._position]
+        reg, value, ticks = self._song.commands[self._position]
         self.writereg(reg, value)
         self._position += 1
         if ticks:
             self._delay += (ticks * self._freq) // self.ticks_per_second
-
-    def load(self, filename):
-        """Loads the IMF commands from the given filename."""
-        self.remove_all_commands()
-        try:
-            with open(filename, "rb") as f:
-                data_length = struct.unpack("<H", f.read(2))[0]
-                file_type = 1 if data_length > 0 else 0
-                if file_type == 0:
-                    data_length = os.stat(filename).st_size
-                    f.seek(0)
-                if data_length % 4 > 0:
-                    raise ValueError("Data length is not a multiple of 4.")
-                ext = os.path.splitext(filename)[1].lower()
-                self.ticks_per_second = 700 if ext == ".wlf" else 560
-                for x in range(0, data_length, 4):
-                    self.add_command(*struct.unpack('<BBH', f.read(4)))
-                comment = f.read()
-            # Pass back some file information.
-            # noinspection PyUnboundLocalVariable
-            return {
-                "file_type": file_type,
-                "data_length": data_length,
-                "num_commands": self.num_commands,
-                "ticks_per_second": self.ticks_per_second,
-                "comment": comment
-                }
-        except EOFError:
-            return None
-
-    # @property
-    # def isactive(self):
-    #     return self._stream is not None and self._stream.is_active()
 
     @property
     def state(self):
@@ -189,9 +139,9 @@ class ImfPlayer:
     def _callback(self, input_data, frame_count, time_info, status):
         # print("_callback")
         # Build enough of a delay to fill the buffer.
-        while self._delay < ImfPlayer.BUFFER_SAMPLE_COUNT and self._position < len(self._commands):
+        while self._delay < ImfPlayer.BUFFER_SAMPLE_COUNT and self._position < self._song.num_commands:
             self._process_command()
-            if self.repeat and self._position == len(self._commands):
+            if self.repeat and self._position == self._song.num_commands:
                 self._position = 0
         # If we have enough to fill the buffer, do so. Otherwise quit.
         if self._delay >= ImfPlayer.BUFFER_SAMPLE_COUNT:
@@ -207,7 +157,7 @@ class ImfPlayer:
     def play(self, repeat=False):
         """Starts playing the song at the current position."""
         self.repeat = repeat
-        if self.num_commands == 0:
+        if self._song is None or self._song.num_commands == 0:
             return
         # If a stream exists and it is not active and not stopped, it needs to be closed and a new one created.
         if self._stream is not None and not self._stream.is_active() and not self._stream.is_stopped():
