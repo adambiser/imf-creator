@@ -1,4 +1,5 @@
 from imf.player import ImfPlayer
+from imf.imfmusicfile import ImfMusicFile
 from resources import Resources
 # try:
 #     import Tkinter as tk
@@ -9,6 +10,7 @@ try:
 except ImportError:
     import tkinter.tix as tix
 
+
 class MainApplication(tix.Tk):
     def __init__(self, screenName=None, baseName=None, className='Tix'):
         # Set up the window.
@@ -18,9 +20,10 @@ class MainApplication(tix.Tk):
         # self.settings = Settings()
         # self.protocol("WM_DELETE_WINDOW", self._onclosing)
         self.player = ImfPlayer()
-        # fileinfo = self.player.load("test.wlf")
-        fileinfo = self.player.load("wolf3d.wlf")
-        print(fileinfo)
+        # self.player.load("test.wlf")
+        self.player.set_song(ImfMusicFile("testtag.wlf"))
+        # self.player.load("wolf3d.wlf")
+        # print(fileinfo)
         self.play_button = tix.Button(self, text='Play', command=self.toggle_play)
         self.play_button.image = Resources.getimage('play.gif')
         self.play_button.config(image=self.play_button.image)
@@ -34,7 +37,7 @@ class MainApplication(tix.Tk):
             self.player.play()
 
     def onplayerstatechanged(self, state):
-        print("onplayerstatechanged: {}".format(state))
+        # print("onplayerstatechanged: {}".format(state))
         if state == ImfPlayer.PLAYING:
             self.play_button.image = Resources.getimage('stop.gif')
         elif state == ImfPlayer.STOPPED:
