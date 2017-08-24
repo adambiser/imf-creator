@@ -186,33 +186,33 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
         while note >= len(BLOCK_FREQ_NOTE_MAP):
             note -= 12
         block, freq = BLOCK_FREQ_NOTE_MAP[note]
-        print "note on: {}, 0x{:x}".format(block, freq)
-        # Adjust for pitch bend
+        # Adjust for pitch bend.
+        # The octave adjustment relies heavily on how the BLOCK_FREQ_NOTE_MAP has been calculated.
+        # F% is close to the top of the 1023 limit while G is in the middle at 517. Because of this,
+        # bends that cross over the line between F# and G are better handled in the range below G and the
+        # lower block/freq is adjusted upward so that it is in the same block as the other note.
+        # For each increment of 1 to the block, the f-num needs to be halved.  This can lead to a loss of
+        # precision, but hopefully it won't be too drastic.
         if scaled_pitch_bend < 0:
             semitones = int(math.floor(scaled_pitch_bend))
             bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note - semitones]
+            # If the bend-to note is on a lower block/octave, multiply the bend-to f-num by 0.5 per block
+            # to bring it up to the same block as the original note.
             if bend_block < block:
-                bend_freq = bend_freq * 0.5 ** (block - bend_block)
+                bend_freq = bend_freq / (2.0 ** (block - bend_block))
             freq = int(freq - (freq - bend_freq) * scaled_pitch_bend / -semitones)
-            print "bend down, {}: {}, 0x{:x}".format(scaled_pitch_bend, block, freq)
         elif scaled_pitch_bend > 0:
             semitones = int(math.ceil(scaled_pitch_bend))
             bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
+            # If the bend-to note is on a higher block/octave, multiple the original f-num by 0.5 per block
+            # to bring it up to the same block as the bend-to note.
             if bend_block > block:
-                bend_freq = bend_freq * 2 ** (block - bend_block)
+                freq = freq / (2.0 ** (bend_block - block))
+                block = bend_block
             freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
-            # Bounds checking
-            print "bend up, {}: {}, 0x{:x}".format(scaled_pitch_bend, block, freq)
-            while (freq > 0x7ff):
-                freq = freq // 2
-                block -= 1
-                print "bounds adjust: {}, 0x{:x}".format(block, freq)
-                if block < 0:
-                    block, freq = (0, 0)
-                    break
-        else:
-            print "no bend"
-        return block, freq  # BLOCK_FREQ_NOTE_MAP[note]
+        assert 0 <= block <= 7
+        assert 0 <= freq <= 0x3ff
+        return block, freq
 
     def find_imf_channel_for_instrument_note(instrument, note):
         channel = filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] == note, imf_channels)
@@ -285,7 +285,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
     # Cycle MIDI events and convert to IMF commands.
     last_ticks = 0
     # ticks = 0
-    pitch_bend_resolution = 0x100
+    pitch_bend_resolution = 0x200
     pitch_bend_range = (-8192.0 - -8192 % -pitch_bend_resolution, 8191.0 - 8191 % pitch_bend_resolution)
     imf.commands.append((0, 0, 0)) # Always start with 0, 0, 0
     for event in events:
@@ -329,8 +329,8 @@ instruments = instrumentfile.get_all_instruments("GENMIDI.OP2")
 reader = MidiReader()
 # reader.load("testfmt1.mid")
 reader.load("test-pitchbend.mid")
-# imf = convert_midi_to_imf(reader, instruments, mute_channels=[9])
 imf = convert_midi_to_imf(reader, instruments, mute_channels=[9])
+# imf = convert_midi_to_imf(reader, instruments, mute_tracks=[1], mute_channels=[9])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[3])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[0, 1, 2])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[0, 1, 2], mute_channels=[9])
