@@ -1,3 +1,4 @@
+from ..imf.constants import *
 # import builtins
 import __builtin__
 builtins = __builtin__
@@ -160,6 +161,24 @@ class Instrument(object):
 
     def __repr__(self):
         return str(self.__dict__ )
+
+    def get_regs(self, channel, voice=0):
+        mod_op = MODULATORS[channel]
+        car_op = CARRIERS[channel]
+        return [
+            # TODO Remove this adjustment. Forces frequency multiplier to be 1.
+            (VIBRATO_MSG | mod_op, (self.modulator[voice].tvskm & 0xf0) | 1),
+            (VOLUME_MSG | mod_op, self.modulator[voice].ksl_output),
+            (ATTACK_DECAY_MSG | mod_op, self.modulator[voice].attack_decay),
+            (SUSTAIN_RELEASE_MSG | mod_op, self.modulator[voice].sustain_release),
+            (WAVEFORM_SELECT_MSG | mod_op, self.modulator[voice].waveform_select),
+            (VIBRATO_MSG | car_op, self.carrier[voice].tvskm),
+            (VOLUME_MSG | car_op, self.carrier[voice].ksl_output),
+            (ATTACK_DECAY_MSG | car_op, self.carrier[voice].attack_decay),
+            (SUSTAIN_RELEASE_MSG | car_op, self.carrier[voice].sustain_release),
+            (WAVEFORM_SELECT_MSG | car_op, self.carrier[voice].waveform_select),
+            (FEEDBACK_MSG | channel, self.feedback[voice]),
+        ]
 
     def registers_match(self, other):
         if self.num_voices != other.num_voices:
