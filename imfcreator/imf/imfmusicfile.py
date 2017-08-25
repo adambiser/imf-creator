@@ -26,6 +26,13 @@ class ImfMusicFile(object):
 
     def add_command(self, reg, value, ticks):
         """Adds a command to the list of commands."""
+        try:
+            assert 0 <= reg <= 0xff
+            assert 0 <= value <= 0xff
+            assert 0 <= ticks <= 0xffff
+        except AssertionError:
+            print "Value out of range! 0x{:x}, 0x{:x}, {}, cmd: {}".format(reg, value, ticks, self.num_commands)
+            raise
         self.commands.append((reg, value, ticks))
 
     @property
