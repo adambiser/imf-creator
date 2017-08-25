@@ -18,6 +18,16 @@ _META_TYPE_NAMES = {
     0x59: 'key_signature',
     0x7f: 'sequencer_specific',
 }
+# TODO
+# http://www.indiana.edu/~emusic/cntrlnumb.html
+# http://nickfever.com/music/midi-cc-list
+# _CONTROLLER_NAMES = {
+#     7: "volume",
+# }
+# http://www.2writers.com/eddie/TutNrpn.htm - pitch bend, rpn
+# https://www.midikits.net/midi_analyser/pitch_bend.htm
+
+
 
 
 class MidiEvent:
@@ -87,8 +97,7 @@ class MidiEvent:
                 })
             elif meta_type_name == "key_signature":
                 keys = ["Cb", "Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#", "C#", "G#", "D#", "A#"]
-                sharps_flats = stream._next_byte()
-                major_minor = stream._next_byte()
+                sharps_flats, major_minor = struct.unpack("<bB", stream.f.read(2))
                 args["key"] = keys[sharps_flats + 7 + major_minor * 3] + "m" * major_minor
             # elif meta_type_name == "sequencer_specific":
             #     # TODO Convert data.
@@ -103,13 +112,13 @@ class MidiEvent:
             if event_type == NOTE_OFF_EVENT:
                 args.update({
                     "type": "note_off",
-                    "key": stream._next_byte(),
+                    "note": stream._next_byte(),
                     "velocity": stream._next_byte(),
                 })
             elif event_type == NOTE_ON_EVENT:
                 args.update({
                     "type": "note_on",
-                    "key": stream._next_byte(),
+                    "note": stream._next_byte(),
                     "velocity": stream._next_byte(),
                 })
             elif event_type == POLYPHONIC_KEY_PRESSURE_EVENT:
@@ -137,7 +146,7 @@ class MidiEvent:
             elif event_type == PITCH_BEND_EVENT:
                 args.update({
                     "type": "pitch_bend",
-                    "pitch_bend": stream._next_byte() + stream._next_byte() * 0x80,
+                    "value": (stream._next_byte() + stream._next_byte() * 0x80) - 0x2000,  # 0 is center
                 })
             else:
                 raise Exception("Unsupported MIDI event code: 0x{:X}".format(event_type))
