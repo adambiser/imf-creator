@@ -242,7 +242,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
             inst_num = 128 + event.note - 35
             note = instruments[inst_num].given_note
         else:
-            midi_track = midi_channels[event.track]
+            midi_track = midi_channels[event.channel]
             if midi_track["instrument"] is None:
                 print "No instrument assigned to track {}, defaulting to 0."
                 midi_track["instrument"] = 0
@@ -253,28 +253,27 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
                 print "Note out of range: {}".format(note)
                 note = 60
             if is_note_on:
-                midi_track["active_notes"].append((note, event.note, inst_num))
+                midi_track["active_notes"].append({
+                    "note": note,
+                    "inst_num": inst_num,
+                    "event": event,
+                })
             else:
-                match = (note, event.note, inst_num)
-                if match in midi_track["active_notes"]:
+                # match = midi_track["notes"].get(event.note)
+                match = filter(lambda note_info: note_info["event"].note == event.note, midi_track["active_notes"])
+                if match:
+                    match = match[0]
+                    note = match["note"]
+                    inst_num = match["inst_num"]
                     midi_track["active_notes"].remove(match)
                 else:
-                    # On the rare chance that the instrument changes for the MIDI track while a note is being held
-                    # AND that note has a different note_offset, use a loose filter that matches solely at the actual
-                    # event note.  Use the note and inst_num from the match instead of what was calculated above.
-                    match = filter(lambda notes: notes[1] == event.note, midi_track["active_notes"])
-                    if match:
-                        match = match[0]  # Use first match.
-                        midi_track["active_notes"].remove(match)
-                        note, base_note, inst_num = match
-                    else:
-                        print "Tried to remove non-active note: track {}, inst {} note {}".format(event.track, inst_num, note)
+                    print "Tried to remove non-active note: track {}, inst {} note {}".format(event.track, inst_num, note)
         return inst_num, note
 
     def note_on(event):
         commands = []
         voice = 0
-        midi_track = midi_channels[event.track]
+        midi_track = midi_channels[event.channel]
         inst_num, note = get_inst_and_note(event, True)
         channel = find_imf_channel(inst_num, note)
         if channel:
@@ -301,15 +300,15 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
     def pitch_bend(event):
         commands = []
         amount = event.value - event.value % pitch_bend_resolution
-        if midi_channels[event.track]["pitch_bend"] != amount:
-            midi_channels[event.track]["pitch_bend"] = amount
+        if midi_channels[event.channel]["pitch_bend"] != amount:
+            midi_channels[event.channel]["pitch_bend"] = amount
             # Scale picth bend to -1..1
             scaled_pitch_bend = amount / -pitch_bend_range[0] if amount < 0 else amount / pitch_bend_range[1]
             scaled_pitch_bend *= 2  # TODO Read from controller messages. 2 semi-tones is the default.
-            midi_channels[event.track]["scaled_pitch_bend"] = scaled_pitch_bend
-            instrument = midi_channels[event.track]["instrument"]
-            for note in midi_channels[event.track]["active_notes"]:
-                note = note[0]  # Only the actual note matters here. note[1] is the base note before instrument offset.
+            midi_channels[event.channel]["scaled_pitch_bend"] = scaled_pitch_bend
+            instrument = midi_channels[event.channel]["instrument"]
+            for note_info in midi_channels[event.channel]["active_notes"]:
+                note = note_info["note"]
                 channel = find_imf_channel_for_instrument_note(instrument, note)
                 if channel:
                     block, freq = get_block_and_freq(note, scaled_pitch_bend)
@@ -320,6 +319,25 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
                     pass
         return commands
 
+    def adjust_volume(event):
+        commands = []
+        voice = 0
+        midi_track = midi_channels[event.channel]
+        midi_track["volume"] = event.value
+        inst_num = midi_track["instrument"]
+        for note_info in midi_track["active_notes"]:
+            channel = find_imf_channel_for_instrument_note(inst_num, note_info["note"])
+            if channel:
+                volume = int(midi_track["volume"] * note_info["event"].velocity / 127.0)
+                instrument = instruments[inst_num]
+                commands += [
+                    (
+                        VOLUME_MSG | CARRIERS[channel["id"]],
+                        ((127 - volume) / 2) | instrument.carrier[voice].key_scale_level
+                    ),
+                ]
+        return commands
+
     # Cycle MIDI events and convert to IMF commands.
     last_ticks = 0
     # ticks = 0
@@ -327,10 +345,11 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
     pitch_bend_range = (-8192.0 - -8192 % -pitch_bend_resolution, 8191.0 - 8191 % pitch_bend_resolution)
     imf.commands.append((0, 0, 0)) # Always start with 0, 0, 0
     for event in events:
-        ticks = calc_imf_ticks(event.event_time)
-        if ticks > last_ticks:
-            imf.commands[-1] = imf.commands[-1][:2] + (imf.commands[-1][2] + ticks - last_ticks,)
-            last_ticks = ticks
+        ticks = calc_imf_ticks(event.event_time - last_ticks)
+        if ticks > 0:
+            prev_ticks = imf.commands[-1][2] + ticks
+            imf.commands[-1] = imf.commands[-1][:2] + (prev_ticks,)
+            last_ticks = event.event_time #ticks
         # Perform muting
         if mute_tracks:
             if event.track in mute_tracks:
@@ -345,11 +364,11 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
         elif event.type == "note_on":
             commands += note_on(event)
         elif event.type == "controller_change" and event.controller == 7:  # volume, TODO: .controller_name
-            midi_channels[event.channel]["volume"] = event.value
+            commands += adjust_volume(event)
         elif event.type == "pitch_bend":
             commands += pitch_bend(event)
         elif event.type == "program_change":
-            midi_channels[event.track]["instrument"] = event.program
+            midi_channels[event.channel]["instrument"] = event.program
         elif event.type == "meta" and event.meta_type == "set_tempo":
             midi_tempo = float(event.bpm)
         add_commands(commands)
@@ -372,7 +391,7 @@ instruments = instrumentfile.get_all_instruments("GENMIDI.OP2")
 
 
 reader = MidiReader()
-reader.load("debussy.mid")
+reader.load("ghostbusters.mid")
 # reader.load("test-pitchbend.mid")
 imf = convert_midi_to_imf(reader, instruments) #, mute_channels=[9])
 # imf = convert_midi_to_imf(reader, instruments, mute_tracks=[1], mute_channels=[9])
