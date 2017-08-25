@@ -85,8 +85,15 @@ class ImfPlayer:
 
     def reset_opl(self):
         """Resets OPL player values back to defaults."""
-        for reg in range(255):
-            self.writereg(reg, 0)
+        # for reg in range(255):
+        #     self.writereg(reg, 0)
+        self.writereg(0x01, 0x20)  # enable Waveform Select
+        self.writereg(0x08, 0x40)  # turn off CSW mode
+        self.writereg(0xBD, 0x00)  # set vibrato / tremolo depth to low, set melodic mode
+        for i in range(9):
+            self.writereg(0x40 | MODULATORS[i], 0x3f)  # turn off volume
+            self.writereg(0x40 | CARRIERS[i], 0x3f)  # turn off volume
+            self.writereg(0xb0 | i, 0)  # KEY-OFF
 
     def rewind(self):
         """Sets the playback position back to the beginning."""
