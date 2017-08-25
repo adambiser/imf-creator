@@ -166,8 +166,7 @@ class Instrument(object):
         mod_op = MODULATORS[channel]
         car_op = CARRIERS[channel]
         return [
-            # TODO Remove this adjustment. Forces frequency multiplier to be 1.
-            (VIBRATO_MSG | mod_op, (self.modulator[voice].tvskm & 0xf0) | 1),
+            (VIBRATO_MSG | mod_op, self.modulator[voice].tvskm),
             (VOLUME_MSG | mod_op, self.modulator[voice].ksl_output),
             (ATTACK_DECAY_MSG | mod_op, self.modulator[voice].attack_decay),
             (SUSTAIN_RELEASE_MSG | mod_op, self.modulator[voice].sustain_release),
@@ -177,7 +176,7 @@ class Instrument(object):
             (ATTACK_DECAY_MSG | car_op, self.carrier[voice].attack_decay),
             (SUSTAIN_RELEASE_MSG | car_op, self.carrier[voice].sustain_release),
             (WAVEFORM_SELECT_MSG | car_op, self.carrier[voice].waveform_select),
-            (FEEDBACK_MSG | channel, self.feedback[voice]),
+            (FEEDBACK_MSG | channel, self.feedback[voice]),  # | 0x30),
         ]
 
     def registers_match(self, other):
