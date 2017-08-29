@@ -18,7 +18,7 @@ class MainApplication(tix.Tk):
         self.title('IMF Creator')
         # self.tk.call('wm', 'iconbitmap', self._w, '-default', os.path.join(Resources.PATH, 'icon.ico'))
         # self.settings = Settings()
-        # self.protocol("WM_DELETE_WINDOW", self._onclosing)
+        self.protocol("WM_DELETE_WINDOW", self._onclosing)
         self.player = ImfPlayer()
         # self.player.load("test.wlf")
         self.player.set_song(ImfMusicFile("testtag.wlf"))
@@ -43,3 +43,7 @@ class MainApplication(tix.Tk):
         elif state == ImfPlayer.STOPPED:
             self.play_button.image = Resources.getimage('play.gif')
         self.play_button.config(image=self.play_button.image)
+
+    def _onclosing(self):
+        self.player.close()
+        self.destroy()
