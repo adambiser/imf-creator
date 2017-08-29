@@ -19,6 +19,6 @@ There are no additional requirements.
 This project is dual licensed under the MIT License and GPL 3 License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
-* Malvineous for the [PyOPL](https://github.com/Malvineous/pyopl) library.
+* Adam Nielsen (Malvineous) for his [PyOPL](https://github.com/Malvineous/pyopl) library.
 * [FreeDoom](https://github.com/freedoom/freedoom) for its GENMIDI.OP2 file.
 * [Kenney.nl](https://opengameart.org/content/game-icons) for the button icons. (CC0 License)
