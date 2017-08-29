@@ -1,10 +1,15 @@
 Copyright (C) 2017 Adam Biser
 
-This software is licensed under a dual license (MIT or GPL 3).  The GPL 3 license applies to the project as a whole because is uses pyopl which is released under a GPL 3 license. The MIT license also applies to all code BUT that of the pyopl library.
+This software is licensed under a dual license (MIT or GPL 3).  The 
+GPL 3 license applies to the project as a whole because is uses PyOPL 
+which is released under a GPL 3 license. The MIT license also applies 
+to all code BUT that of the PyOPL library.
 
 The license texts are as follows:
 
-## LICENCE (MIT)
+------------------------
+LICENCE (MIT)
+------------------------
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation files
@@ -26,7 +31,10 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## LICENSE (GPL 3)
+------------------------
+LICENSE (GPL 3)
+------------------------
+
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
