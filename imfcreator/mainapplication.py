@@ -21,7 +21,7 @@ class MainApplication(tix.Tk):
         self.protocol("WM_DELETE_WINDOW", self._onclosing)
         self.player = ImfPlayer()
         # self.player.load("test.wlf")
-        self.player.set_song(ImfMusicFile("testtag.wlf"))
+        self.player.set_song(ImfMusicFile("test/testtag.wlf"))
         # self.player.load("wolf3d.wlf")
         # print(fileinfo)
         self.play_button = tix.Button(self, text='Play', command=self.toggle_play)
