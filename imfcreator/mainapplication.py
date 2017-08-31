@@ -1,6 +1,7 @@
-from imf.player import ImfPlayer
-from imf.imfmusicfile import ImfMusicFile
+from .filetypes.imfmusicfile import ImfMusicFile
+from player import ImfPlayer
 from resources import Resources
+
 # try:
 #     import Tkinter as tk
 # except ImportError:

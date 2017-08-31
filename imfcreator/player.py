@@ -1,9 +1,8 @@
-from .constants import *
-from ..signal import Signal
-import os
 import pyaudio
-from ..pyopl import pyopl
-import struct
+
+from adlib import *
+from .pyopl import pyopl
+from signal import Signal
 
 _FREQUENCY = 44100
 

@@ -1,4 +1,4 @@
-from .._binary import u8, u16le
+from ._binary import u8, u16le
 import os
 import struct
 
@@ -64,7 +64,7 @@ class ImfMusicFile(object):
         except EOFError:
             return None
 
-    def _save(self, filename, file_type=None, include_tag=False, remarks=None):
+    def save(self, filename, file_type=None, include_tag=False, remarks=None):
         if file_type is None:
             file_type = self.file_type
         # TODO include_tags, remarks, etc

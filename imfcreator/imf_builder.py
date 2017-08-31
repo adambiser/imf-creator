@@ -1,10 +1,11 @@
 import copy
 import math
-from .imf.constants import *
-from .imf.imfmusicfile import ImfMusicFile
+
+from .adlib import *
+from .filetypes.imfmusicfile import ImfMusicFile
 
 
-def sort_midi(midi): #, mute_tracks=None, mute_channels=None):
+def sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     # Combine all tracks into one track.
     events = []
     for track in midi.tracks:
@@ -30,7 +31,7 @@ def sort_midi(midi): #, mute_tracks=None, mute_channels=None):
 
 
 def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None):
-    events = sort_midi(midi) #, mute_tracks, mute_channels)
+    events = sort_midi(midi)  # , mute_tracks, mute_channels)
     imf = ImfMusicFile()
     # Prepare MIDI and IMF channel variables.
     midi_channels = {}
@@ -57,13 +58,13 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
     def find_imf_channel(instrument, note):
         channel = filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] is None, imf_channels)
         if channel:
-            return channel[0]  #["id"]
+            return channel[0]  # ["id"]
         # channel = filter(lambda ch: ch["instrument"] == instrument, imf_channels)
         # if channel:
-        #     return channel[0]  #["id"]
+        #     return channel[0]  # ["id"]
         channel = filter(lambda ch: ch["last_note"] is None, imf_channels)
         if channel:
-            return channel[0]  #["id"]
+            return channel[0]  # ["id"]
         # TODO Aggressive channel find.
         return None
 
@@ -167,11 +168,12 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
                     inst_num = match["inst_num"]
                     midi_track["active_notes"].remove(match)
                 else:
-                    print "Tried to remove non-active note: track {}, inst {} note {}".format(event.track, inst_num, note)
+                    print "Tried to remove non-active note: track {}, inst {} note {}"\
+                        .format(event.track, inst_num, note)
         return inst_num, note
 
     def get_volume_commands(channel, instrument, midi_volume, voice=0):
-        volume_table= [
+        volume_table = [
             0, 1, 3, 5, 6, 8, 10, 11,
             13, 14, 16, 17, 19, 20, 22, 23,
             25, 26, 27, 29, 30, 32, 33, 34,
@@ -313,7 +315,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
         if ticks > 0:
             prev_ticks = imf.commands[-1][2] + ticks
             imf.commands[-1] = imf.commands[-1][:2] + (prev_ticks,)
-            last_ticks = event.event_time #ticks
+            last_ticks = event.event_time  # ticks
         # Perform muting
         if mute_tracks:
             if event.track in mute_tracks:
@@ -327,7 +329,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
             commands += note_off(event)
         elif event.type == "note_on":
             commands += note_on(event)
-        elif event.type == "controller_change" and event.controller == 7:  # volume, TODO: .controller_name
+        elif event.type == "controller_change" and event.controller == "volume_msb":
             commands += adjust_volume(event)
         elif event.type == "pitch_bend":
             commands += pitch_bend(event)
@@ -336,7 +338,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
         elif event.type == "meta" and event.meta_type == "set_tempo":
             midi_tempo = float(event.bpm)
         add_commands(commands)
-    imf._save("output.wlf", file_type=0)
+    imf.save("output.wlf", file_type=0)
     # for command in imf.commands:
     #     print(map(hex, command))
     for mc in range(16):
