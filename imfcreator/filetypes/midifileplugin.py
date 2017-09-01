@@ -13,6 +13,19 @@ F0_SYSEX_EVENT = 0xf0
 F7_SYSEX_EVENT = 0xf7
 META_EVENT = 0xff
 
+_EVENT_TYPE_NAMES = {
+    NOTE_OFF_EVENT: "note_off",
+    NOTE_ON_EVENT: "note_on",
+    POLYPHONIC_KEY_PRESSURE_EVENT: "polyphonic_key_pressure",
+    CONTROLLER_CHANGE_EVENT: "controller_change",
+    PROGRAM_CHANGE_EVENT: "program_change",
+    CHANNEL_KEY_PRESSURE_EVENT: "channel_key_pressure",
+    PITCH_BEND_EVENT: "pitch_bend",
+    F0_SYSEX_EVENT: "f0_sysex",
+    F7_SYSEX_EVENT: "f7_sysex",
+    META_EVENT: "meta",
+}
+
 _META_TYPE_NAMES = {
     0: 'sequence_number',
     1: 'text_event',
@@ -144,7 +157,8 @@ class MidiReader:
                 for chunk_name, chunk_length in chunk_headers:
                     if chunk_name == "MTrk":
                         track = MidiTrack(len(self.tracks))
-                        map(track.add_event, list(self._read_events(chunk_length)))
+                        for event in self._read_events(chunk_length):
+                            track.add_event(event)
                         self.tracks.append(track)
                         self._running_status = None
                     else:
@@ -258,9 +272,9 @@ class MidiEvent:
     """Represents an abstract event within a MIDI file."""
     def __init__(self, **kwargs):
         if kwargs.get("delta") is None:
-            raise Exception("A value for \"delta\" is required.")
+            raise Exception('A value for "delta" is required.')
         if kwargs.get("type") is None:
-            raise Exception("A value for \"type\" is required.")
+            raise Exception('A value for "type" is required.')
         for k, v in kwargs.iteritems():
             self.__dict__[k] = v
 
@@ -270,22 +284,22 @@ class MidiEvent:
     @classmethod
     def create_event(cls, delta, event_type, stream):
         args = {
-            "delta": delta
+            "delta": delta,
         }
         if event_type == F0_SYSEX_EVENT:
             data_length = _read_var_length(stream)
             args.update({
-                "type": "f0_sysex",
+                "type": _EVENT_TYPE_NAMES[event_type],
                 "data": [_u8(stream) for x in range(data_length)],
             })
         elif event_type == F7_SYSEX_EVENT:
             data_length = _read_var_length(stream)
             args.update({
-                "type": "f7_sysex",
+                "type": _EVENT_TYPE_NAMES[event_type],
                 "data": [_u8(stream) for x in range(data_length)],
             })
         elif event_type == META_EVENT:
-            args["type"] = "meta"
+            args["type"] = _EVENT_TYPE_NAMES[event_type]
             meta_type = _u8(stream)
             meta_type_name = _META_TYPE_NAMES.get(meta_type)
             if meta_type_name is None:
@@ -335,21 +349,21 @@ class MidiEvent:
         else:
             args["channel"] = event_type & 0xf
             event_type &= 0xf0
+            args["type"] = _EVENT_TYPE_NAMES[event_type]
+            if args["type"] is None:
+                args["type"] = "unknown_0x{:x}".format(event_type)
             if event_type == NOTE_OFF_EVENT:
                 args.update({
-                    "type": "note_off",
                     "note": _u8(stream),
                     "velocity": _u8(stream),
                 })
             elif event_type == NOTE_ON_EVENT:
                 args.update({
-                    "type": "note_on",
                     "note": _u8(stream),
                     "velocity": _u8(stream),
                 })
             elif event_type == POLYPHONIC_KEY_PRESSURE_EVENT:
                 args.update({
-                    "type": "polyphonic_key_pressure",
                     "key": _u8(stream),
                     "pressure": _u8(stream),
                 })
@@ -359,24 +373,20 @@ class MidiEvent:
                 if controller_name is None:
                     controller_name = "unknown_0x{:x}".format(controller)
                 args.update({
-                    "type": "controller_change",
                     # "controller": _u8(stream),
                     "controller": controller_name,
                     "value": _u8(stream),
                 })
             elif event_type == PROGRAM_CHANGE_EVENT:
                 args.update({
-                    "type": "program_change",
                     "program": _u8(stream),
                 })
             elif event_type == CHANNEL_KEY_PRESSURE_EVENT:
                 args.update({
-                    "type": "channel_key_pressure",
                     "pressure": _u8(stream),
                 })
             elif event_type == PITCH_BEND_EVENT:
                 args.update({
-                    "type": "pitch_bend",
                     "value": (_u8(stream) + _u8(stream) * 0x80) - 0x2000,  # 0 is center
                 })
             else:
