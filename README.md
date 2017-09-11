@@ -1,5 +1,7 @@
 # IMF Creator
 
+**This project is still a work-in-progress.**
+
 A program to create IMF music used by several classic ID and Apogee games such as Wolfenstein 3D and Commander Keen.
 
 ## Getting Started
