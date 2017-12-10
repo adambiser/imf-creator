@@ -14,10 +14,12 @@ You need Python 2.7 to run this.
 
 Clone or download this repository.
 
+#### Windows
 There are no additional requirements.
 
 #### Dependencies on Linux
 On Linux you will need to install some of dependencies to be able run this
+
 ##### Ubuntu / Debian
 ```bash
 sudo apt install tix-dev python-tk
