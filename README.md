@@ -16,6 +16,15 @@ Clone or download this repository.
 
 There are no additional requirements.
 
+#### Dependencies on Linux
+On Linux you will need to install some of dependencies to be able run this
+##### Ubuntu / Debian
+```bash
+sudo apt install tix-dev python-tk
+sudo apt-get install libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
+pip install pysound
+```
+
 ## License
 
 This project is dual licensed under the MIT License and GPL 3 License - see the [LICENSE](LICENSE) file for details.
