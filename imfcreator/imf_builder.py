@@ -30,7 +30,7 @@ def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     return events
 
 
-def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None):
+def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None, output_file_name="output.wlf", imf_file_type=0):
     events = _sort_midi(midi)  # , mute_tracks, mute_channels)
     imf = ImfMusicFile()
     # Prepare MIDI and IMF channel variables.
@@ -142,6 +142,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
         if event.channel == 9:
             inst_num = 128 + event.note - 35
             note = instruments[inst_num].given_note
+            note += instruments[inst_num].note_offset[voice]
         else:
             midi_track = midi_channels[event.channel]
             if midi_track["instrument"] is None:
@@ -199,19 +200,32 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
             n = (n * volume_table[midi_volume]) >> 7
             return 0x3f - n
             # return op_volume
-
-        return [
-            (
-                VOLUME_MSG | MODULATORS[channel["id"]],
-                get_operator_volume(instrument.modulator[voice].output_level)
-                | instrument.modulator[voice].key_scale_level
-            ),
-            (
-                VOLUME_MSG | CARRIERS[channel["id"]],
-                get_operator_volume(instrument.carrier[voice].output_level)
-                | instrument.carrier[voice].key_scale_level
-            ),
-        ]
+        if (instrument.feedback[voice] & 0x01) == 1:  # when AM, scale both operators
+            return [
+                (
+                    VOLUME_MSG | MODULATORS[channel["id"]],
+                    get_operator_volume(instrument.modulator[voice].output_level)
+                    | (instrument.modulator[voice].key_scale_level << 6)
+                ),
+                (
+                    VOLUME_MSG | CARRIERS[channel["id"]],
+                    get_operator_volume(instrument.carrier[voice].output_level)
+                    | (instrument.carrier[voice].key_scale_level << 6)
+                ),
+            ]
+        else:  # When FM, scale carrier only, keep modulator as-is
+            return [
+                (
+                    VOLUME_MSG | MODULATORS[channel["id"]],
+                    instrument.modulator[voice].output_level & 0x3f
+                    | (instrument.modulator[voice].key_scale_level << 6)
+                ),
+                (
+                    VOLUME_MSG | CARRIERS[channel["id"]],
+                    get_operator_volume(instrument.carrier[voice].output_level)
+                    | (instrument.carrier[voice].key_scale_level << 6)
+                ),
+            ]
 
     def _note_on(event):
         commands = []
@@ -338,7 +352,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None)
         elif event.type == "meta" and event.meta_type == "set_tempo":
             midi_tempo = float(event.bpm)
         _add_commands(commands)
-    imf.save("output.wlf", file_type=0)
+    imf.save(output_file_name, file_type=imf_file_type)
     # for command in imf.commands:
     #     print(map(hex, command))
     for mc in range(16):
