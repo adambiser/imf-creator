@@ -70,7 +70,12 @@ class ImfMusicFile(object):
         # TODO include_tags, remarks, etc
         data = ""
         if file_type == 1:
-            data += struct.pack("<H", self.num_commands * 4)
+            length = self.num_commands * 4
+            if length > 65532:
+                print "WARNING: IMF file max buffer overflow (total commands given=%d; written commands=%d)" % (self.num_commands, (65532 / 4))
+                data += struct.pack("<H", 65532)
+            else:
+                data += struct.pack("<H", length)
         for command in self.commands:
             data += struct.pack("<BBH", *command)
         with open(filename, "wb") as f:
