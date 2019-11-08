@@ -87,26 +87,27 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         block, freq = BLOCK_FREQ_NOTE_MAP[note]
         # Adjust for pitch bend.
         # The octave adjustment relies heavily on how the BLOCK_FREQ_NOTE_MAP has been calculated.
-        # F% is close to the top of the 1023 limit while G is in the middle at 517. Because of this,
+        # F# is close to the top of the 1023 limit while G is in the middle at 517. Because of this,
         # bends that cross over the line between F# and G are better handled in the range below G and the
         # lower block/freq is adjusted upward so that it is in the same block as the other note.
         # For each increment of 1 to the block, the f-num needs to be halved.  This can lead to a loss of
         # precision, but hopefully it won't be too drastic.
         if scaled_pitch_bend < 0:
             semitones = int(math.floor(scaled_pitch_bend))
-            bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note - semitones]
-            # If the bend-to note is on a lower block/octave, multiply the bend-to f-num by 0.5 per block
+            bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
+            # If the bend-to note is on a lower block/octave, multiply the *bend-to* f-num by 0.5 per block
             # to bring it up to the same block as the original note.
+            # assert not (bend_block == 1 and block == 0 and note == 18 and semitones == -1)
             if bend_block < block:
-                bend_freq = bend_freq / (2.0 ** (block - bend_block))
-            freq = int(freq - (freq - bend_freq) * scaled_pitch_bend / -semitones)
+                bend_freq /= (2.0 ** (block - bend_block))
+            freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
         elif scaled_pitch_bend > 0:
             semitones = int(math.ceil(scaled_pitch_bend))
             bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
-            # If the bend-to note is on a higher block/octave, multiple the original f-num by 0.5 per block
+            # If the bend-to note is on a higher block/octave, multiply the *original* f-num by 0.5 per block
             # to bring it up to the same block as the bend-to note.
             if bend_block > block:
-                freq = freq / (2.0 ** (bend_block - block))
+                freq /= (2.0 ** (bend_block - block))
                 block = bend_block
             freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
         assert 0 <= block <= 7
