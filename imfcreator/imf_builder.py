@@ -121,7 +121,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
 
     def _note_off(event):
         commands = []
-        inst_num, note = _get_inst_and_note(event, False)
+        inst_num, note, ins = _get_inst_and_note(event, False)
         channel = _find_imf_channel_for_instrument_note(inst_num, note)
         if channel:
             channel["last_note"] = None
@@ -138,19 +138,55 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         #     print "Could not find note to shut off! inst: {}, note: {}".format(inst_num, note)
         return commands
 
+    def _encode_ins_number(type, bank, patch):
+        t = 0x1000000 if type == 'p' else 0
+        b = bank << 2
+        return t + bank + patch
+
+    def _get_inst_by_code(code):
+        type = 'p' if (code & 0x1000000) != 0 else 'm'
+        bank = (code & 0x0FFFF00) >> 2
+        patch = (code & 0x00000FF)
+        return instruments[type][bank][patch]
+
+    def _find_inst_and_bank(type, bank, inst):
+        if bank not in instruments[type]:
+            bank = 0  # Fallback to zero bank
+            if bank not in instruments[type]:
+                return -1, -1  # Error when not found even in zero bank
+        if inst not in instruments[type][bank]:
+            bank = 0  # Fallback to zero bank
+            if bank not in instruments[type] or inst not in instruments[type][bank]:
+                return -1, -1  # Error when not found even in zero bank
+        return bank, inst
+
     def _get_inst_and_note(event, is_note_on, voice=0):
+        bank = 0  # TODO: Read controllers 0 and 32 to choose the bank number. Watch out for GS and XG logic difference!
         if event.channel == 9:
-            inst_num = 128 + event.note - 35
-            note = instruments[inst_num].given_note
-            note += instruments[inst_num].note_offset[voice]
+            assert 'p' in instruments
+            bank, inst = _find_inst_and_bank('p', bank, event.note)
+            if bank < 0 or inst < 0:
+                return -1, -1, None  # Bank / instrument is not foind
+            ins = instruments['p'][bank][inst]
+            inst_num = _encode_ins_number('p', bank, event.note)
+            note = ins.given_note
+            note += ins.note_offset[voice]
+            if note < 0 or note > 127:
+                print "Note out of range: {}".format(note)
+                note = 60
         else:
+            assert 'm' in instruments
             midi_track = midi_channels[event.channel]
             if midi_track["instrument"] is None:
                 print "No instrument assigned to track {}, defaulting to 0."
                 midi_track["instrument"] = 0
-            inst_num = midi_track["instrument"]
+            bank, inst = _find_inst_and_bank('m', bank, midi_track["instrument"])
+            if bank < 0 or inst < 0:
+                return -1, -1, None  # Bank / instrument is not foind
+            ins = instruments['m'][bank][inst]
+            inst_num = _encode_ins_number('p', bank, inst)
             note = event.note
-            note += instruments[inst_num].note_offset[voice]
+            note += ins.note_offset[voice]
             if note < 0 or note > 127:
                 print "Note out of range: {}".format(note)
                 note = 60
@@ -171,7 +207,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 else:
                     print "Tried to remove non-active note: track {}, inst {} note {}"\
                         .format(event.track, inst_num, note)
-        return inst_num, note
+        return inst_num, note, ins
 
     def _get_volume_commands(channel, instrument, midi_volume, voice=0):
         volume_table = [
@@ -231,11 +267,13 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         commands = []
         voice = 0
         midi_track = midi_channels[event.channel]
-        inst_num, note = _get_inst_and_note(event, True)
+        inst_num, note, ins = _get_inst_and_note(event, True)
+        if inst_num < 0 or ins is None:
+            return commands
         channel = _find_imf_channel(inst_num, note)
         if channel:
             # Check for instrument change.
-            instrument = instruments[inst_num]
+            instrument = ins
             if channel["instrument"] != inst_num:
                 # Removed volume messages. Volume will initialize to OFF.
                 commands += [cmd for cmd in instrument.get_regs(channel["id"], voice) if (cmd[0] & 0xf0) != VOLUME_MSG]
@@ -300,7 +338,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             channel = _find_imf_channel_for_instrument_note(inst_num, note_info["note"])
             if channel:
                 volume = int(midi_track["volume"] * note_info["event"].velocity / 127.0)
-                instrument = instruments[inst_num]
+                instrument = _get_inst_by_code(inst_num)
                 commands += _get_volume_commands(channel, instrument, volume)
                 # commands += [
                 #     (

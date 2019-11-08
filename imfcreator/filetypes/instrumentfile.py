@@ -55,7 +55,18 @@ def get_all_instruments(f):
 
     :param f: A filename or file object.
     """
-    return [i for i in open(f)]
+    q = open(f)
+    dest = dict()
+    dest['m'] = dict()
+    dest['p'] = dict()
+    for i in q:
+        k = 'p' if i.bank_is_percussion else 'm'
+        b = (i.bank_msb * 256) + i.bank_lsb
+        if b not in dest[k]:
+            dest[k][b] = dict()
+        dest[k][b][i.patch_id] = i
+
+    return dest
 
 
 class InstrumentFile(object):

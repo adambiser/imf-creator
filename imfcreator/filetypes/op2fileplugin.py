@@ -20,6 +20,8 @@ class Op2FilePlugin(InstrumentFile):
     FLAG_UNKNOWN = 2
     FLAG_USE_SECONDARY_VOICE = 4
     # FLAG_USE_FINE_TUNING = 4???
+    _last_entry = 0
+    _is_drum = False
 
     def _open(self):
         self.seek(0)
@@ -47,6 +49,14 @@ class Op2FilePlugin(InstrumentFile):
         instrument.given_note = u8(entry[3])
         Op2FilePlugin._read_voice(instrument, 0, entry[4:20])
         Op2FilePlugin._read_voice(instrument, 1, entry[20:36])
+        instrument.bank_msb = 0
+        instrument.bank_lsb = 0
+        instrument.patch_id = self._last_entry
+        instrument.bank_is_percussion = self._is_drum
+        self._last_entry += 1
+        if self._last_entry >= 128:
+            self._is_drum = True
+            self._last_entry = 35
         return instrument
 
     @staticmethod
