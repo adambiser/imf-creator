@@ -3,7 +3,7 @@ import math
 
 from .adlib import *
 from .filetypes.imfmusicfile import ImfMusicFile
-
+import instrumentnames
 
 def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     # Combine all tracks into one track.
@@ -123,6 +123,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
     def _note_off(event):
         commands = []
         inst_num, note = _get_inst_and_note(event, False)
+        if inst_num is None:
+            return commands
         channel = _find_imf_channel_for_instrument_note(inst_num, note)
         if channel:
             channel["last_note"] = None
@@ -141,7 +143,13 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
 
     def _get_inst_and_note(event, is_note_on, voice=0):
         if event.channel == 9:
-            inst_num = 128 + event.note - 35
+            note = event.note
+            # Make sure the drum note value is valid.
+            if note not in instrumentnames.DRUM_NOTE_NAMES:
+                note = instrumentnames.GM2_DRUM_NOTE_MAPPING.get(note, None)
+                if note is None:
+                    return None, None
+            inst_num = 128 + note - 35
             note = instruments[inst_num].given_note
             note += instruments[inst_num].note_offset[voice]
         else:
@@ -233,6 +241,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         voice = 0
         midi_track = midi_channels[event.channel]
         inst_num, note = _get_inst_and_note(event, True)
+        if inst_num is None:
+            return commands
         channel = _find_imf_channel(inst_num, note)
         if channel:
             # Check for instrument change.
