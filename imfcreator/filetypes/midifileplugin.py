@@ -1,6 +1,8 @@
 import os
 import struct
 import _binary
+import songfile
+from .songfile import SongFile
 
 NOTE_OFF_EVENT = 0x80
 NOTE_ON_EVENT = 0x90
@@ -127,45 +129,46 @@ def _u8(f):
     return _binary.u8(f.read(1))
 
 
-class MidiReader:
+def _accept(preview):
+    return preview[0:4] == "MThd" and _binary.u32be(preview[4:8]) == 6
+
+
+class MidiFilePlugin(SongFile):
+    ID = "MIDI"
+    DESCRIPTION = "MIDI File"
+
     """Reads a MIDI file."""
-    def __init__(self):
+    def __init__(self, fp=None, filename=None):
         self.file_format = None
         self.division = None
-        self.f = None
         self._running_status = None
-        # self.num_tracks = None
-        self.tracks = []
+        super(MidiFilePlugin, self).__init__(fp, filename)
 
-    def load(self, filename):
+    def load(self):
         """Loads a MIDI file into the reader object."""
-        with open(filename, "rb") as f:
-            try:
-                self.f = f
-                # Start the chunk header generator. The data within the chunk must be handled separately.
-                chunk_headers = self._iterchunkheader()
-                chunk_name, chunk_length = chunk_headers.next()
-                if chunk_name != "MThd":
-                    raise IOError("Not a MIDI file.")
-                if chunk_length != 6:
-                    raise IOError("Invalid MIDI header length: {}".format(chunk_length))
-                self.file_format, num_tracks, self.division = struct.unpack(">HHH", f.read(6))
-                # if self.file_format not in (0, 1):
-                #     raise IOError("Unsupported MIDI file format: {}".format(self.file_format))
-                # print(self.file_format, num_tracks, self.division)
-                # Process remaining chunks.
-                for chunk_name, chunk_length in chunk_headers:
-                    if chunk_name == "MTrk":
-                        track = MidiTrack(len(self.tracks))
-                        for event in self._read_events(chunk_length):
-                            track.add_event(event)
-                        self.tracks.append(track)
-                        self._running_status = None
-                    else:
-                        # Skip any other chunk types that might appear.
-                        f.seek(chunk_length, os.SEEK_CUR)
-            finally:
-                self.f = None
+        # Start the chunk header generator. The data within the chunk must be handled separately.
+        chunk_headers = self._iterchunkheader()
+        chunk_name, chunk_length = chunk_headers.next()
+        if chunk_name != "MThd":
+            raise IOError("Not a MIDI file.")
+        if chunk_length != 6:
+            raise IOError("Invalid MIDI header length: {}".format(chunk_length))
+        self.file_format, num_tracks, self.division = struct.unpack(">HHH", self.fp.read(6))
+        # if self.file_format not in (0, 1):
+        #     raise IOError("Unsupported MIDI file format: {}".format(self.file_format))
+        # print(self.file_format, num_tracks, self.division)
+        # Process remaining chunks.
+        for chunk_name, chunk_length in chunk_headers:
+            if chunk_name == "MTrk":
+                track = MidiTrack(len(self.tracks))
+                print "_load"
+                for event in self._read_events(chunk_length):
+                    track.add_event(event)
+                self.tracks.append(track)
+                self._running_status = None
+            else:
+                # Skip any other chunk types that might appear.
+                self.fp.seek(chunk_length, os.SEEK_CUR)
 
     def convert_to_format_0(self):
         # First, calculate the time from the start of the file for each event.
@@ -173,8 +176,6 @@ class MidiReader:
         for track in self.tracks:
             time = 0
             for event in track:
-                # if event.type == "meta" and event.meta_type == "end_of_track":
-                #     continue
                 time += event.delta
                 event.time_from_start = time
                 events.append(event)
@@ -206,18 +207,18 @@ class MidiReader:
         at the start of chunk header information.
         """
         while True:
-            chunk_name = self.f.read(4)
+            chunk_name = self.fp.read(4)
             if chunk_name == "":
                 return
-            chunk_length = struct.unpack(">I", self.f.read(4))[0]
+            chunk_length = struct.unpack(">I", self.fp.read(4))[0]
             yield chunk_name, chunk_length
 
     def _read_events(self, length):
         """A generator that assumes that the internal file object is positioned
         at the start of an event delta time.
         """
-        end_tell = self.f.tell() + length
-        while self.f.tell() < end_tell:
+        end_tell = self.fp.tell() + length
+        while self.fp.tell() < end_tell:
             event = self._read_event()
             if event is None:
                 return
@@ -225,20 +226,20 @@ class MidiReader:
 
     def _read_event(self):
         """Reads a MIDI event at the current file position."""
-        delta_time = _read_var_length(self.f)
+        delta_time = _read_var_length(self.fp)
         # Read the event type.
-        event_type = _u8(self.f)
+        event_type = _u8(self.fp)
         # Check for running status.
         if event_type & 0x80 == 0:
             assert event_type is not None
-            self.f.seek(-1, os.SEEK_CUR)
+            self.fp.seek(-1, os.SEEK_CUR)
             event_type = self._running_status
         else:
             # New status event. Clear the running status now.
             # It will get reassigned later if necessary.
             self._running_status = None
-        # print("Event 0x{:x} at 0x{:x}".format(event_type, self.f.tell() - 1))
-        event = MidiEvent.create_event(delta_time, event_type, self.f)
+        # print("Event 0x{:x} at 0x{:x}".format(event_type, self.fp.tell() - 1))
+        event = MidiEvent.create_event(delta_time, event_type, self.fp)
         try:
             if event.channel >= 0:
                 self._running_status = event_type
@@ -392,3 +393,7 @@ class MidiEvent:
             else:
                 raise Exception("Unsupported MIDI event code: 0x{:X}".format(event_type))
         return MidiEvent(**args)
+
+
+# Register the plugin.
+songfile.register_open(MidiFilePlugin.ID, MidiFilePlugin, _accept)

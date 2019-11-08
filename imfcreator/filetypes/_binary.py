@@ -15,3 +15,7 @@ def u16le(c):
 
 def s16le(c):
     return struct.unpack("<h", c)[0]
+
+
+def u32be(c):
+    return struct.unpack(">I", c)[0]

@@ -21,6 +21,9 @@ class Op2FilePlugin(InstrumentFile):
     FLAG_USE_SECONDARY_VOICE = 4
     # FLAG_USE_FINE_TUNING = 4???
 
+    def __init__(self, fp=None, filename=None):
+        super(Op2FilePlugin, self).__init__(fp, filename)
+
     def _open(self):
         self.seek(0)
 

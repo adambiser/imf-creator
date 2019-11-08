@@ -1,0 +1,26 @@
+<menubar>
+    <menu label="&amp;File">
+        <command label="&amp;Open Folder" command="self._choosefolder" accelerator="Ctrl+O"/>
+        <separator/>
+        <command label="&amp;Save Image As" command="self._saveimageas" accelerator="Ctrl+S" state="disabled"/>
+        <command label="Save A&amp;nimation As" command="self._saveanimationas" accelerator="Ctrl+A" state="disabled"/>
+        <separator/>
+        <command label="Save &amp;All Files" command="self._saveall" state="disabled"/>
+        <separator/>
+        <command label="E&amp;xit" command="self._onclosing"/>
+    </menu>
+    <menu label="Options">
+        <check label="&amp;Loop Animations" variable="self.settings.repeatanimations" accelerator="Ctrl+L"/>
+        <menu label="&amp;Image Scale">
+            <radio label="&amp;Auto" variable="self.settings.imagescale" value="0" accelerator="Ctrl+0"/>
+            <radio label="&amp;1" variable="self.settings.imagescale" value="1" accelerator="Ctrl+1"/>
+            <radio label="&amp;2" variable="self.settings.imagescale" value="2" accelerator="Ctrl+2"/>
+            <radio label="&amp;3" variable="self.settings.imagescale" value="3" accelerator="Ctrl+3"/>
+            <radio label="&amp;4" variable="self.settings.imagescale" value="4" accelerator="Ctrl+4"/>
+            <radio label="&amp;5" variable="self.settings.imagescale" value="5" accelerator="Ctrl+5"/>
+            <radio label="&amp;6" variable="self.settings.imagescale" value="6" accelerator="Ctrl+6"/>
+            <radio label="&amp;7" variable="self.settings.imagescale" value="7" accelerator="Ctrl+7"/>
+            <radio label="&amp;8" variable="self.settings.imagescale" value="8" accelerator="Ctrl+8"/>
+        </menu>
+    </menu>
+</menubar>
