@@ -123,6 +123,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
     def _note_off(event):
         commands = []
         inst_num, note, ins = _get_inst_and_note(event, False)
+        if inst_num is None or ins is None:
+            return commands
         channel = _find_imf_channel_for_instrument_note(inst_num, note)
         if channel:
             channel["last_note"] = None
@@ -154,11 +156,11 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         if bank not in instruments[type]:
             bank = 0  # Fallback to zero bank
             if bank not in instruments[type]:
-                return -1, -1  # Error when not found even in zero bank
+                return None, None  # Error when not found even in zero bank
         if inst not in instruments[type][bank]:
             bank = 0  # Fallback to zero bank
             if bank not in instruments[type] or inst not in instruments[type][bank]:
-                return -1, -1  # Error when not found even in zero bank
+                return None, None  # Error when not found even in zero bank
         return bank, inst
 
     def _get_inst_and_note(event, is_note_on, voice=0):
@@ -166,8 +168,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         if event.channel == 9:
             assert 'p' in instruments
             bank, inst = _find_inst_and_bank('p', bank, event.note)
-            if bank < 0 or inst < 0:
-                return -1, -1, None  # Bank / instrument is not foind
+            if bank is None or inst is None:
+                return None, None, None  # Bank / instrument is not foind
             ins = instruments['p'][bank][inst]
             inst_num = _encode_ins_number('p', bank, event.note)
             note = ins.given_note
@@ -182,8 +184,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 print "No instrument assigned to track {}, defaulting to 0."
                 midi_track["instrument"] = 0
             bank, inst = _find_inst_and_bank('m', bank, midi_track["instrument"])
-            if bank < 0 or inst < 0:
-                return -1, -1, None  # Bank / instrument is not foind
+            if bank is None or inst is None:
+                return None, None, None  # Bank / instrument is not foind
             ins = instruments['m'][bank][inst]
             inst_num = _encode_ins_number('p', bank, inst)
             note = event.note
@@ -269,7 +271,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         voice = 0
         midi_track = midi_channels[event.channel]
         inst_num, note, ins = _get_inst_and_note(event, True)
-        if inst_num < 0 or ins is None:
+        if inst_num is None or ins is None:
             return commands
         channel = _find_imf_channel(inst_num, note)
         if channel:
