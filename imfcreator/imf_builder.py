@@ -110,6 +110,11 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 block = bend_block
             freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
         assert 0 <= block <= 7
+        # TODO: implement multiplier increasing for too high notes to get tone higher than maximum
+        #  possible frequency like made here:
+        #  https://github.com/Wohlstand/libADLMIDI/blob/master/src/adlmidi_opl3.cpp#L332-L412
+        while freq > 0x3ff:
+            freq /= 2
         assert 0 <= freq <= 0x3ff
         return block, freq
 
@@ -122,6 +127,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
     def _note_off(event):
         commands = []
         inst_num, note = _get_inst_and_note(event, False)
+        if inst_num < 0:
+            return commands
         channel = _find_imf_channel_for_instrument_note(inst_num, note)
         if channel:
             channel["last_note"] = None
@@ -141,6 +148,9 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
     def _get_inst_and_note(event, is_note_on, voice=0):
         if event.channel == 9:
             inst_num = 128 + event.note - 35
+            if inst_num >= len(instruments):
+                # Silence
+                return -1, -1
             note = instruments[inst_num].given_note
             note += instruments[inst_num].note_offset[voice]
         else:
@@ -232,6 +242,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         voice = 0
         midi_track = midi_channels[event.channel]
         inst_num, note = _get_inst_and_note(event, True)
+        if inst_num < 0:
+            return commands
         channel = _find_imf_channel(inst_num, note)
         if channel:
             # Check for instrument change.
