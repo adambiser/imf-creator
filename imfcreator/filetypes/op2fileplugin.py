@@ -3,6 +3,7 @@ from .instrumentfile import InstrumentFile
 from ..adlib import AdlibInstrument
 from ._binary import u8, u16le, s16le
 
+from ..instrumentnames import GM2_DRUM_NOTE_NAMES, GM2_DRUM_NOTE_MAPPING
 
 def _accept(preview):
     return preview[0:8] == "#OPL_II#"
@@ -13,7 +14,7 @@ class Op2FilePlugin(InstrumentFile):
     DESCRIPTION = "OPL2 DMX Sound Library"
     ENTRY_START = 8
     ENTRY_SIZE = 36
-    NUM_ENTRIES = 175  # Always 175 for OP2 files.
+    NUM_ENTRIES = 175 + 14  # Always 175 for OP2 files. (and +14 for GM2 mapping aliases)
     NAME_START = ENTRY_START + ENTRY_SIZE * NUM_ENTRIES
     NAME_SIZE = 32
     FLAG_USE_GIVEN_NOTE = 1
@@ -21,12 +22,35 @@ class Op2FilePlugin(InstrumentFile):
     FLAG_USE_SECONDARY_VOICE = 4
     # FLAG_USE_FINE_TUNING = 4???
     _last_entry = 0
+    _patch_override = None
     _is_drum = False
+
+    GM2_DRUM_NOTE_OPL2_EXTRA = [
+        27,  # "High Q"
+        28,  # "Slap"
+        29,  # "Scratch Push"
+        30,  # "Scratch Pull"
+        31,  # "Sticks"
+        32,  # "Square Click"
+        33,  # "Metronome Click"
+        34,  # "Metronome Bell"
+        82,  # "Shaker"
+        83,  # "Jingle Bell"
+        84,  # "Belltree"
+        85,  # "Castanets"
+        86,  # "Mute Surdo"
+        87,  # "Open Surdo"
+    ]
 
     def _open(self):
         self.seek(0)
 
     def seek(self, index):
+        if index >= 175:  # 0...174 - file data, and 175+ - GM2 drums aliases
+            self._patch_override = self.GM2_DRUM_NOTE_OPL2_EXTRA[index - 175]
+            self._is_drum = True
+            index = 127 + GM2_DRUM_NOTE_MAPPING.get(self._patch_override, None) - 35
+        assert index is not None
         self.info = [
             Op2FilePlugin.ENTRY_START + index * Op2FilePlugin.ENTRY_SIZE,
             Op2FilePlugin.NAME_START + index * Op2FilePlugin.NAME_SIZE,
@@ -51,12 +75,13 @@ class Op2FilePlugin(InstrumentFile):
         Op2FilePlugin._read_voice(instrument, 1, entry[20:36])
         instrument.bank_msb = 0
         instrument.bank_lsb = 0
-        instrument.patch_id = self._last_entry
+        instrument.patch_id = self._last_entry if self._patch_override is None else self._patch_override
         instrument.bank_is_percussion = self._is_drum
-        self._last_entry += 1
-        if self._last_entry >= 128:
-            self._is_drum = True
-            self._last_entry = 35
+        if self._patch_override is None:
+            self._last_entry += 1
+            if self._last_entry >= 128:
+                self._is_drum = True
+                self._last_entry = 35
         return instrument
 
     @staticmethod

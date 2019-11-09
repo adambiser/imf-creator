@@ -129,7 +129,7 @@ INSTRUMENT_NAMES = [
     "Gunshot",
 ]
 
-DRUM_NOTE_MAP = {
+DRUM_NOTE_NAMES = {
     35: "Acoustic Bass Drum",
     36: "Bass Drum 1",
     37: "Side Stick",
@@ -177,4 +177,38 @@ DRUM_NOTE_MAP = {
     79: "Open Cuica",
     80: "Mute Triangle",
     81: "Open Triangle",
+}
+
+GM2_DRUM_NOTE_NAMES = {
+     27: "High Q",
+     28: "Slap",
+     29: "Scratch Push",
+     30: "Scratch Pull",
+     31: "Sticks",
+     32: "Square Click",
+     33: "Metronome Click",
+     34: "Metronome Bell",
+     82: "Shaker",
+     83: "Jingle Bell",
+     84: "Belltree",
+     85: "Castanets",
+     86: "Mute Surdo",
+     87: "Open Surdo",
+}
+
+GM2_DRUM_NOTE_MAPPING = {
+     27: 37,  # "High Q" => "Side stick"
+     28: 39,  # "Slap" => "Hand Clap"
+     29: 78,  # "Scratch Push" => "Mute Cuica"
+     30: 79,  # "Scratch Pull" => "Open Cuica"
+     31: 37,  # "Sticks" => "Side stick"
+     32: 37,  # "Square Click" => "Side stick"
+     33: 37,  # "Metronome Click" => "Side stick"
+     34: 53,  # "Metronome Bell" => "Ride Bell"
+     82: 69,  # "Shaker" => "Cabasa"
+     83: 54,  # "Jingle Bell" => "Tambourine"
+     84: 74,  # "Belltree" => "Long Guiro"
+     85: 37,  # "Castanets" => "Side stick"
+     86: 62,  # "Mute Surdo" => "Mute Hi Conga"
+     87: 64,  # "Open Surdo" => Low Conga
 }
