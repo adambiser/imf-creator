@@ -143,12 +143,12 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
 
     def _encode_ins_number(type, bank, patch):
         t = 0x1000000 if type == 'p' else 0
-        b = bank << 2
-        return t + bank + patch
+        b = bank << 8
+        return t + b + patch
 
     def _get_inst_by_code(code):
         type = 'p' if (code & 0x1000000) != 0 else 'm'
-        bank = (code & 0x0FFFF00) >> 2
+        bank = (code & 0x0FFFF00) >> 8
         patch = (code & 0x00000FF)
         return instruments[type][bank][patch]
 
@@ -167,16 +167,14 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         bank = 0  # TODO: Read controllers 0 and 32 to choose the bank number. Watch out for GS and XG logic difference!
         if event.channel == 9:
             assert 'p' in instruments
-            bank, inst = _find_inst_and_bank('p', bank, event.note)
+            note = event.note
+            bank, inst = _find_inst_and_bank('p', bank, note)
             if bank is None or inst is None:
                 return None, None, None  # Bank / instrument is not foind
             ins = instruments['p'][bank][inst]
-            inst_num = _encode_ins_number('p', bank, event.note)
+            inst_num = _encode_ins_number('p', bank, note)
             note = ins.given_note
             note += ins.note_offset[voice]
-            if note < 0 or note > 127:
-                print "Note out of range: {}".format(note)
-                return None, None, None
         else:
             assert 'm' in instruments
             midi_track = midi_channels[event.channel]
@@ -187,7 +185,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             if bank is None or inst is None:
                 return None, None, None  # Bank / instrument is not foind
             ins = instruments['m'][bank][inst]
-            inst_num = _encode_ins_number('p', bank, inst)
+            inst_num = _encode_ins_number('m', bank, inst)
             note = event.note
             note += ins.note_offset[voice]
             if note < 0 or note > 127:
