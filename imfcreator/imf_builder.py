@@ -3,7 +3,7 @@ import math
 
 from .adlib import *
 from .filetypes.imfmusicfile import ImfMusicFile
-
+import instrumentnames
 
 def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     # Combine all tracks into one track.
@@ -176,7 +176,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             note += ins.note_offset[voice]
             if note < 0 or note > 127:
                 print "Note out of range: {}".format(note)
-                note = 60
+                return None, None, None
         else:
             assert 'm' in instruments
             midi_track = midi_channels[event.channel]
