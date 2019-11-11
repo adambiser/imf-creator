@@ -3,7 +3,8 @@ from .instrumentfile import InstrumentFile
 from ..adlib import AdlibInstrument
 from ._binary import u8, u16le, s16le
 
-from ..instrumentnames import GM2_DRUM_NOTE_NAMES, GM2_DRUM_NOTE_MAPPING
+from ..instrumentnames import GM2_DRUM_NOTE_MAPPING
+
 
 def _accept(preview):
     return preview[0:8] == "#OPL_II#"
@@ -45,12 +46,15 @@ class Op2FilePlugin(InstrumentFile):
     def _open(self):
         self.seek(0)
 
+    def _load(self):
+        pass
+
     def seek(self, index):
+        assert index is not None
         if index >= 175:  # 0...174 - file data, and 175+ - GM2 drums aliases
             self._patch_override = self.GM2_DRUM_NOTE_OPL2_EXTRA[index - 175]
             self._is_drum = True
-            index = 127 + GM2_DRUM_NOTE_MAPPING.get(self._patch_override, None) - 35
-        assert index is not None
+            index = 128 + GM2_DRUM_NOTE_MAPPING.get(self._patch_override, None) - 35
         self.info = [
             Op2FilePlugin.ENTRY_START + index * Op2FilePlugin.ENTRY_SIZE,
             Op2FilePlugin.NAME_START + index * Op2FilePlugin.NAME_SIZE,

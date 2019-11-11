@@ -3,7 +3,7 @@ import math
 
 from .adlib import *
 from .filetypes.imfmusicfile import ImfMusicFile
-import instrumentnames
+
 
 def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     # Combine all tracks into one track.
