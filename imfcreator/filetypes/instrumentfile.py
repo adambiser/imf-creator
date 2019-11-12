@@ -1,4 +1,5 @@
 # import builtins
+# -*- coding: utf-8 -*-
 import __builtin__
 
 builtins = __builtin__
@@ -20,7 +21,7 @@ def open(f):
     :param f: A filename or file object.
     """
     filename = ""
-    if type(f) is str:  # filename
+    if type(f) is str or type(f) is unicode:  # filename
         filename = f
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
