@@ -60,6 +60,8 @@ def get_all_instruments(f):
     dest['m'] = dict()
     dest['p'] = dict()
     for i in q:
+        if i is None:
+            continue
         k = 'p' if i.bank_is_percussion else 'm'
         b = (i.bank_msb * 256) + i.bank_lsb
         if b not in dest[k]:
