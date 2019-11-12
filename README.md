@@ -24,7 +24,7 @@ On Linux you will need to install some of dependencies to be able run this
 ```bash
 sudo apt install tix-dev python-tk
 sudo apt-get install libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
-pip install pysound
+pip install pyaudio
 ```
 
 ## License
