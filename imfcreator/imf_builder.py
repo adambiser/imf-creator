@@ -31,7 +31,7 @@ def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     return events
 
 
-def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None, output_file_name="output.wlf", imf_file_type=0):
+def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None, output_file_name=None, imf_file_type=0):
     events = _sort_midi(midi)  # , mute_tracks, mute_channels)
     imf = ImfMusicFile()
     # Prepare MIDI and IMF channel variables.
@@ -442,7 +442,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         elif event.type == "meta" and event.meta_type == "set_tempo":
             midi_tempo = float(event.bpm)
         _add_commands(commands)
-    imf.save(output_file_name, file_type=imf_file_type)
+    if output_file_name is not None:
+        imf.save(output_file_name, file_type=imf_file_type)
     # for command in imf.commands:
     #     print(map(hex, command))
     for mc in range(16):
