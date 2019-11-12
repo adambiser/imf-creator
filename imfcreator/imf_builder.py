@@ -38,8 +38,16 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
     for ch in range(16):
         midi_channels[ch] = {
             "instrument": None,
+            "bank_lsb": 0,
+            "bank_msb": 0,
+            "last_lrpn": 0,
+            "last_mrpn": 0,
+            "nrpn": False,
             "volume": 127,
             "pitch_bend": 0,
+            "pitch_bend_sensitivity_lsb": 0,
+            "pitch_bend_sensitivity_msb": 2,
+            "pitch_bend_sensitivity": 2.0,
             "scaled_pitch_bend": 0.0,
             "active_notes": [],
         }
@@ -92,24 +100,29 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         # lower block/freq is adjusted upward so that it is in the same block as the other note.
         # For each increment of 1 to the block, the f-num needs to be halved.  This can lead to a loss of
         # precision, but hopefully it won't be too drastic.
-        if scaled_pitch_bend < 0:
+        if scaled_pitch_bend < 0 or scaled_pitch_bend > 0:
             semitones = int(math.floor(scaled_pitch_bend))
-            bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
-            # If the bend-to note is on a lower block/octave, multiply the *bend-to* f-num by 0.5 per block
-            # to bring it up to the same block as the original note.
-            # assert not (bend_block == 1 and block == 0 and note == 18 and semitones == -1)
-            if bend_block < block:
-                bend_freq /= (2.0 ** (block - bend_block))
-            freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
-        elif scaled_pitch_bend > 0:
-            semitones = int(math.ceil(scaled_pitch_bend))
-            bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
-            # If the bend-to note is on a higher block/octave, multiply the *original* f-num by 0.5 per block
-            # to bring it up to the same block as the bend-to note.
-            if bend_block > block:
-                freq /= (2.0 ** (bend_block - block))
-                block = bend_block
-            freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
+            offset = note + semitones
+            if offset < 0:
+                offset = 0
+            elif offset > len(BLOCK_FREQ_NOTE_MAP):
+                offset = len(BLOCK_FREQ_NOTE_MAP) - 1
+            bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[offset]
+            if semitones != 0:
+                if scaled_pitch_bend < 0:
+                    # If the bend-to note is on a lower block/octave, multiply the *bend-to* f-num by 0.5 per block
+                    # to bring it up to the same block as the original note.
+                    # assert not (bend_block == 1 and block == 0 and note == 18 and semitones == -1)
+                    if bend_block < block:
+                        bend_freq /= (2.0 ** (block - bend_block))
+                    freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
+                elif scaled_pitch_bend > 0:
+                    # If the bend-to note is on a higher block/octave, multiply the *original* f-num by 0.5 per block
+                    # to bring it up to the same block as the bend-to note.
+                    if bend_block > block:
+                        freq /= (2.0 ** (bend_block - block))
+                        block = bend_block
+                    freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
         assert 0 <= block <= 7
         assert 0 <= freq <= 0x3ff
         return block, freq
@@ -164,11 +177,15 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         return bank, inst
 
     def _get_inst_and_note(event, is_note_on, voice=0):
-        bank = 0  # TODO: Read controllers 0 and 32 to choose the bank number. Watch out for GS and XG logic difference!
-        if event.channel == 9:
+        midi_chan = midi_channels[event.channel]
+        if midi_chan["instrument"] is None:
+            print "No instrument assigned to track {}, defaulting to 0."
+            midi_chan["instrument"] = 0
+        bank = (midi_chan["bank_msb"] * 256) + midi_chan["bank_lsb"]
+        if event.channel == 9 or bank == 0x7F00:
             assert 'p' in instruments
             note = event.note
-            bank, inst = _find_inst_and_bank('p', bank, note)
+            bank, inst = _find_inst_and_bank('p', midi_chan["instrument"], note)
             if bank is None or inst is None:
                 return None, None, None  # Bank / instrument is not foind
             ins = instruments['p'][bank][inst]
@@ -177,11 +194,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             note += ins.note_offset[voice]
         else:
             assert 'm' in instruments
-            midi_track = midi_channels[event.channel]
-            if midi_track["instrument"] is None:
-                print "No instrument assigned to track {}, defaulting to 0."
-                midi_track["instrument"] = 0
-            bank, inst = _find_inst_and_bank('m', bank, midi_track["instrument"])
+            bank, inst = _find_inst_and_bank('m', bank, midi_chan["instrument"])
             if bank is None or inst is None:
                 return None, None, None  # Bank / instrument is not foind
             ins = instruments['m'][bank][inst]
@@ -192,19 +205,19 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 print "Note out of range: {}".format(note)
                 note = 60
             if is_note_on:
-                midi_track["active_notes"].append({
+                midi_chan["active_notes"].append({
                     "note": note,
                     "inst_num": inst_num,
                     "event": event,
                 })
             else:
-                # match = midi_track["notes"].get(event.note)
-                match = filter(lambda note_info: note_info["event"].note == event.note, midi_track["active_notes"])
+                # match = midi_chan["notes"].get(event.note)
+                match = filter(lambda note_info: note_info["event"].note == event.note, midi_chan["active_notes"])
                 if match:
                     match = match[0]
                     note = match["note"]
                     inst_num = match["inst_num"]
-                    midi_track["active_notes"].remove(match)
+                    midi_chan["active_notes"].remove(match)
                 else:
                     print "Tried to remove non-active note: track {}, inst {} note {}"\
                         .format(event.track, inst_num, note)
@@ -314,7 +327,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             midi_channels[event.channel]["pitch_bend"] = amount
             # Scale picth bend to -1..1
             scaled_pitch_bend = amount / -pitch_bend_range[0] if amount < 0 else amount / pitch_bend_range[1]
-            scaled_pitch_bend *= 2  # TODO Read from controller messages. 2 semi-tones is the default.
+            scaled_pitch_bend *= midi_channels[event.channel]["pitch_bend_sensitivity"]
             midi_channels[event.channel]["scaled_pitch_bend"] = scaled_pitch_bend
             instrument = midi_channels[event.channel]["instrument"]
             for note_info in midi_channels[event.channel]["active_notes"]:
@@ -353,6 +366,23 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 # ]
         return commands
 
+    def _update_bend_sense(channel):
+        cent = (channel["pitch_bend_sensitivity_msb"]) * 128 + channel["pitch_bend_sensitivity_lsb"]
+        channel["pitch_bend_sensitivity"] = float(cent) / 128.0
+
+    def _set_rpn(event, channel, is_msb):
+        nrpn = channel["nrpn"]
+        addr = channel["last_mrpn"] * 0x100 + channel["last_lrpn"]
+        msb = 1 if is_msb else 0
+        key = addr + nrpn * 0x10000 + msb * 0x20000
+        if key == 0x0000 + 0*0x10000 + 1*0x20000: # Pitch-bender sensitivity
+            channel["pitch_bend_sensitivity_msb"] = event.value
+            _update_bend_sense(channel)
+        elif key == 0x0000 + 0*0x10000 + 0*0x20000:  # Pitch-bender sensitivity LSB
+            channel["pitch_bend_sensitivity_lsb"] = event.value
+            _update_bend_sense(channel)
+
+
     # Cycle MIDI events and convert to IMF commands.
     last_ticks = 0
     # ticks = 0
@@ -384,6 +414,26 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             commands += _note_on(event)
         elif event.type == "controller_change" and event.controller == "volume_msb":
             commands += _adjust_volume(event)
+        elif event.type == "controller_change" and event.controller == "bank_select_msb":
+            midi_channels[event.channel]["bank_msb"] = event.value
+        elif event.type == "controller_change" and event.controller == "bank_select_lsb":
+            midi_channels[event.channel]["bank_lsb"] = event.value
+        elif event.type == "controller_change" and event.controller == "nrpn_lsb":
+            midi_channels[event.channel]["last_lrpn"] = event.value
+            midi_channels[event.channel]["nrpn"] = True
+        elif event.type == "controller_change" and event.controller == "nrpn_msb":
+            midi_channels[event.channel]["last_mrpn"] = event.value
+            midi_channels[event.channel]["nrpn"] = True
+        elif event.type == "controller_change" and event.controller == "rpn_lsb":
+            midi_channels[event.channel]["last_lrpn"] = event.value
+            midi_channels[event.channel]["nrpn"] = False
+        elif event.type == "controller_change" and event.controller == "rpn_msb":
+            midi_channels[event.channel]["last_mrpn"] = event.value
+            midi_channels[event.channel]["nrpn"] = False
+        elif event.type == "controller_change" and event.controller == "data_entry_lsb":
+            _set_rpn(event, midi_channels[event.channel], False)
+        elif event.type == "controller_change" and event.controller == "data_entry_msb":
+            _set_rpn(event, midi_channels[event.channel], True)
         elif event.type == "pitch_bend":
             commands += _pitch_bend(event)
         elif event.type == "program_change":
