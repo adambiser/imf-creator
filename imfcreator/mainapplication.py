@@ -41,8 +41,7 @@ class MainApplication(tix.Tk):
         self.bank_file = self.settings['bank_file'] if self.settings.has_key('bank_file') else "genmidi/GENMIDI.OP2"  # freedoom
         self.song_path = self.settings['song_file'] if self.settings.has_key('song_file') else "test/testtag.wlf"
         self.instruments = None
-        self.load_bank(self.bank_file)
-        self.reload_song()
+        self.imf = None
         self.open_bank_button = tix.Button(self, text='Open bank', command=self.open_bank_file)
         self.open_bank_button.image = Resources.getimage('bank.gif')
         self.open_bank_button.config(image=self.open_bank_button.image)
@@ -55,6 +54,13 @@ class MainApplication(tix.Tk):
         self.play_button.image = Resources.getimage('play.gif')
         self.play_button.config(image=self.play_button.image)
         self.play_button.pack(side='left')
+        self.save_button = tix.Button(self, text='Save', command=self.save_imf)
+        self.save_button.image = Resources.getimage('save.gif')
+        self.save_button.config(image=self.save_button.image, state=tix.DISABLED)
+        self.save_button.pack(side='left')
+
+        self.load_bank(self.bank_file)
+        self.reload_song()
 
         self.player.onstatechanged.add_handler(self.on_player_state_changed)
 
@@ -92,20 +98,36 @@ class MainApplication(tix.Tk):
         self.instruments = instrumentfile.get_all_instruments(path)
 
     def reload_song(self):
+        self.save_button['state'] = tix.DISABLED
         if self.song_path.lower().endswith(".imf") or self.song_path.lower().endswith(".wlf"):
-            imf = ImfMusicFile(self.song_path)
+            self.imf = ImfMusicFile(self.song_path)
         else:
             reader = MidiReader()
             reader.load(self.song_path)
-            imf = convert_midi_to_imf(reader, self.instruments)
+            self.imf = convert_midi_to_imf(reader, self.instruments)
             del reader
-        self.player.set_song(imf)
+            self.save_button['state'] = tix.NORMAL
+        self.player.set_song(self.imf)
 
     def toggle_play(self):
         if self.player.state == ImfPlayer.PLAYING:
             self.player.stop()
         else:
             self.player.play()
+
+    def save_imf(self):
+        dir_path = os.path.dirname(self.song_path) if self.song_path is not None else None
+        file_basename = os.path.splitext(os.path.basename(self.song_path))[0] if self.song_path is not None else None
+        options = dict()
+        options['defaultextension'] = '.imf'
+        options['initialdir'] = dir_path
+        options['initialfile'] = file_basename + ".imf"
+        options['parent'] = self
+        options['filetypes'] = [("IMF file", ".imf")]
+        options['title'] = "Save an IMF file"
+        dst_song = tkFileDialog.asksaveasfilename(**options)
+        if dst_song:
+            self.imf.save(dst_song, file_type=1)  # TODO: Make a choice of a destination
 
     def on_player_state_changed(self, state):
         # print("on_player_state_changed: {}".format(state))
