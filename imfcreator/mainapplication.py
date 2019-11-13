@@ -1,3 +1,4 @@
+import sys
 from .filetypes.imfmusicfile import ImfMusicFile
 from player import ImfPlayer
 from resources import Resources
@@ -8,9 +9,11 @@ from imfcreator.filetypes.midifileplugin import MidiReader
 
 try:
     import Tix as tix
+    import ttk
     import tkFileDialog
 except ImportError:
     import tkinter.tix as tix
+    from tkinter import tix
     import tkinter.filedialog as tkFileDialog
 
 
@@ -24,6 +27,9 @@ class MainApplication(tix.Tk):
     def __init__(self, screen_name=None, base_name=None, class_name='Tix'):
         # Set up the window.
         tix.Tk.__init__(self, screen_name, base_name, class_name)
+        if sys.platform != "Windows":
+            s = ttk.Style()
+            s.theme_use('clam')
         self.title('IMF Creator')
         # self.tk.call('wm', 'iconbitmap', self._w, '-default', os.path.join(Resources.PATH, 'icon.ico'))
         # self.settings = Settings()
