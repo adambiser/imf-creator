@@ -44,7 +44,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             "last_lrpn": 0,
             "last_mrpn": 0,
             "nrpn": False,
-            "volume": 127,
+            "volume": 100,
+            "expression": 127,
             "pitch_bend": 0,
             "pitch_bend_sensitivity_lsb": 0,
             "pitch_bend_sensitivity_msb": 2,
@@ -224,6 +225,9 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                         .format(event.track, inst_num, note)
         return inst_num, note, ins
 
+    def _compute_volume(ch_volume, ch_expression, note_velocity):
+        return int((ch_expression * ch_volume * note_velocity) / 16129.0)
+
     def _get_volume_commands(channel, instrument, midi_volume, voice=0):
         volume_table = [
             0, 1, 3, 5, 6, 8, 10, 11,
@@ -248,35 +252,26 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
 
         def get_operator_volume(op_volume):
             n = 0x3f - (op_volume & 0x3f)
-            n = (n * volume_table[midi_volume]) >> 7
+            n = ((n * 2) * volume_table[midi_volume]) >> 8
             return 0x3f - n
-            # return op_volume
+
         if (instrument.feedback[voice] & 0x01) == 1:  # when AM, scale both operators
-            return [
-                (
-                    VOLUME_MSG | MODULATORS[channel["id"]],
-                    get_operator_volume(instrument.modulator[voice].output_level)
-                    | (instrument.modulator[voice].key_scale_level << 6)
-                ),
-                (
-                    VOLUME_MSG | CARRIERS[channel["id"]],
-                    get_operator_volume(instrument.carrier[voice].output_level)
-                    | (instrument.carrier[voice].key_scale_level << 6)
-                ),
-            ]
+            modulator_volume = get_operator_volume(instrument.modulator[voice].output_level)
         else:  # When FM, scale carrier only, keep modulator as-is
-            return [
-                (
-                    VOLUME_MSG | MODULATORS[channel["id"]],
-                    instrument.modulator[voice].output_level & 0x3f
-                    | (instrument.modulator[voice].key_scale_level << 6)
-                ),
-                (
-                    VOLUME_MSG | CARRIERS[channel["id"]],
-                    get_operator_volume(instrument.carrier[voice].output_level)
-                    | (instrument.carrier[voice].key_scale_level << 6)
-                ),
-            ]
+            modulator_volume = instrument.modulator[voice].output_level & 0x3f
+
+        carrier_volume = get_operator_volume(instrument.carrier[voice].output_level)
+
+        return [
+            (
+                VOLUME_MSG | MODULATORS[channel["id"]],
+                modulator_volume | (instrument.modulator[voice].key_scale_level << 6)
+            ),
+            (
+                VOLUME_MSG | CARRIERS[channel["id"]],
+                carrier_volume | (instrument.carrier[voice].key_scale_level << 6)
+            ),
+        ]
 
     def _note_on(event):
         commands = []
@@ -301,7 +296,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 #                                                          instr[7] | state);
                 # }
                 channel["instrument"] = inst_num
-            volume = int(midi_track["volume"] * event.velocity / 127.0)
+            volume = _compute_volume(midi_track["volume"], midi_track["expression"], event.velocity)
             channel["last_note"] = note
             block, freq = _get_block_and_freq(note, midi_track["scaled_pitch_bend"])
             commands += _get_volume_commands(channel, instrument, volume)
@@ -346,13 +341,17 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
     def _adjust_volume(event):
         commands = []
         voice = 0
+        is_expression = (event.controller == "expression_msb")
         midi_track = midi_channels[event.channel]
-        midi_track["volume"] = event.value
+        if is_expression:
+            midi_track["expression"] = event.value
+        else:
+            midi_track["volume"] = event.value
         inst_num = midi_track["instrument"]
         for note_info in midi_track["active_notes"]:
             channel = _find_imf_channel_for_instrument_note(inst_num, note_info["note"])
             if channel:
-                volume = int(midi_track["volume"] * note_info["event"].velocity / 127.0)
+                volume = _compute_volume(midi_track["volume"], midi_track["expression"], note_info["event"].velocity)
                 instrument = _get_inst_by_code(inst_num)
                 commands += _get_volume_commands(channel, instrument, volume)
                 # commands += [
@@ -414,6 +413,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         elif event.type == "note_on":
             commands += _note_on(event)
         elif event.type == "controller_change" and event.controller == "volume_msb":
+            commands += _adjust_volume(event)
+        elif event.type == "controller_change" and event.controller == "expression_msb":
             commands += _adjust_volume(event)
         elif event.type == "controller_change" and event.controller == "bank_select_msb":
             midi_channels[event.channel]["bank_msb"] = event.value
