@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from imfcreator.mainapplication import MainApplication
+from imfcreator.mainapplication import run_app
 
 
 def main():
@@ -24,8 +24,9 @@ def main():
     #     # print("isactive")
     #     time.sleep(0.1)
     # player.close()
-    root = MainApplication()
-    root.mainloop()
+    # root = MainApplication()
+    # root.mainloop()
+    run_app()
 
 
 # def add_command(regs, reg, value, ticks):

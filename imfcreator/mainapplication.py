@@ -25,14 +25,13 @@ def copy_file(src, dst):
             df.write(sf.read())
 
 
-class MainApplication(tix.Tk):
-    def __init__(self, screen_name=None, base_name=None, class_name='Tix'):
+class MainApplication:
+    def __init__(self, master):
         # Set up the window.
-        tix.Tk.__init__(self, screen_name, base_name, class_name)
-        if sys.platform != "Windows":
-            s = ttk.Style()
-            s.theme_use('clam')
-        self.title('IMF Creator')
+        self.frame = ttk.Frame(master)
+        self.frame.pack()
+        self.master = master
+        self.master.title('IMF Creator')
         # self.tk.call('wm', 'iconbitmap', self._w, '-default', os.path.join(Resources.PATH, 'icon.ico'))
         self.instruments = None
         self.imf = None
@@ -47,7 +46,7 @@ class MainApplication(tix.Tk):
 
     def _load_settings(self):
         self.settings = shelve.open('settings.dat', writeback=True)
-        self.protocol("WM_DELETE_WINDOW", self._on_closing)
+        self.master.protocol("WM_DELETE_WINDOW", self._on_closing)
         self.player = ImfPlayer()
         self.bank_file = self.settings['bank_file'] if 'bank_file' in self.settings else "genmidi/GENMIDI.OP2"
         self.song_path = self.settings['song_file'] if 'song_file' in self.settings else "test/testtag.wlf"
@@ -58,12 +57,12 @@ class MainApplication(tix.Tk):
             pass
 
         # Menubar
-        self.menubar = tix.Menu(self)
+        self.menubar = tix.Menu(self.master)
 
         file_menu = tix.Menu(self.menubar, tearoff=0)
         file_menu.add_command(label="Open", command=self.open_music_file)
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.quit)
+        file_menu.add_command(label="Exit", command=self._on_closing)
         self.menubar.add_cascade(label="File", menu=file_menu)
 
         edit_menu = tix.Menu(self.menubar, tearoff=0)
@@ -99,39 +98,39 @@ class MainApplication(tix.Tk):
         help_menu.add_command(label="Contents", command=do_nothing, state=tix.DISABLED)
         help_menu.add_command(label="About...", command=do_nothing, state=tix.DISABLED)
         self.menubar.add_cascade(label="Help", menu=help_menu)
-        self.config(menu=self.menubar)
+        self.master.config(menu=self.menubar)
 
-        self.label_current_music_box = tix.Frame(self)
-        self.label_current_music = tix.Label(self.label_current_music_box, text=os.path.basename(self.song_path))
+        self.label_current_music_box = ttk.Frame(self.frame)
+        self.label_current_music = ttk.Label(self.label_current_music_box, text=os.path.basename(self.song_path))
         self.label_current_music.pack()
         self.label_current_music_box.pack(side='top')
 
-        self.label_current_bank_box = tix.Frame(self)
-        self.label_current_bank = tix.Label(self.label_current_bank_box, text=os.path.basename(self.bank_file))
+        self.label_current_bank_box = ttk.Frame(self.frame)
+        self.label_current_bank = ttk.Label(self.label_current_bank_box, text=os.path.basename(self.bank_file))
         self.label_current_bank.pack()
         self.label_current_bank_box.pack(side='top')
 
         # Open bank file
-        self.open_bank_button = tix.Button(self, text='Open bank', command=self.open_bank_file)
+        self.open_bank_button = ttk.Button(self.frame, text='Open bank', command=self.open_bank_file)
         self.open_bank_button.image = Resources.getimage('bank.gif')
         self.open_bank_button.config(image=self.open_bank_button.image)
         self.open_bank_button.pack(side='left')
         # Open MIDI file
-        self.open_midi_button = tix.Button(self, text='Open MIDI', command=self.open_music_file)
+        self.open_midi_button = ttk.Button(self.frame, text='Open MIDI', command=self.open_music_file)
         self.open_midi_button.image = Resources.getimage('song.gif')
         self.open_midi_button.config(image=self.open_midi_button.image)
         self.open_midi_button.pack(side='left')
         # Play the song
-        self.play_button = tix.Button(self, text='Play', command=self.toggle_play)
+        self.play_button = ttk.Button(self.frame, text='Play', command=self.toggle_play)
         self.play_button.image = Resources.getimage('play.gif')
         self.play_button.config(image=self.play_button.image)
         self.play_button.pack(side='left')
         # Save IMF file
-        self.save_button = tix.Button(self, text='Save', command=self.save_imf)
+        self.save_button = ttk.Button(self.frame, text='Save', command=self.save_imf)
         self.save_button.image = Resources.getimage('save.gif')
         self.save_button.config(image=self.save_button.image, state=tix.DISABLED)
         self.save_button.pack(side='left')
-        self.update()
+        self.master.update()
 
     def imf_set_format_0(self):
         self.imf_format = 0
@@ -155,7 +154,7 @@ class MainApplication(tix.Tk):
                                                 ("Bank files", "*.op2 *.wopl *.OP2 *.WOPL"),
                                                 ("all files", "*.*")
                                             ),
-                                            parent=self,
+                                            parent=self.master,
                                             initialdir=dir_path)
         if bank:
             self.bank_file = bank
@@ -172,7 +171,7 @@ class MainApplication(tix.Tk):
                                                 ("IMF files", "*.imf *.wlf *.IMF *.WLF"),
                                                 ("all files", "*.*")
                                             ),
-                                            parent=self,
+                                            parent=self.master,
                                             initialdir=dir_path)
         if song:
             self.song_path = song
@@ -208,7 +207,7 @@ class MainApplication(tix.Tk):
         options['defaultextension'] = '.imf'
         options['initialdir'] = dir_path
         options['initialfile'] = file_basename + ".imf"
-        options['parent'] = self
+        options['parent'] = self.master
         options['filetypes'] = [("IMF file", ".imf")]
         options['title'] = "Save an IMF file"
         dst_song = tkFileDialog.asksaveasfilename(**options)
@@ -227,4 +226,17 @@ class MainApplication(tix.Tk):
         self.settings.sync()
         self.settings.close()
         self.player.close()
-        self.destroy()
+        self.frame.destroy()
+        self.master.quit()
+
+
+root = tix.Tk()
+if sys.platform != "Windows":
+    root.style = ttk.Style()
+    root.style.theme_use('clam')
+
+
+def run_app():
+    global root
+    app = MainApplication(root)
+    root.mainloop()
