@@ -46,6 +46,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             "nrpn": False,
             "volume": 100,
             "expression": 127,
+            "brightness": 127,
             "pitch_bend": 0,
             "pitch_bend_sensitivity_lsb": 0,
             "pitch_bend_sensitivity_msb": 2,
@@ -228,7 +229,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
     def _compute_volume(ch_volume, ch_expression, note_velocity):
         return int((ch_expression * ch_volume * note_velocity) / 16129.0)
 
-    def _get_volume_commands(channel, instrument, midi_volume, voice=0):
+    def _get_volume_commands(channel, instrument, midi_volume, midi_brightness, voice=0):
         volume_table = [
             0, 1, 3, 5, 6, 8, 10, 11,
             13, 14, 16, 17, 19, 20, 22, 23,
@@ -250,15 +251,28 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         if midi_volume > 127:
             midi_volume = 127
 
+        if midi_brightness >= 64:
+            brightness = 127
+        else:
+            brightness = midi_brightness * 2
+
         def get_operator_volume(op_volume):
             n = 0x3f - (op_volume & 0x3f)
             n = ((n * 2) * volume_table[midi_volume]) >> 8
             return 0x3f - n
 
+        def get_operator_brightness(op_volume):
+            if brightness == 127:
+                return op_volume & 0x3f
+            n = 0x3f - (op_volume & 0x3f)
+            bright = int(round(127.0 * math.sqrt(float(brightness) * (1.0 / 127.0))) / 2.0)
+            n = (n * bright) / 0x3f
+            return 0x3f - n
+
         if (instrument.feedback[voice] & 0x01) == 1:  # when AM, scale both operators
             modulator_volume = get_operator_volume(instrument.modulator[voice].output_level)
         else:  # When FM, scale carrier only, keep modulator as-is
-            modulator_volume = instrument.modulator[voice].output_level & 0x3f
+            modulator_volume = get_operator_brightness(instrument.modulator[voice].output_level)
 
         carrier_volume = get_operator_volume(instrument.carrier[voice].output_level)
 
@@ -299,7 +313,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             volume = _compute_volume(midi_track["volume"], midi_track["expression"], event.velocity)
             channel["last_note"] = note
             block, freq = _get_block_and_freq(note, midi_track["scaled_pitch_bend"])
-            commands += _get_volume_commands(channel, instrument, volume)
+            commands += _get_volume_commands(channel, instrument, volume, midi_track["brightness"])
             commands += [
                 # (
                 #     VOLUME_MSG | MODULATORS[channel["id"]],
@@ -342,8 +356,11 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         commands = []
         voice = 0
         is_expression = (event.controller == "expression_msb")
+        is_brightness = (event.controller == "xg_brightness")
         midi_track = midi_channels[event.channel]
-        if is_expression:
+        if is_brightness:
+            midi_track["brightness"] = event.value
+        elif is_expression:
             midi_track["expression"] = event.value
         else:
             midi_track["volume"] = event.value
@@ -353,7 +370,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             if channel:
                 volume = _compute_volume(midi_track["volume"], midi_track["expression"], note_info["event"].velocity)
                 instrument = _get_inst_by_code(inst_num)
-                commands += _get_volume_commands(channel, instrument, volume)
+                commands += _get_volume_commands(channel, instrument, volume, midi_track["brightness"])
                 # commands += [
                 #     (
                 #         VOLUME_MSG | MODULATORS[channel["id"]],
@@ -381,7 +398,6 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         elif key == 0x0000 + 0*0x10000 + 0*0x20000:  # Pitch-bender sensitivity LSB
             channel["pitch_bend_sensitivity_lsb"] = event.value
             _update_bend_sense(channel)
-
 
     # Cycle MIDI events and convert to IMF commands.
     last_ticks = 0
@@ -415,6 +431,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         elif event.type == "controller_change" and event.controller == "volume_msb":
             commands += _adjust_volume(event)
         elif event.type == "controller_change" and event.controller == "expression_msb":
+            commands += _adjust_volume(event)
+        elif event.type == "controller_change" and event.controller == "xg_brightness":
             commands += _adjust_volume(event)
         elif event.type == "controller_change" and event.controller == "bank_select_msb":
             midi_channels[event.channel]["bank_msb"] = event.value
