@@ -101,14 +101,28 @@ class MainApplication:
         self.master.config(menu=self.menubar)
 
         self.label_current_music_box = ttk.Frame(self.frame)
-        self.label_current_music = ttk.Label(self.label_current_music_box, text=os.path.basename(self.song_path))
+        self.label_current_music = ttk.Label(self.label_current_music_box,
+                                             text=os.path.basename(self.song_path),
+                                             justify='left',
+                                             width=50)
         self.label_current_music.pack()
         self.label_current_music_box.pack(side='top')
 
         self.label_current_bank_box = ttk.Frame(self.frame)
-        self.label_current_bank = ttk.Label(self.label_current_bank_box, text=os.path.basename(self.bank_file))
+        self.label_current_bank = ttk.Label(self.label_current_bank_box,
+                                            text=os.path.basename(self.bank_file),
+                                            justify='left',
+                                            width=50)
         self.label_current_bank.pack()
         self.label_current_bank_box.pack(side='top')
+
+        self.label_current_imf_format_box = ttk.Frame(self.frame)
+        self.label_current_imf_format = ttk.Label(self.label_current_bank_box,
+                                                  text=("IMF Format Type %d" % self.imf_format),
+                                                  justify='left',
+                                                  width=50)
+        self.label_current_imf_format.pack()
+        self.label_current_imf_format_box.pack(side='top')
 
         # Open bank file
         self.open_bank_button = ttk.Button(self.frame, text='Open bank', command=self.open_bank_file)
@@ -135,16 +149,19 @@ class MainApplication:
     def imf_set_format_0(self):
         self.imf_format = 0
         self.settings['imf_format'] = self.imf_format
+        self.label_current_imf_format['text'] = ("IMF Format Type %d" % self.imf_format)
         self.reload_song()
 
     def imf_set_format_1(self):
         self.imf_format = 1
         self.settings['imf_format'] = self.imf_format
+        self.label_current_imf_format['text'] = ("IMF Format Type %d" % self.imf_format)
         self.reload_song()
 
     def imf_set_format_2(self):
         self.imf_format = 2
         self.settings['imf_format'] = self.imf_format
+        self.label_current_imf_format['text'] = ("IMF Format Type %d" % self.imf_format)
         self.reload_song()
 
     def open_bank_file(self):
@@ -212,7 +229,7 @@ class MainApplication:
         options['title'] = "Save an IMF file"
         dst_song = tkFileDialog.asksaveasfilename(**options)
         if dst_song:
-            self.imf.save(dst_song, file_type=1)  # TODO: Make a choice of a destination
+            self.imf.save(dst_song, file_type=self.imf_format)
 
     def on_player_state_changed(self, state):
         # print("on_player_state_changed: {}".format(state))
