@@ -87,7 +87,7 @@ _CONTROLLER_NAMES = {
     71: "sound_controller_2",
     72: "sound_controller_3",
     73: "sound_controller_4",
-    74: "sound_controller_5",
+    74: "xg_brightness",
     75: "sound_controller_6",
     76: "sound_controller_7",
     77: "sound_controller_8",
