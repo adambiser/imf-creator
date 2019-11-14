@@ -22,9 +22,8 @@ On Linux you will need to install some of dependencies to be able run this
 
 ##### Ubuntu / Debian
 ```bash
-sudo apt install tix-dev python-tk
+sudo apt install tix-dev python-tk python-pyinotify python-pyaudio
 sudo apt-get install libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
-pip install pyaudio
 ```
 
 ## License

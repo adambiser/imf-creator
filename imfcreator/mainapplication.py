@@ -1,6 +1,10 @@
-import sys
 import os
 import shelve
+import subprocess
+import pyinotify
+import platform
+import threading
+from distutils import spawn
 from .filetypes.imfmusicfile import ImfMusicFile
 from player import ImfPlayer
 from resources import Resources
@@ -8,21 +12,34 @@ from imfcreator.filetypes import instrumentfile
 from imfcreator.imf_builder import convert_midi_to_imf
 from imfcreator.filetypes.midifileplugin import MidiReader
 
-
 try:
     import Tix as tix
     import ttk
     import tkFileDialog
+    import tkMessageBox
 except ImportError:
     import tkinter.tix as tix
     from tkinter import tix
     import tkinter.filedialog as tkFileDialog
+    import tkinter.messagebox as tkMessageBox
 
 
 def copy_file(src, dst):
     with open(src, "rb") as sf:
         with open(dst, "wb") as df:
             df.write(sf.read())
+
+
+def run_and_exit(on_exit, proc_args):
+    def run_in_thread(_on_exit, _proc_args):
+        proc = subprocess.Popen(proc_args)
+        proc.wait()
+        _on_exit()
+        return
+    thread = threading.Thread(target=run_in_thread, args=(on_exit, proc_args))
+    thread.start()
+    # returns immediately after the thread starts
+    return thread
 
 
 class MainApplication:
@@ -38,9 +55,13 @@ class MainApplication:
         self.imf_format = 0
         self.song_path = ""
         self.bank_file = ""
+        self.be_notifier = None
+        self.be_wm = None
+        self.be_wdd = None
+        self.be_thread = None
         self._load_settings()
         self._build_ui()
-        self.load_bank(self.bank_file)
+        self.reload_bank()
         self.reload_song()
         self.player.onstatechanged.add_handler(self.on_player_state_changed)
 
@@ -66,9 +87,7 @@ class MainApplication:
         self.menubar.add_cascade(label="File", menu=file_menu)
 
         edit_menu = tix.Menu(self.menubar, tearoff=0)
-        # TODO: find external OPL3 Bank Editor and open current bank with it.
-        #  If not found, suggest to download & install it
-        edit_menu.add_command(label="Instruments", command=do_nothing, state=tix.DISABLED)
+        edit_menu.add_command(label="Instruments", command=self.edit_instruments)
         self.menubar.add_cascade(label="Edit", menu=edit_menu)
 
         options_menu = tix.Menu(self.menubar, tearoff=0)
@@ -146,6 +165,48 @@ class MainApplication:
         self.save_button.pack(side='left')
         self.master.update()
 
+    def _bank_editor_exit(self):
+        self.be_notifier.stop()
+        del self.be_wdd
+        del self.be_notifier
+        del self.be_wm
+        del self.be_thread
+        self.be_notifier = None
+        self.be_wm = None
+        self.be_wdd = None
+        self.be_thread = None
+
+    class FileModifyHandler(pyinotify.ProcessEvent):
+        def __init__(self, p_root):
+            pyinotify.ProcessEvent.__init__(self)
+            self.root = p_root
+
+        # Reload bank and the song once bank was saved on the side of OPL3 Bank Editor
+        def process_IN_CLOSE_WRITE(self, evt):
+            self.root.reload_bank()
+            self.root.reload_song()
+
+    def edit_instruments(self):
+        be_exec = spawn.find_executable('opl3_bank_editor')
+        # TODO: Add an option to manually specify a path to Bank Editor executable when it can't be find automatically
+        if be_exec is None:
+            tkMessageBox.showwarning("OPL3 Bank Editor is not found",
+                                     "Can't run %s because it's probably not installed. "
+                                     "You can find it here: \n"
+                                     "https://github.com/Wohlstand/OPL3BankEditor" % be_exec, parent=self.frame)
+        elif self.be_wm is None and self.be_thread is None:
+            # Setup file modify watcher (after saving of bank file by Bank Editor
+            # a reload of bank and music files should happen automatically)
+            handler = MainApplication.FileModifyHandler(self)
+            self.be_wm = pyinotify.WatchManager()
+            self.be_notifier = pyinotify.ThreadedNotifier(self.be_wm, handler)
+            self.be_notifier.start()
+            self.be_wdd = self.be_wm.add_watch(self.bank_file, pyinotify.IN_CLOSE_WRITE, rec=True)
+            # Start Bank Editor
+            self.be_thread = run_and_exit(self._bank_editor_exit, [be_exec, self.bank_file])
+        else:
+            tkMessageBox.showwarning("Already open", "Instruments Editor is already running.", parent=self.frame)
+
     def imf_set_format_0(self):
         self.imf_format = 0
         self.settings['imf_format'] = self.imf_format
@@ -195,6 +256,9 @@ class MainApplication:
             self.settings['song_file'] = self.song_path
             self.label_current_music['text'] = os.path.basename(self.song_path)
             self.reload_song()
+
+    def reload_bank(self):
+        self.load_bank(self.bank_file)
 
     def load_bank(self, path):
         self.instruments = instrumentfile.get_all_instruments(path)
@@ -248,7 +312,7 @@ class MainApplication:
 
 
 root = tix.Tk()
-if sys.platform != "Windows":
+if platform.system() != "Windows":
     root.style = ttk.Style()
     root.style.theme_use('clam')
 
