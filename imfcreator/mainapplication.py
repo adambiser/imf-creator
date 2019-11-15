@@ -191,9 +191,9 @@ class MainApplication:
         # TODO: Add an option to manually specify a path to Bank Editor executable when it can't be find automatically
         if be_exec is None:
             tkMessageBox.showwarning("OPL3 Bank Editor is not found",
-                                     "Can't run %s because it's probably not installed. "
+                                     "Can't run opl3_bank_editor because it's probably not installed. "
                                      "You can find it here: \n"
-                                     "https://github.com/Wohlstand/OPL3BankEditor" % be_exec, parent=self.frame)
+                                     "https://github.com/Wohlstand/OPL3BankEditor", parent=self.frame)
         elif self.be_wm is None and self.be_thread is None:
             # Setup file modify watcher (after saving of bank file by Bank Editor
             # a reload of bank and music files should happen automatically)
