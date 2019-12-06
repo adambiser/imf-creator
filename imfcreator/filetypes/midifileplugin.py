@@ -1,6 +1,6 @@
 import os
 import struct
-import _binary
+import imfcreator.filetypes._binary as _binary
 
 NOTE_OFF_EVENT = 0x80
 NOTE_ON_EVENT = 0x90
@@ -144,18 +144,18 @@ class MidiReader:
                 self.f = f
                 # Start the chunk header generator. The data within the chunk must be handled separately.
                 chunk_headers = self._iterchunkheader()
-                chunk_name, chunk_length = chunk_headers.next()
-                if chunk_name != "MThd":
+                chunk_name, chunk_length = next(chunk_headers)
+                if chunk_name != b"MThd":
                     raise IOError("Not a MIDI file.")
                 if chunk_length != 6:
-                    raise IOError("Invalid MIDI header length: {}".format(chunk_length))
+                    raise IOError(f"Invalid MIDI header length: {chunk_length}")
                 self.file_format, num_tracks, self.division = struct.unpack(">HHH", f.read(6))
                 # if self.file_format not in (0, 1):
                 #     raise IOError("Unsupported MIDI file format: {}".format(self.file_format))
                 # print(self.file_format, num_tracks, self.division)
                 # Process remaining chunks.
                 for chunk_name, chunk_length in chunk_headers:
-                    if chunk_name == "MTrk":
+                    if chunk_name == b"MTrk":
                         track = MidiTrack(len(self.tracks))
                         for event in self._read_events(chunk_length):
                             track.add_event(event)
@@ -189,7 +189,8 @@ class MidiReader:
         for event in end_of_track:
             events.remove(event)
         time = 0
-        events.append(end_of_track[-1])
+        *_, end_of_track = end_of_track
+        events.append(end_of_track)
         # Remove all track name events.
         for event in filter(lambda event: event.type == "meta" and event.meta_type == "track_name", events):
             events.remove(event)
@@ -207,7 +208,7 @@ class MidiReader:
         """
         while True:
             chunk_name = self.f.read(4)
-            if chunk_name == "":
+            if not chunk_name:
                 return
             chunk_length = struct.unpack(">I", self.f.read(4))[0]
             yield chunk_name, chunk_length
@@ -275,7 +276,7 @@ class MidiEvent:
             raise Exception('A value for "delta" is required.')
         if kwargs.get("type") is None:
             raise Exception('A value for "type" is required.')
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             self.__dict__[k] = v
 
     def __repr__(self):
@@ -303,7 +304,7 @@ class MidiEvent:
             meta_type = _u8(stream)
             meta_type_name = _META_TYPE_NAMES.get(meta_type)
             if meta_type_name is None:
-                meta_type_name = "unknown_0x{:x}".format(meta_type)
+                meta_type_name = f"unknown_0x{meta_type:x}"
             args["meta_type"] = meta_type_name
             data_length = _read_var_length(stream)
             if meta_type_name in [
@@ -351,7 +352,7 @@ class MidiEvent:
             event_type &= 0xf0
             args["type"] = _EVENT_TYPE_NAMES[event_type]
             if args["type"] is None:
-                args["type"] = "unknown_0x{:x}".format(event_type)
+                args["type"] = f"unknown_0x{event_type:x}"
             if event_type == NOTE_OFF_EVENT:
                 args.update({
                     "note": _u8(stream),
@@ -371,7 +372,7 @@ class MidiEvent:
                 controller = _u8(stream)
                 controller_name = _CONTROLLER_NAMES.get(controller)
                 if controller_name is None:
-                    controller_name = "unknown_0x{:x}".format(controller)
+                    controller_name = f"unknown_0x{controller:x}"
                 args.update({
                     # "controller": _u8(stream),
                     "controller": controller_name,
@@ -390,5 +391,5 @@ class MidiEvent:
                     "value": (_u8(stream) + _u8(stream) * 0x80) - 0x2000,  # 0 is center
                 })
             else:
-                raise Exception("Unsupported MIDI event code: 0x{:X}".format(event_type))
+                raise Exception(f"Unsupported MIDI event code: 0x{event_type:x}")
         return MidiEvent(**args)
