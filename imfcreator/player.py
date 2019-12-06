@@ -1,31 +1,43 @@
+"""Contains classes for playing Adlib music."""
 import pyaudio
+import pyopl
+import sys
+import imfcreator.utils as utils
+from enum import IntEnum, auto
+from imfcreator.adlib import *
+from imfcreator.signal import Signal
 
-from adlib import *
-from .pyopl import pyopl
-from signal import Signal
 
-_FREQUENCY = 44100
+class PlayerState(IntEnum):
+    """Represents a music player state."""
+    STOPPED = auto()
+    PLAYING = auto()
+    PAUSED = auto()
 
 
 class ImfPlayer:
     """A streaming IMF music player."""
+    FREQUENCY = 44100
     SAMPLE_SIZE = 2  # 16-bit
     CHANNELS = 2  # stereo
     BUFFER_SAMPLE_COUNT = 512  # Max allowed: 512
-    # States
-    STOPPED = 0
-    PLAYING = 1
-    PAUSED = 2
 
-    def __init__(self, freq=_FREQUENCY, ticks_per_second=700):
-        """Initializes the PyAudio and OPL synth."""
+    def __init__(self, freq: int = FREQUENCY, ticks_per_second: int = 700):
+        """Initializes PyAudio and the PyOPL synth."""
         self._freq = freq
         self.ticks_per_second = ticks_per_second
         # Prepare PyAudio
         self._audio = pyaudio.PyAudio()
         # Prepare buffers.
         self._data = bytearray(ImfPlayer.BUFFER_SAMPLE_COUNT * ImfPlayer.SAMPLE_SIZE * ImfPlayer.CHANNELS)
-        self._buffer = buffer(self._data)  # Wraps self.data. Used by PyAudio.
+        if sys.version_info[0] < 3:
+            # noinspection PyUnresolvedReferences
+            self._buffer = buffer(self._data)  # Wraps self.data. Used by PyAudio.
+        else:
+            # Since Python 3 doesn't have buffer() and PyAudio doesn't support memoryview.
+            # noinspection PyShadowingNames
+            ImfPlayer._buffer = property(lambda self: bytes(self._data))
+
         # Prepare stream attribute and opl player.
         self._stream = None  # Created later.
         self._opl = pyopl.opl(freq=freq, sampleSize=ImfPlayer.SAMPLE_SIZE, channels=ImfPlayer.CHANNELS)
@@ -36,12 +48,12 @@ class ImfPlayer:
         self._position = 0
         self._delay = 0
         self.repeat = False
-        self.ignoreregs = []
-        self.onstatechanged = Signal(state=int)
+        # self.ignoreregs = []
+        self.onstatechanged = Signal(state=PlayerState)
         # self.mute = [False] * OPL_CHANNELS
         # self._create_stream(start=False)
 
-    def _create_stream(self, start=True):
+    def _create_stream(self, start: bool = True):
         """Create a new PyAudio stream."""
         self._stream = self._audio.open(
             format=self._audio.get_format_from_width(ImfPlayer.SAMPLE_SIZE),
@@ -56,17 +68,17 @@ class ImfPlayer:
         self._song = song
         self.rewind()
 
-    def seek(self, offset, whence=0):
+    def seek(self, offset: int, whence: int = 0):
         """Moves the play position to the command at the given offset."""
         if whence == 0:
             new_position = offset
         elif whence == 1:
             new_position = self._position + offset
         elif whence == 2:
-            new_position = self._song.num_commands + offset
+            new_position = self._song.command_count + offset
         else:
             raise ValueError("Invalid argument")
-        new_position = _clamp(new_position, 0, self._song.num_commands - 1)
+        new_position = utils.clamp(new_position, 0, self._song.command_count - 1)
         if self._position == new_position:
             return
         # Process commands between old and new positions. If the new position is before the old,
@@ -100,9 +112,9 @@ class ImfPlayer:
         self._delay = 0
         self.reset_opl()
 
-    def writereg(self, reg, value):
-        if reg in self.ignoreregs:
-            return
+    def writereg(self, reg: int, value: int):
+        # if reg in self.ignoreregs:
+        #     return
         # if (reg & 0xf0) == BLOCK_MSG:
         #     c = reg & 0xf
         #     if c < OPL_CHANNELS:
@@ -114,7 +126,6 @@ class ImfPlayer:
 
     def _process_command(self):
         """Processes the command at the current position and moves to the next command.
-
         The delay is also incremented if the command has a ticks value.
         """
         reg, value, ticks = self._song.commands[self._position]
@@ -127,27 +138,26 @@ class ImfPlayer:
     def state(self):
         if self._stream is None:
             # No stream exists, so it is stopped.
-            return ImfPlayer.STOPPED
+            return PlayerState.STOPPED
         if self._stream.is_stopped():
             if self._position == 0:
-                return ImfPlayer.STOPPED
+                return PlayerState.STOPPED
             else:
                 # Stopped, but not rewound, so paused.
-                return ImfPlayer.PAUSED
+                return PlayerState.PAUSED
         if self._stream.is_active():
-            return ImfPlayer.PLAYING
+            return PlayerState.PLAYING
         else:
             # Not active and not stopped means that the stream has closed because it reached the end of its data.
             # Consider it stopped here.
-            return ImfPlayer.STOPPED
+            return PlayerState.STOPPED
 
     # noinspection PyUnusedLocal
     def _callback(self, input_data, frame_count, time_info, status):
-        # print("_callback")
         # Build enough of a delay to fill the buffer.
-        while self._delay < ImfPlayer.BUFFER_SAMPLE_COUNT and self._position < self._song.num_commands:
+        while self._delay < ImfPlayer.BUFFER_SAMPLE_COUNT and self._position < self._song.command_count:
             self._process_command()
-            if self.repeat and self._position == self._song.num_commands:
+            if self.repeat and self._position == self._song.command_count:
                 self._position = 0
         # If we have enough to fill the buffer, do so. Otherwise quit.
         if self._delay >= ImfPlayer.BUFFER_SAMPLE_COUNT:
@@ -156,14 +166,14 @@ class ImfPlayer:
             return self._buffer, pyaudio.paContinue
         else:
             self.rewind()
-            self.onstatechanged(state=ImfPlayer.STOPPED)
+            self.onstatechanged(state=PlayerState.STOPPED)
             return None, pyaudio.paComplete
         # return self.buffer, pyaudio.paContinue if self.position < len(self.commands) else pyaudio.paComplete
 
-    def play(self, repeat=False):
+    def play(self, repeat: bool = False):
         """Starts playing the song at the current position."""
         self.repeat = repeat
-        if self._song is None or self._song.num_commands == 0:
+        if self._song is None or self._song.command_count == 0:
             return
         # If a stream exists and it is not active and not stopped, it needs to be closed and a new one created.
         if self._stream is not None and not self._stream.is_active() and not self._stream.is_stopped():
@@ -174,18 +184,18 @@ class ImfPlayer:
             self._create_stream(False)
         self._stream.start_stream()
         # self._stream = self._create_stream()
-        self.onstatechanged(state=ImfPlayer.PLAYING)
+        self.onstatechanged(state=PlayerState.PLAYING)
 
     def pause(self):
         """Stops the PyAudio stream, but does not rewind the playback position."""
         self._stream.stop_stream()
-        self.onstatechanged(state=ImfPlayer.PAUSED)
+        self.onstatechanged(state=PlayerState.PAUSED)
 
     def stop(self):
         """Stops the PyAudio stream and resets the playback position."""
         self._stream.stop_stream()
         self.rewind()
-        self.onstatechanged(state=ImfPlayer.STOPPED)
+        self.onstatechanged(state=PlayerState.STOPPED)
 
     def close(self):
         """Closes the PyAudio stream and terminates it."""
@@ -194,7 +204,3 @@ class ImfPlayer:
             self._stream.close()
             self._stream = None
         self._audio.terminate()
-
-
-def _clamp(value, minimum, maximum):
-    return max(minimum, min(value, maximum))
