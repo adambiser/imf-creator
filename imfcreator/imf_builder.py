@@ -1,9 +1,11 @@
 import copy
+import logging as _logging
 import math
-
+import imfcreator.instruments as instruments
+# import imfcreator.instrumentnames
 from .adlib import *
 from .filetypes.imfmusicfile import ImfMusicFile
-import instrumentnames
+
 
 def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     # Combine all tracks into one track.
@@ -29,20 +31,20 @@ def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     ))
     return events
 
-
-def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None, output_file_name="output.wlf", imf_file_type=0):
+# instruments,
+def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_name="output.wlf",
+                        imf_file_type=0):
     events = _sort_midi(midi)  # , mute_tracks, mute_channels)
     imf = ImfMusicFile()
     # Prepare MIDI and IMF channel variables.
-    midi_channels = {}
-    for ch in range(16):
-        midi_channels[ch] = {
-            "instrument": None,
-            "volume": 127,
-            "pitch_bend": 0,
-            "scaled_pitch_bend": 0.0,
-            "active_notes": [],
-        }
+    midi_channels = [{
+        "id": ch,
+        "instrument": None,
+        "volume": 127,
+        "pitch_bend": 0,
+        "scaled_pitch_bend": 0.0,
+        "active_notes": [],
+    } for ch in range(16)]
     imf_channels = [{
         "id": channel,
         "instrument": None,
@@ -56,15 +58,16 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         return int(imf.ticks_per_second * (float(value) / midi.division) * (60.0 / midi_tempo))
 
     def _find_imf_channel(instrument, note):
-        channel = filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] is None, imf_channels)
+        channel = next(filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] is None, imf_channels),
+                       None)
         if channel:
-            return channel[0]  # ["id"]
+            return channel
         # channel = filter(lambda ch: ch["instrument"] == instrument, imf_channels)
         # if channel:
         #     return channel[0]  # ["id"]
-        channel = filter(lambda ch: ch["last_note"] is None, imf_channels)
+        channel = next(filter(lambda ch: ch["last_note"] is None, imf_channels), None)
         if channel:
-            return channel[0]  # ["id"]
+            return channel  # ["id"]
         # TODO Aggressive channel find.
         return None
 
@@ -115,17 +118,26 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         return block, freq
 
     def _find_imf_channel_for_instrument_note(instrument, note):
-        channel = filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] == note, imf_channels)
-        if channel:
-            return channel[0]
-        return None
+        return next(filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] == note, imf_channels), None)
 
     def _note_off(event):
         commands = []
-        inst_num, note = _get_inst_and_note(event, False)
-        if inst_num is None:
+        voice = 0
+        midi_track = midi_channels[event.channel]
+        instrument = _get_event_instrument(event)
+        if instrument is None:
             return commands
-        channel = _find_imf_channel_for_instrument_note(inst_num, note)
+        note = _get_instrument_note(instrument, event, voice)
+        if event.channel != 9:
+            match = next(filter(lambda note_info: note_info["event"].note == event.note, midi_track["active_notes"]), None)
+            if match:
+                note = match["note"]
+                # inst_num = match["inst_num"]
+                midi_track["active_notes"].remove(match)
+            else:
+                raise ValueError(f"Tried to remove non-active note: "
+                                 f"track {event.track}, note {note}")
+        channel = _find_imf_channel_for_instrument_note(instrument, note)
         if channel:
             channel["last_note"] = None
             # block, freq = get_block_and_freq(event)
@@ -138,49 +150,33 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 # (SUSTAIN_RELEASE_MSG | CARRIERS[channel["id"]], 0xf),
             ]
         # else:
-        #     print "Could not find note to shut off! inst: {}, note: {}".format(inst_num, note)
+        #     print(f"Could not find note to shut off! inst: {inst_num}, note: {note}")
         return commands
 
-    def _get_inst_and_note(event, is_note_on, voice=0):
+    def _get_event_instrument(event) -> AdlibInstrument:
         if event.channel == 9:
-            note = event.note
-            # Make sure the drum note value is valid.
-            if note not in instrumentnames.DRUM_NOTE_NAMES:
-                note = instrumentnames.GM2_DRUM_NOTE_MAPPING.get(note, None)
-                if note is None:
-                    return None, None
-            inst_num = 128 + note - 35
-            note = instruments[inst_num].given_note
-            note += instruments[inst_num].note_offset[voice]
+            # _logging.debug(f"Searching for PERCUSSION instrument {event.note}")
+            return instruments.get(instruments.PERCUSSION, event.note)
         else:
             midi_track = midi_channels[event.channel]
-            if midi_track["instrument"] is None:
-                print "No instrument assigned to track {}, defaulting to 0."
-                midi_track["instrument"] = 0
             inst_num = midi_track["instrument"]
-            note = event.note
-            note += instruments[inst_num].note_offset[voice]
-            if note < 0 or note > 127:
-                print "Note out of range: {}".format(note)
-                note = 60
-            if is_note_on:
-                midi_track["active_notes"].append({
-                    "note": note,
-                    "inst_num": inst_num,
-                    "event": event,
-                })
-            else:
-                # match = midi_track["notes"].get(event.note)
-                match = filter(lambda note_info: note_info["event"].note == event.note, midi_track["active_notes"])
-                if match:
-                    match = match[0]
-                    note = match["note"]
-                    inst_num = match["inst_num"]
-                    midi_track["active_notes"].remove(match)
-                else:
-                    print "Tried to remove non-active note: track {}, inst {} note {}"\
-                        .format(event.track, inst_num, note)
-        return inst_num, note
+            if inst_num is None:
+                _logging.warning(f"No instrument assigned to channel {event.channel}, defaulting to 0.")
+                midi_track["instrument"] = 0
+                inst_num = 0
+            # _logging.debug(f"Searching for MELODIC instrument {inst_num}")
+            return instruments.get(instruments.MELODIC, inst_num)
+
+    # TODO banks support
+    def _get_instrument_note(instrument: AdlibInstrument, event, voice: int = 0):
+        note = event.note
+        if instrument.use_given_note:
+            note = instrument.given_note
+        note += instrument.note_offset[voice]
+        if note < 0 or note > 127:
+            _logging.error(f"Note out of range: {event}")
+            note = 60
+        return note
 
     def _get_volume_commands(channel, instrument, midi_volume, voice=0):
         volume_table = [
@@ -240,14 +236,20 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         commands = []
         voice = 0
         midi_track = midi_channels[event.channel]
-        inst_num, note = _get_inst_and_note(event, True)
-        if inst_num is None:
+        instrument = _get_event_instrument(event)
+        if instrument is None:
             return commands
-        channel = _find_imf_channel(inst_num, note)
+        note = _get_instrument_note(instrument, event, voice)
+        if event.channel != 9:
+            midi_track["active_notes"].append({
+                "note": note,
+                "event": event,
+            })
+        channel = _find_imf_channel(instrument, note)
         if channel:
             # Check for instrument change.
-            instrument = instruments[inst_num]
-            if channel["instrument"] != inst_num:
+            # instrument = instruments[inst_num]
+            if channel["instrument"] != instrument:
                 # Removed volume messages. Volume will initialize to OFF.
                 commands += [cmd for cmd in instrument.get_regs(channel["id"], voice) if (cmd[0] & 0xf0) != VOLUME_MSG]
                 commands += [
@@ -258,7 +260,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 #                     (instr[6] & 1) ? (instr[7] | state): instr[0],
                 #                                                          instr[7] | state);
                 # }
-                channel["instrument"] = inst_num
+                channel["instrument"] = instrument
             volume = int(midi_track["volume"] * event.velocity / 127.0)
             channel["last_note"] = note
             block, freq = _get_block_and_freq(note, midi_track["scaled_pitch_bend"])
@@ -276,11 +278,14 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                 (BLOCK_MSG | channel["id"], KEY_ON_MASK | (block << 2) | (freq >> 8)),
             ]
         # else:
-        #     print "Could not find channel for note on! inst: {}, note: {}".format(inst_num, note)
+        #     print(f"Could not find channel for note on! inst: {inst_num}, note: {note}")
         return commands
 
     def _pitch_bend(event):
         commands = []
+        # Can't pitch bend percussion.
+        if event.channel == 9:  # TODO Remove magic number!
+            return commands
         amount = event.value - event.value % pitch_bend_resolution
         if midi_channels[event.channel]["pitch_bend"] != amount:
             midi_channels[event.channel]["pitch_bend"] = amount
@@ -288,7 +293,7 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
             scaled_pitch_bend = amount / -pitch_bend_range[0] if amount < 0 else amount / pitch_bend_range[1]
             scaled_pitch_bend *= 2  # TODO Read from controller messages. 2 semi-tones is the default.
             midi_channels[event.channel]["scaled_pitch_bend"] = scaled_pitch_bend
-            instrument = midi_channels[event.channel]["instrument"]
+            instrument = _get_event_instrument(event)  # midi_channels[event.channel]["instrument"]
             for note_info in midi_channels[event.channel]["active_notes"]:
                 note = note_info["note"]
                 channel = _find_imf_channel_for_instrument_note(instrument, note)
@@ -298,7 +303,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
                         (FREQ_MSG | channel["id"], freq & 0xff),
                         (BLOCK_MSG | channel["id"], KEY_ON_MASK | (block << 2) | (freq >> 8)),
                     ]
-                    pass
+                else:
+                    _logging.warning(f"Could not find Adlib channel for channel {event.channel} note {note}.")
         return commands
 
     def _adjust_volume(event):
@@ -306,12 +312,13 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
         voice = 0
         midi_track = midi_channels[event.channel]
         midi_track["volume"] = event.value
-        inst_num = midi_track["instrument"]
+        # instrument = midi_track["instrument"]
+        instrument = _get_event_instrument(event)
         for note_info in midi_track["active_notes"]:
-            channel = _find_imf_channel_for_instrument_note(inst_num, note_info["note"])
+            channel = _find_imf_channel_for_instrument_note(instrument, note_info["note"])
             if channel:
                 volume = int(midi_track["volume"] * note_info["event"].velocity / 127.0)
-                instrument = instruments[inst_num]
+                # instrument = instruments[inst_num]
                 commands += _get_volume_commands(channel, instrument, volume)
                 # commands += [
                 #     (
@@ -368,8 +375,8 @@ def convert_midi_to_imf(midi, instruments, mute_tracks=None, mute_channels=None,
     #     print(map(hex, command))
     for mc in range(16):
         if midi_channels[mc]["active_notes"]:
-            print "midi track {} had open notes: {}".format(mc, midi_channels[mc]["active_notes"])
+            print(f"midi track {mc} had open notes: {midi_channels[mc]['active_notes']}")
     for ch in imf_channels:
         if ch["last_note"]:
-            print "imf channel {} had open note: {}".format(ch["id"], ch["last_note"])
+            print(f"imf channel {ch['id']} had open note: {ch['last_note']}")
     return imf

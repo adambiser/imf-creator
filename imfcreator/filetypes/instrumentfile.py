@@ -1,132 +1,118 @@
-# import builtins
-import __builtin__
-
-builtins = __builtin__
-
-IDS = []
-PLUGINS = {}
-
-
-def register_open(plugin_id, plugin, accept=None):
-    """Registers a file type plugin used when opening instrument files."""
-    plugin_id = plugin_id.upper()
-    IDS.append(plugin_id)
-    PLUGINS[plugin_id] = (plugin, accept)
-
-
-def open(f):
-    """Opens the given instrument file.
-
-    :param f: A filename or file object.
-    """
-    filename = ""
-    if type(f) is str:  # filename
-        filename = f
-        fp = builtins.open(filename, "rb")
-        exclusive_fp = True
-    else:
-        fp = f
-        exclusive_fp = False
-    preview = fp.read(32)
-    fp.seek(0)
-
-    def open_with_plugin(fp, filename, preview):
-        for plugin_id in IDS:
-            cls, accept = PLUGINS[plugin_id]
-            if accept is None or accept(preview):
-                try:
-                    return cls(fp, filename)
-                except:
-                    pass
-        return None
-
-    inst = open_with_plugin(fp, filename, preview)
-    if inst:
-        # The plugin now owns the fp.
-        inst._exclusive_fp = exclusive_fp
-        return inst
-    if exclusive_fp:
-        fp.close()
-    raise IOError("Cannot identify instrument file {}".format(filename))
-
-
-def get_all_instruments(f):
-    """Returns all of the instruments in a file.
-
-    :param f: A filename or file object.
-    """
-    return [i for i in open(f)]
+import logging
+import imfcreator.utils
+from imfcreator.adlib import AdlibInstrument
 
 
 class InstrumentFile(object):
-    """The abstract class from which all instrument file plugins should inherit."""
+    """The base class from which all instrument file plugins should inherit."""
+
     def __init__(self, fp=None, filename=None):
         """Initializes and opens the instrument file."""
         if fp is None:
-            self.fp = builtins.open(filename, "rb")
+            self.fp = open(filename, "rb")
             self._exclusive_fp = True
         else:
             self.fp = fp
             self._exclusive_fp = False
         self.filename = filename
-        self.info = None
-        self.instrument = None
-        self._num_instruments = 1
         try:
             self._open()
-        except (TypeError, IOError) as ex:
+        except (ValueError, IOError, OSError) as ex:
             self.close()
-            raise SyntaxError(ex)
+            raise ValueError(ex)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+        return False
 
     def __del__(self):
         self.close()
 
-    def _open(self):
-        """Sets self.info to contain the information needed to load the first or only instrument in the file."""
-        raise NotImplementedError("Subclass must override _open method.")
-
-    def __iter__(self):
-        if self.num_instruments == 1:
-            yield self.load()
-            return
-        for index in range(self.num_instruments):
-            self.seek(index)
-            yield self.load()
+    def __iter__(self) -> (int, int, AdlibInstrument, int):
+        for index in range(self.instrument_count):
+            yield self.get_instrument(index)
 
     def close(self):
         """Closes the internal file object when it is owned by this instance."""
-        try:
-            if self._exclusive_fp and self.fp is not None:
-                self._exclusive_fp = False
-                self.fp.close()
-                self.fp = None
-        except Exception as ex:
-            print("Error closing file: " + str(ex))
+        if self._exclusive_fp and self.fp is not None:
+            self._exclusive_fp = False
+            self.fp.close()
+            self.fp = None
 
-    def load(self):
-        """Returns the instrument at the current position within the instrument file."""
-        if self.info is None:
-            raise IOError("Cannot load this instrument file.")
-        if not self.info:
-            return self.instrument
-        self.instrument = self._load()
-        return self.instrument
+    @classmethod
+    def accept(cls, preview: bytes) -> bool:
+        """Checks the preview bytes to see whether this class might be able to read the given file.
 
-    def _load(self):
-        """Loads the instrument from the plugin using the information from self.info."""
-        raise NotImplementedError("Subclass must override _load method.")
+        :param preview: 32 preview bytes
+        :return: True if the class might be able to open the file; otherwise, False.
+        """
+        raise NotImplementedError()
+
+    def _open(self):
+        """Reads any header information and verifies that the given file is indeed one that this class can read.
+
+        :exception ValueError: When file data is not recognized.
+        """
+        raise NotImplementedError()
 
     @property
-    def num_instruments(self):
-        """Returns the number of instruments in the file. Initializes and defaults to 1."""
-        return self._num_instruments
+    def instrument_count(self) -> int:
+        """Returns the number of instruments in the file.
 
-    def seek(self, index):
-        """Prepare self.info with the information needed to load the instrument at the given index."""
-        raise NotImplementedError("Subclass must override seek method if it contains more than one instrument.")
+        :return: An integer greater than 0.
+        """
+        raise NotImplementedError()
+
+    def get_instrument(self, index: int) -> (int, int, AdlibInstrument, int):
+        """Returns the instrument for the given index.
+        Implementations must be able to instruments in an arbitrary order, not just in file order.
+
+        :param index: The index of the instrument to return.
+        :return: An Adlib instrument.
+        :exception ValueError: When file data is not recognized.
+        """
+        raise NotImplementedError()
+
+
+# def open_file(f):
+#     """Opens the given instrument file.
+#
+#     :param f: A filename or file object.
+#     """
+#     if type(f) is str:  # filename
+#         filename = f
+#         fp = open(filename, "rb")
+#         exclusive_fp = True
+#     else:
+#         filename = ""
+#         fp = f
+#         exclusive_fp = False
+#     # Scan plugin classes for one that can open the file.
+#     preview = fp.read(32)
+#     for cls in utils.get_all_subclasses(InstrumentFile):
+#         if cls.accept(preview):
+#             try:
+#                 logging.debug(f'Attempting to load "{filename}" using {cls.__name__}.')
+#                 # Reset the file position for each attempt.
+#                 fp.seek(0)
+#                 instance = cls(fp, filename)
+#                 # The instance now owns the fp.
+#                 instance._exclusive_fp = exclusive_fp
+#                 logging.info(f'Loaded "{filename}" using {cls.__name__}.')
+#                 return instance
+#             except (ValueError, IOError, OSError) as ex:
+#                 logging.warning(f'Error while attempting to load "{filename}" using {cls.__name__}: {ex}')
+#     if exclusive_fp:
+#         fp.close()
+#     raise ValueError(f"Cannot identify instrument file: {filename}")
+#
+#
+# def get_all_instruments(f):
+#     """Returns all of the instruments in a file.
+#
+#     :param f: A filename or file object.
+#     """
+#     return [i for i in open_file(f)]
