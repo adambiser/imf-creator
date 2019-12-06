@@ -20,7 +20,6 @@ class opl:
     """
     OPL emulator
     """
-    pass
 
     def __init__(self, freq: int, sampleSize: int, channels: int) -> None:
         """Creates an OPL emulator instance.
@@ -29,7 +28,6 @@ class opl:
         :param sampleSize: The sample size.  Must be 2.
         :param channels: Channel count. 1 for mono, 2 for stereo.
         """
-        pass
 
     def writeReg(self, reg: int, val: int) -> None:
         """Write a value to an OPL register.
