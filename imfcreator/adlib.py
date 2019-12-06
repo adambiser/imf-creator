@@ -1,3 +1,7 @@
+"""**Adlib Information**
+
+This module contains fields and classes representing Adlib register values and instruments.
+"""
 OPL_CHANNELS = 9
 
 # OPERATORS
@@ -71,18 +75,19 @@ PERCUSSION_MODE_HI_HAT_MASK = 0b00000001
 
 
 class AdlibInstrument(object):
-    """Represents an adlib instrument.
+    """Represents an Adlib instrument.
 
     Instruments can contain one or more voices, each consisting of a modulator and a carrier.
-    This largely reflects the information stored per instrument in an OP2 file.
+    This is based upon the instrument information in an OP2 file.
     """
+
     def __init__(self, name=None, num_voices=1):
         self.name = name
         """The name of the instrument, if one is available."""
         self.use_given_note = False
         """When true, this instrument acts like a percussion instrument using given_note."""
         self.use_secondary_voice = False
-        """When true, the second voice can be used in addition to the first. 
+        """When true, the second voice can be used in addition to the first.
         Also, fine_tuning should be taken into account.
         """
         # Fine tune value is an index offset of frequencies table. 128 is a center, i.e. don't detune.
@@ -100,7 +105,7 @@ class AdlibInstrument(object):
     def __repr__(self):
         return str(self.__dict__)
 
-    def get_regs(self, channel, voice=0):
+    def get_regs(self, channel: int, voice: int = 0):
         mod_op = MODULATORS[channel]
         car_op = CARRIERS[channel]
         return [
@@ -117,7 +122,7 @@ class AdlibInstrument(object):
             (FEEDBACK_MSG | channel, self.feedback[voice]),  # | 0x30),
         ]
 
-    def registers_match(self, other):
+    def registers_match(self, other: "AdlibInstrument"):
         if self.num_voices != other.num_voices:
             return False
         for v in range(self.num_voices):
@@ -132,7 +137,9 @@ class AdlibInstrument(object):
 
 class AdlibOperator(object):  # MUST inherit from object for properties to work.
     """Represents an adlib operator's register values."""
-    def __init__(self, tvskm=0, ksl_output=0, attack_decay=0, sustain_release=0, waveform_select=0):
+
+    def __init__(self, tvskm: int = 0, ksl_output: int = 0, attack_decay: int = 0, sustain_release: int = 0,
+                 waveform_select: int = 0):
         self.tvskm = 0  # tvskffff = tremolo, vibrato, sustain, ksr, frequency multiplier
         self.ksl_output = 0  # kkoooooo = key scale level, output level
         self.attack_decay = 0  # aaaadddd = attack rate, decay rate
@@ -152,8 +159,9 @@ class AdlibOperator(object):  # MUST inherit from object for properties to work.
         AdlibOperator.sustain_level = _create_bit_property("sustain_release", 4, 4)
         AdlibOperator.release_rate = _create_bit_property("sustain_release", 4, 0)
 
-    def set_regs(self, tvskm, ksl_output, attack_decay, sustain_release, waveform_select):
-        """Sets all operator registers."""
+    def set_regs(self, tvskm: int, ksl_output: int, attack_decay: int, sustain_release: int,
+                 waveform_select: int) -> None:
+        """Sets all operator register values."""
         self.tvskm = tvskm
         self.ksl_output = ksl_output
         self.attack_decay = attack_decay
@@ -170,7 +178,7 @@ class AdlibOperator(object):  # MUST inherit from object for properties to work.
         return not self.__eq__(other)
 
 
-def _create_bit_property(var_name, bits, shift):
+def _create_bit_property(var_name: str, bits: int, shift: int):
     """Creates a property that is a bit-wise representation of a register.
 
     The property performs bitshifting and value range checks.
@@ -184,11 +192,11 @@ def _create_bit_property(var_name, bits, shift):
     )
 
 
-def _check_range(value, max_value):
+def _check_range(value: int, max_value: int):
     """Checks a value to verify that it is between 0 and maxvalue, inclusive."""
     if value is None:
         raise ValueError("Value is required.")
     if 0 <= value <= max_value:
         return value
     else:
-        raise ValueError("Value should be between 0 and {} inclusive. Got: {}.".format(max_value, value))
+        raise ValueError(f"Value should be between 0 and {max_value} inclusive. Got: {value}.")
