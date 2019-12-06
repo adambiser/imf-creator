@@ -1,28 +1,21 @@
-from ._binary import u8, u16le
+from ._binary import u16le
 import os
 import struct
 
 
 class ImfMusicFile(object):
+    _MAXIMUM_COMMAND_COUNT = 65535 // 4
+
     def __init__(self, filename=None):
         self.commands = []
         self.file_type = 1
         self.ticks_per_second = 700
-        self.title = ""
-        self.composer = ""
-        self.remarks = ""
-        self.program = ""
+        self.title = None
+        self.composer = None
+        self.remarks = None
+        self.program = None
         if filename:
             self._open(filename)
-
-    # def reset(self):
-    #     self.commands = []
-    #     self.file_type = 1
-    #     self.ticks_per_second = 700
-    #     self.title = ""
-    #     self.composer = ""
-    #     self.remarks = ""
-    #     self.program = ""
 
     def add_command(self, reg, value, ticks):
         """Adds a command to the list of commands."""
@@ -31,12 +24,12 @@ class ImfMusicFile(object):
             assert 0 <= value <= 0xff
             assert 0 <= ticks <= 0xffff
         except AssertionError:
-            print "Value out of range! 0x{:x}, 0x{:x}, {}, cmd: {}".format(reg, value, ticks, self.num_commands)
+            print(f"Value out of range! 0x{reg:x}, 0x{value:x}, {ticks}, cmd: {self.command_count}")
             raise
         self.commands.append((reg, value, ticks))
 
     @property
-    def num_commands(self):
+    def command_count(self):
         """Returns the number of commands."""
         return len(self.commands)
 
@@ -57,7 +50,7 @@ class ImfMusicFile(object):
                 if self.file_type == 1:
                     # Check for unofficial tag.
                     if f.read(1) == '\x1a':
-                        self.title, self.composer, self.remarks, self.program = f.read().split('\x00')[0:4]
+                        self.title, self.composer, self.remarks, self.program = f.read().split(bytes('\x00'))[0:4]
                     else:
                         f.seek(-1, os.SEEK_CUR)
                         self.remarks = f.read()
@@ -68,14 +61,14 @@ class ImfMusicFile(object):
         if file_type is None:
             file_type = self.file_type
         # TODO include_tags, remarks, etc
-        data = ""
+        data = bytearray()
         if file_type == 1:
-            length = self.num_commands * 4
-            if length > 65532:
-                print "WARNING: IMF file max buffer overflow (total commands given=%d; written commands=%d)" % (self.num_commands, (65532 / 4))
-                data += struct.pack("<H", 65532)
-            else:
-                data += struct.pack("<H", length)
+            command_count = self.command_count
+            if command_count > ImfMusicFile._MAXIMUM_COMMAND_COUNT:
+                print(f"WARNING: IMF file max buffer overflow.  Total commands: {command_count}; "
+                      f"Written commands: {ImfMusicFile._MAXIMUM_COMMAND_COUNT})")
+                command_count = ImfMusicFile._MAXIMUM_COMMAND_COUNT
+            data += struct.pack("<H", command_count * 4)
         for command in self.commands:
             data += struct.pack("<BBH", *command)
         with open(filename, "wb") as f:
