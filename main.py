@@ -48,11 +48,13 @@ if not os.path.isfile("GENMIDI.OP2"):
 instruments.add_file("GENMIDI.OP2")
 
 
-reader = SongReader.open_file("test/test-pitchbend.mid")
-# reader.load("exclude/OUT1FM.mid")
-# reader.load("test-pitchbend.mid")
-# reader.load("test/testfmt0.mid")
-# reader.load("test/test-velocity.mid")
+# reader = SongReader.open_file("test/test-pitchbend.mid")
+reader = SongReader.open_file("test/Ecu_10_Bass_xg-hr.mid")
+# reader = SongReader.open_file("exclude/OUT1FM.mid")
+# reader = SongReader.open_file("test-pitchbend.mid")
+# reader = SongReader.open_file("test/testfmt0.mid")
+# reader = SongReader.open_file("test/testfmt0.mid")
+# reader = SongReader.open_file("test/test-velocity.mid")
 imf = convert_midi_to_imf(reader)   # , instruments)  # , mute_channels=[9])
 # imf = convert_midi_to_imf(reader, instruments, mute_tracks=[1], mute_channels=[9])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[3])
