@@ -1,9 +1,9 @@
 import logging as _logging
-import math
+import math as _math
 import imfcreator.instruments as instruments
 import imfcreator.midi as _midi
-from .adlib import *
-from .plugins.imfmusicfile import ImfMusicFile
+from imfcreator.adlib import *
+from imfcreator.plugins.imfmusicfile import ImfMusicFile
 
 
 def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
@@ -54,7 +54,8 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
 
     # Define helper functions.
     def _calc_imf_ticks(value):
-        return int(imf.ticks_per_second * (float(value) / midi.division) * (60.0 / midi_tempo))
+        # return int(imf.ticks_per_second * (float(value) / midi.division) * (60.0 / midi_tempo))
+        return int(imf.ticks_per_second * value * (60.0 / midi_tempo))
 
     def _find_imf_channel(instrument, note):
         channel = next(filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] is None, imf_channels),
@@ -95,7 +96,7 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         # For each increment of 1 to the block, the f-num needs to be halved.  This can lead to a loss of
         # precision, but hopefully it won't be too drastic.
         if scaled_pitch_bend < 0:
-            semitones = int(math.floor(scaled_pitch_bend))
+            semitones = int(_math.floor(scaled_pitch_bend))
             bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
             # If the bend-to note is on a lower block/octave, multiply the *bend-to* f-num by 0.5 per block
             # to bring it up to the same block as the original note.
@@ -104,7 +105,7 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
                 bend_freq /= (2.0 ** (block - bend_block))
             freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
         elif scaled_pitch_bend > 0:
-            semitones = int(math.ceil(scaled_pitch_bend))
+            semitones = int(_math.ceil(scaled_pitch_bend))
             bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
             # If the bend-to note is on a higher block/octave, multiply the *original* f-num by 0.5 per block
             # to bring it up to the same block as the bend-to note.
@@ -128,8 +129,8 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
             return commands
         note = _get_instrument_note(instrument, event, voice)
         if event.channel != 9:
-            _logging.debug(f"Removing active note: {event['note']} -> {note}, channel {event.channel}")
-            _logging.debug(f"Active: {[note_info['event']['note'] for note_info in midi_track['active_notes']]}")
+            # _logging.debug(f"Removing active note: {event['note']} -> {note}, channel {event.channel}")
+            # _logging.debug(f"Active: {[note_info['event']['note'] for note_info in midi_track['active_notes']]}")
             match = next(filter(lambda note_info: note_info["event"]["note"] == event['note'],
                                 midi_track["active_notes"]), None)
             if match:
@@ -242,7 +243,7 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
             return commands
         note = _get_instrument_note(instrument, event, voice)
         if event.channel != 9:
-            _logging.debug(f"Adding active note: {event['note']} -> {note}, channel {event.channel}")
+            # _logging.debug(f"Adding active note: {event['note']} -> {note}, channel {event.channel}")
             midi_track["active_notes"].append({
                 "note": note,
                 "event": event,
@@ -311,6 +312,9 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
 
     def _adjust_volume(event: _midi.SongEvent):
         commands = []
+        # Can't adjust volume of active percussion.
+        if event.channel == 9:  # TODO Remove magic number!
+            return commands
         voice = 0
         midi_track = midi_channels[event.channel]
         midi_track["volume"] = event["value"]
@@ -336,6 +340,13 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
 
     # Cycle MIDI events and convert to IMF commands.
     last_ticks = 0
+
+    def add_delay(time):
+        nonlocal last_ticks
+        ticks = _calc_imf_ticks(time - last_ticks)
+        imf.commands[-1] = imf.commands[-1][0:2] + (ticks,)
+        last_ticks = time
+
     # ticks = 0
     pitch_bend_resolution = 0x200
     pitch_bend_range = (-8192.0 - -8192 % -pitch_bend_resolution, 8191.0 - 8191 % pitch_bend_resolution)
@@ -345,11 +356,6 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         (0x8, 0, 0),
     ]
     for event in events:
-        ticks = _calc_imf_ticks(event.time - last_ticks)
-        if ticks > 0:
-            prev_ticks = imf.commands[-1][2] + ticks
-            imf.commands[-1] = imf.commands[-1][:2] + (prev_ticks,)
-            last_ticks = event.time  # ticks
         # Perform muting
         if mute_tracks:
             if event.track in mute_tracks:
@@ -358,20 +364,32 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
             if event.channel in mute_channels:
                 continue
         # Handle events.
-        commands = []  # list of (reg, value) tuples.
+        commands = None  # list of (reg, value) tuples.
         if event.type == _midi.EventType.NOTE_OFF or (event.type == _midi.EventType.NOTE_ON and event["velocity"] == 0):
-            commands += _note_off(event)
+            commands = _note_off(event)
         elif event.type == _midi.EventType.NOTE_ON:
-            commands += _note_on(event)
+            commands = _note_on(event)
         elif event.type == _midi.EventType.CONTROLLER_CHANGE and event["controller"] == _midi.ControllerType.VOLUME_MSB:
-            commands += _adjust_volume(event)
+            commands = _adjust_volume(event)
         elif event.type == _midi.EventType.PITCH_BEND:
-            commands += _pitch_bend(event)
+            commands = _pitch_bend(event)
         elif event.type == _midi.EventType.PROGRAM_CHANGE:
             midi_channels[event.channel]["instrument"] = event["program"]
         elif event.type == _midi.EventType.META and event["meta_type"] == _midi.MetaType.SET_TEMPO:
             midi_tempo = float(event["bpm"])
-        _add_commands(commands)
+        if commands:
+            # Set the delay on the current last command.
+            # ticks = _calc_imf_ticks(event.time - last_ticks)
+            # imf.commands[-1] = imf.commands[-1][0:2] + (ticks,)
+            # last_ticks = event.time  # ticks
+            add_delay(event.time)
+            # Now add the new commands
+            _add_commands(commands)
+    # Add any remaining delay to the final command for wrap-around timing.
+    add_delay(max([event.time for event in events]))
+    # end_time = max([event.time for event in events])
+    # ticks = _calc_imf_ticks(end_time - last_ticks)
+    # imf.commands[-1] = imf.commands[-1][0:2] + (ticks,)
     imf.save(output_file_name, file_type=imf_file_type)
     # for command in imf.commands:
     #     print(map(hex, command))
