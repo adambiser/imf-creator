@@ -2,7 +2,7 @@
 import os
 
 
-def clamp(value: int, minimum: int, maximum: int):
+def clamp(value, minimum, maximum):
     """Clamps a value within the given range."""
     return max(minimum, min(value, maximum))
 

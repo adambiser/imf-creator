@@ -12,7 +12,7 @@ def _init():
         try:
             importlib.import_module(f"{__name__}.{plugin}")
         except ImportError as e:
-            print(f"filetypes plugin: failed to import {plugin}: {e}")
+            print(f"plugin: failed to import {plugin}: {e}")
 
 
 _init()

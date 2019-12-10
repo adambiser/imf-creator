@@ -1,6 +1,6 @@
-from ._binary import u16le
 import os
 import struct
+from ._binary import u16le as _u16le
 
 
 class ImfMusicFile(object):
@@ -36,7 +36,7 @@ class ImfMusicFile(object):
     def _open(self, filename):
         try:
             with open(filename, "rb") as f:
-                data_length = u16le(f.read(2))
+                data_length = _u16le(f.read(2))
                 self.file_type = 1 if data_length > 0 else 0
                 if self.file_type == 0:
                     data_length = os.stat(filename).st_size

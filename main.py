@@ -1,10 +1,9 @@
 import logging
 import os
 import imfcreator.instruments as instruments
-from imfcreator.filetypes import instrumentfile
 from imfcreator.imf_builder import convert_midi_to_imf
 from imfcreator.mainapplication import MainApplication
-from imfcreator.filetypes.midifileplugin import MidiReader
+from imfcreator.filetypes import SongReader
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s\t%(message)s')
 
@@ -46,17 +45,15 @@ def copy_file(src, dst):
 if not os.path.isfile("GENMIDI.OP2"):
     copy_file("genmidi/GENMIDI.OP2", "GENMIDI.OP2")
 
-# instruments = instrumentfile.get_all_instruments("GENMIDI.OP2")  # .freedoom
 instruments.add_file("GENMIDI.OP2")
 
 
-reader = MidiReader()
-reader.load("test/test-pitchbend.mid")
+reader = SongReader.open_file("test/test-pitchbend.mid")
 # reader.load("exclude/OUT1FM.mid")
 # reader.load("test-pitchbend.mid")
 # reader.load("test/testfmt0.mid")
 # reader.load("test/test-velocity.mid")
-imf = convert_midi_to_imf(reader)  #, instruments)  # , mute_channels=[9])
+imf = convert_midi_to_imf(reader)   # , instruments)  # , mute_channels=[9])
 # imf = convert_midi_to_imf(reader, instruments, mute_tracks=[1], mute_channels=[9])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[3])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[0, 1, 2])

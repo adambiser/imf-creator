@@ -5,9 +5,9 @@ import os
 import shutil
 import sys
 
-from imfcreator.filetypes import instrumentfile
+from imfcreator.plugins import instrumentfile
 from imfcreator.imf_builder import convert_midi_to_imf
-from imfcreator.filetypes.midifileplugin import MidiReader
+from imfcreator.plugins.midifileplugin import MidiReader
 
 instruments = instrumentfile.get_all_instruments("GENMIDI.OP2")  # .freedoom
 
