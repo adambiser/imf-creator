@@ -84,17 +84,6 @@ def has(inst_type: int, program: int, bank: int = 0) -> bool:
     return key in _INSTRUMENTS
 
 
-def get_name(inst_type: int, program: int) -> str:
-    """Returns the instrument name as defined by the MIDI standard."""
-    _validate_args(inst_type, program)
-    if inst_type == MELODIC:
-        return _MELODIC_NAMES[program]
-    elif inst_type == PERCUSSION:
-        if program in _PERCUSSION_NAMES:
-            return _PERCUSSION_NAMES[program]
-        return f"Unknown percussion {program}"
-
-
 def _validate_args(inst_type: int, program: int, bank: int = 0):
     """Validates the entry argument values."""
     if inst_type not in [MELODIC, PERCUSSION]:
@@ -136,6 +125,17 @@ def _open_file(f):
     if exclusive_fp:
         fp.close()
     raise ValueError(f"Failed to load instrument file: {filename}")
+
+
+def get_name(inst_type: int, program: int) -> str:
+    """Returns the instrument name as defined by the MIDI standard."""
+    _validate_args(inst_type, program)
+    if inst_type == MELODIC:
+        return _MELODIC_NAMES[program]
+    elif inst_type == PERCUSSION:
+        if program in _PERCUSSION_NAMES:
+            return _PERCUSSION_NAMES[program]
+        return f"Unknown percussion {program}"
 
 
 _MELODIC_NAMES = [
