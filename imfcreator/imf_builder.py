@@ -1,37 +1,36 @@
-import copy
 import logging as _logging
 import math
 import imfcreator.instruments as instruments
-# import imfcreator.instrumentnames
+import imfcreator.midi as _midi
 from .adlib import *
-from .filetypes.imfmusicfile import ImfMusicFile
+from .plugins.imfmusicfile import ImfMusicFile
 
 
 def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
     # Combine all tracks into one track.
-    events = []
-    for track in midi.tracks:
-        time = 0
-        for event in track:
-            time += event.delta
-            del event.delta
-            event = copy.copy(event)
-            event.event_time = time
-            event.track = track.number
-            events.append(event)
+    events = [_ for _ in midi]
+    # for track in midi.tracks:
+    #     time = 0
+    #     for event in track:
+    #         time += event.delta
+    #         del event.delta
+    #         event = copy.copy(event)
+    #         event.event_time = time
+    #         event.track = track.number
+    #         events.append(event)
     # if mute_tracks:
     #     events = filter(lambda event: event.track not in mute_tracks, events)
     # if mute_channels:
     #     events = filter(lambda event: not hasattr(event, "channel") or event.channel not in mute_channels, events)
     # Sort by event time and channel. Note-on events with a velocity should come last at a given time within the song.
     events = sorted(events, key=lambda event: (
-        event.event_time,
-        1 if event.type == "note_on" and event.velocity > 0 else 0,
-        event.channel if hasattr(event, "channel") else -1,
+        event.time,
+        1 if event.type == _midi.EventType.NOTE_ON and event["velocity"] > 0 else 0,
+        event.channel if event.channel is not None else -1,
     ))
     return events
 
-# instruments,
+
 def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_name="output.wlf",
                         imf_file_type=0):
     events = _sort_midi(midi)  # , mute_tracks, mute_channels)
@@ -120,7 +119,7 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
     def _find_imf_channel_for_instrument_note(instrument, note):
         return next(filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] == note, imf_channels), None)
 
-    def _note_off(event):
+    def _note_off(event: _midi.SongEvent):
         commands = []
         voice = 0
         midi_track = midi_channels[event.channel]
@@ -129,14 +128,16 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
             return commands
         note = _get_instrument_note(instrument, event, voice)
         if event.channel != 9:
-            match = next(filter(lambda note_info: note_info["event"].note == event.note, midi_track["active_notes"]), None)
+            _logging.debug(f"Removing active note: {event['note']} -> {note}, channel {event.channel}")
+            _logging.debug(f"Active: {[note_info['event']['note'] for note_info in midi_track['active_notes']]}")
+            match = next(filter(lambda note_info: note_info["event"]["note"] == event['note'],
+                                midi_track["active_notes"]), None)
             if match:
                 note = match["note"]
                 # inst_num = match["inst_num"]
                 midi_track["active_notes"].remove(match)
             else:
-                raise ValueError(f"Tried to remove non-active note: "
-                                 f"track {event.track}, note {note}")
+                raise ValueError(f"Tried to remove non-active note: track {event.track}, note {note}")
         channel = _find_imf_channel_for_instrument_note(instrument, note)
         if channel:
             channel["last_note"] = None
@@ -153,10 +154,10 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         #     print(f"Could not find note to shut off! inst: {inst_num}, note: {note}")
         return commands
 
-    def _get_event_instrument(event) -> AdlibInstrument:
+    def _get_event_instrument(event: _midi.SongEvent) -> AdlibInstrument:
         if event.channel == 9:
-            # _logging.debug(f"Searching for PERCUSSION instrument {event.note}")
-            return instruments.get(instruments.PERCUSSION, event.note)
+            # _logging.debug(f"Searching for PERCUSSION instrument {event['note']}")
+            return instruments.get(instruments.PERCUSSION, event["note"])
         else:
             midi_track = midi_channels[event.channel]
             inst_num = midi_track["instrument"]
@@ -168,8 +169,8 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
             return instruments.get(instruments.MELODIC, inst_num)
 
     # TODO banks support
-    def _get_instrument_note(instrument: AdlibInstrument, event, voice: int = 0):
-        note = event.note
+    def _get_instrument_note(instrument: AdlibInstrument, event: _midi.SongEvent, voice: int = 0):
+        note = event["note"]
         if instrument.use_given_note:
             note = instrument.given_note
         note += instrument.note_offset[voice]
@@ -232,7 +233,7 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
                 ),
             ]
 
-    def _note_on(event):
+    def _note_on(event: _midi.SongEvent):
         commands = []
         voice = 0
         midi_track = midi_channels[event.channel]
@@ -241,6 +242,7 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
             return commands
         note = _get_instrument_note(instrument, event, voice)
         if event.channel != 9:
+            _logging.debug(f"Adding active note: {event['note']} -> {note}, channel {event.channel}")
             midi_track["active_notes"].append({
                 "note": note,
                 "event": event,
@@ -261,7 +263,7 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
                 #                                                          instr[7] | state);
                 # }
                 channel["instrument"] = instrument
-            volume = int(midi_track["volume"] * event.velocity / 127.0)
+            volume = int(midi_track["volume"] * event["velocity"] / 127.0)
             channel["last_note"] = note
             block, freq = _get_block_and_freq(note, midi_track["scaled_pitch_bend"])
             commands += _get_volume_commands(channel, instrument, volume)
@@ -281,16 +283,16 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         #     print(f"Could not find channel for note on! inst: {inst_num}, note: {note}")
         return commands
 
-    def _pitch_bend(event):
+    def _pitch_bend(event: _midi.SongEvent):
         commands = []
         # Can't pitch bend percussion.
         if event.channel == 9:  # TODO Remove magic number!
             return commands
-        amount = event.value - event.value % pitch_bend_resolution
+        amount = event["value"]  # - event["value"] % pitch_bend_resolution
         if midi_channels[event.channel]["pitch_bend"] != amount:
             midi_channels[event.channel]["pitch_bend"] = amount
-            # Scale picth bend to -1..1
-            scaled_pitch_bend = amount / -pitch_bend_range[0] if amount < 0 else amount / pitch_bend_range[1]
+            # Scale pitch bend to -1..1
+            scaled_pitch_bend = amount  # / -pitch_bend_range[0] if amount < 0 else amount / pitch_bend_range[1]
             scaled_pitch_bend *= 2  # TODO Read from controller messages. 2 semi-tones is the default.
             midi_channels[event.channel]["scaled_pitch_bend"] = scaled_pitch_bend
             instrument = _get_event_instrument(event)  # midi_channels[event.channel]["instrument"]
@@ -307,17 +309,17 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
                     _logging.warning(f"Could not find Adlib channel for channel {event.channel} note {note}.")
         return commands
 
-    def _adjust_volume(event):
+    def _adjust_volume(event: _midi.SongEvent):
         commands = []
         voice = 0
         midi_track = midi_channels[event.channel]
-        midi_track["volume"] = event.value
+        midi_track["volume"] = event["value"]
         # instrument = midi_track["instrument"]
         instrument = _get_event_instrument(event)
         for note_info in midi_track["active_notes"]:
             channel = _find_imf_channel_for_instrument_note(instrument, note_info["note"])
             if channel:
-                volume = int(midi_track["volume"] * note_info["event"].velocity / 127.0)
+                volume = int(midi_track["volume"] * note_info["event"]["velocity"] / 127.0)
                 # instrument = instruments[inst_num]
                 commands += _get_volume_commands(channel, instrument, volume)
                 # commands += [
@@ -343,32 +345,32 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         (0x8, 0, 0),
     ]
     for event in events:
-        ticks = _calc_imf_ticks(event.event_time - last_ticks)
+        ticks = _calc_imf_ticks(event.time - last_ticks)
         if ticks > 0:
             prev_ticks = imf.commands[-1][2] + ticks
             imf.commands[-1] = imf.commands[-1][:2] + (prev_ticks,)
-            last_ticks = event.event_time  # ticks
+            last_ticks = event.time  # ticks
         # Perform muting
         if mute_tracks:
             if event.track in mute_tracks:
                 continue
         if mute_channels:
-            if hasattr(event, "channel") and event.channel in mute_channels:
+            if event.channel in mute_channels:
                 continue
         # Handle events.
         commands = []  # list of (reg, value) tuples.
-        if (event.type == "note_on" and event.velocity == 0) or event.type == "note_off":
+        if event.type == _midi.EventType.NOTE_OFF or (event.type == _midi.EventType.NOTE_ON and event["velocity"] == 0):
             commands += _note_off(event)
-        elif event.type == "note_on":
+        elif event.type == _midi.EventType.NOTE_ON:
             commands += _note_on(event)
-        elif event.type == "controller_change" and event.controller == "volume_msb":
+        elif event.type == _midi.EventType.CONTROLLER_CHANGE and event["controller"] == _midi.ControllerType.VOLUME_MSB:
             commands += _adjust_volume(event)
-        elif event.type == "pitch_bend":
+        elif event.type == _midi.EventType.PITCH_BEND:
             commands += _pitch_bend(event)
-        elif event.type == "program_change":
-            midi_channels[event.channel]["instrument"] = event.program
-        elif event.type == "meta" and event.meta_type == "set_tempo":
-            midi_tempo = float(event.bpm)
+        elif event.type == _midi.EventType.PROGRAM_CHANGE:
+            midi_channels[event.channel]["instrument"] = event["program"]
+        elif event.type == _midi.EventType.META and event["meta_type"] == _midi.MetaType.SET_TEMPO:
+            midi_tempo = float(event["bpm"])
         _add_commands(commands)
     imf.save(output_file_name, file_type=imf_file_type)
     # for command in imf.commands:

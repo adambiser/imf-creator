@@ -1,5 +1,5 @@
 from imfcreator import resources
-from imfcreator.filetypes.imfmusicfile import ImfMusicFile
+from imfcreator.plugins.imfmusicfile import ImfMusicFile
 from imfcreator.player import ImfPlayer, PlayerState
 
 try:

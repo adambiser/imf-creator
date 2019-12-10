@@ -9,7 +9,7 @@ Use `get_name` to get the instrument name
 import logging as _logging
 import typing as _typing
 import imfcreator.adlib as _adlib
-import imfcreator.filetypes.instrumentfile as _instrumentfile
+import imfcreator.filetypes as _filetypes
 import imfcreator.utils as _utils
 # TODO Add GM2 drum instrument mapping flag and dictionary.
 
@@ -96,6 +96,7 @@ def get_name(inst_type: int, program: int) -> str:
 
 
 def _validate_args(inst_type: int, program: int, bank: int = 0):
+    """Validates the entry argument values."""
     if inst_type not in [MELODIC, PERCUSSION]:
         raise ValueError("inst_type must be 0 (MELODIC) or 1 (PERCUSSION).")
     if program < 0 or program > 127:
@@ -119,7 +120,7 @@ def _open_file(f):
         exclusive_fp = False
     # Scan plugin classes for one that can open the file.
     preview = fp.read(32)
-    for cls in _utils.get_all_subclasses(_instrumentfile.InstrumentFile):
+    for cls in _utils.get_all_subclasses(_filetypes.InstrumentFile):
         if cls.accept(preview):
             try:
                 _logging.debug(f'Attempting to load "{filename}" using {cls.__name__}.')

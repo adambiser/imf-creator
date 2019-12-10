@@ -1,11 +1,11 @@
 from ._binary import u8, u16le, s16le
 import imfcreator.adlib as _adlib
-import imfcreator.filetypes.instrumentfile as instrumentfile
+import imfcreator.filetypes as _filetypes
 import imfcreator.instruments as _instruments
 import imfcreator.utils as _utils
 
 
-class Op2FilePlugin(instrumentfile.InstrumentFile):
+class Op2FilePlugin(_filetypes.InstrumentFile):
     """Read instruments from a DMX Sound Library file."""
     DESCRIPTION = "DMX Sound Library"
     _FILE_SIGNATURE = b"#OPL_II#"
