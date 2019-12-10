@@ -1,5 +1,5 @@
 """A collection of various utility methods."""
-import os
+import os as _os
 
 
 def clamp(value, minimum, maximum):
@@ -9,7 +9,7 @@ def clamp(value, minimum, maximum):
 
 def get_file_size(fp):
     """Returns the file size for the given file object."""
-    return os.fstat(fp.fileno()).st_size
+    return _os.fstat(fp.fileno()).st_size
 
 
 def get_all_subclasses(cls):
