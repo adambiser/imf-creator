@@ -9,8 +9,7 @@ Use `get_name` to get the instrument name
 import logging as _logging
 import typing as _typing
 import imfcreator.adlib as _adlib
-import imfcreator.filetypes as _filetypes
-import imfcreator.utils as _utils
+import imfcreator.plugins as _plugins
 # TODO Add GM2 drum instrument mapping flag and dictionary.
 
 # Instrument types.
@@ -43,7 +42,7 @@ def add_file(f):
 
     :param f: A filename or file object.
     """
-    for i in _open_file(f):
+    for i in _plugins.InstrumentFileReader.open_file(f):
         add(*i)
     _logging.info(f"Loaded instruments: {count()}")
 
@@ -92,39 +91,6 @@ def _validate_args(inst_type: int, program: int, bank: int = 0):
         raise ValueError("program must be between 0 and 127 (inclusive).")
     if bank < 0 or bank > 65535:
         raise ValueError("bank must be between 0 and 65535 (inclusive).")
-
-
-def _open_file(f):
-    """Opens the given instrument file.
-
-    :param f: A filename or file object.
-    """
-    if type(f) is str:  # filename
-        filename = f
-        fp = open(filename, "rb")
-        exclusive_fp = True
-    else:
-        filename = ""
-        fp = f
-        exclusive_fp = False
-    # Scan plugin classes for one that can open the file.
-    preview = fp.read(32)
-    for cls in _utils.get_all_subclasses(_filetypes.InstrumentFile):
-        if cls.accept(preview):
-            try:
-                _logging.debug(f'Attempting to load "{filename}" using {cls.__name__}.')
-                # Reset the file position for each attempt.
-                fp.seek(0)
-                instance = cls(fp, filename)
-                # The instance now owns the fp.
-                instance._exclusive_fp = exclusive_fp
-                _logging.info(f'Loaded "{filename}" using {cls.__name__}.')
-                return instance
-            except (ValueError, IOError, OSError) as ex:
-                _logging.warning(f'Error while attempting to load "{filename}" using {cls.__name__}: {ex}')
-    if exclusive_fp:
-        fp.close()
-    raise ValueError(f"Failed to load instrument file: {filename}")
 
 
 def get_name(inst_type: int, program: int) -> str:

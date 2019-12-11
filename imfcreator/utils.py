@@ -12,9 +12,9 @@ def get_file_size(fp):
     return _os.fstat(fp.fileno()).st_size
 
 
-def get_all_subclasses(cls):
-    """Returns a list of all subclasses of the given class recusively."""
-    subclasses = cls.__subclasses__()
-    for sub in cls.__subclasses__():
-        subclasses += get_all_subclasses(sub)
-    return subclasses
+# def get_all_subclasses(cls):
+#     """Returns a list of all subclasses of the given class recusively."""
+#     subclasses = cls.__subclasses__()
+#     for sub in cls.__subclasses__():
+#         subclasses += get_all_subclasses(sub)
+#     return subclasses
