@@ -1,6 +1,35 @@
 from enum import IntEnum
+from functools import total_ordering
 
 
+class EventType(IntEnum):
+    """Song event types.
+
+    Data dictionary for each type:
+     * NOTE_OFF: "note", "velocity"
+     * NOTE_ON: "note", "velocity"
+     * POLYPHONIC_KEY_PRESSURE: "note", "pressure"
+     * CONTROLLER_CHANGE: "controller", "value"
+     * PROGRAM_CHANGE: "program"
+     * CHANNEL_KEY_PRESSURE: "pressure"
+     * PITCH_BEND: "value" from -1.0 to 1.0 where 0 = center.  Bend by current bend amount.
+     * F0_SYSEX: "bytes"
+     * F7_SYSEX: "bytes"
+     * META: See MetaType
+    """
+    NOTE_OFF = 0x80
+    NOTE_ON = 0x90
+    POLYPHONIC_KEY_PRESSURE = 0xa0
+    CONTROLLER_CHANGE = 0xb0  # Also has channel mode messages.
+    PROGRAM_CHANGE = 0xc0
+    CHANNEL_KEY_PRESSURE = 0xd0
+    PITCH_BEND = 0xe0
+    F0_SYSEX = 0xf0
+    F7_SYSEX = 0xf7
+    META = 0xff
+
+
+@total_ordering
 class SongEvent:
     """Represents a song event.
     This is pretty much just a MIDI event and song readers should convert their file format's events to match MIDI.
@@ -32,38 +61,45 @@ class SongEvent:
         self._data = data
         self.channel = channel
 
+    def __repr__(self):
+        text = f"{self.time:0.3f}: {str(self.type)}"
+        if self.type == EventType.META:
+            text += f" - {str(self._data['meta_type'])}"
+        elif self.channel is not None:
+            text += f" - {self.channel}"
+        return f"[{text} - {self._data}]"
+
     def __getitem__(self, key):
         return self._data[key]
 
     def __setitem__(self, key, value):
         self._data[key] = value
 
+    def __eq__(self, other: "SongEvent"):
+        if self.time != other.time:
+            return False
+        if _EVENT_TYPE_ORDER[self.type] != _EVENT_TYPE_ORDER[other.type]:
+            return False
+        # if self.channel != other.channel:
+        #     return False
+        if self.track != other.track:
+            return False
+        return True
 
-class EventType(IntEnum):
-    """Song event types.
-
-    Data dictionary for each type:
-     * NOTE_OFF: "note", "velocity"
-     * NOTE_ON: "note", "velocity"
-     * POLYPHONIC_KEY_PRESSURE: "note", "pressure"
-     * CONTROLLER_CHANGE: "controller", "value"
-     * PROGRAM_CHANGE: "program"
-     * CHANNEL_KEY_PRESSURE: "pressure"
-     * PITCH_BEND: "value" from -1.0 to 1.0 where 0 = center.  Bend by current bend amount.
-     * F0_SYSEX: "bytes"
-     * F7_SYSEX: "bytes"
-     * META: See MetaType
-    """
-    NOTE_OFF = 0x80
-    NOTE_ON = 0x90
-    POLYPHONIC_KEY_PRESSURE = 0xa0
-    CONTROLLER_CHANGE = 0xb0  # Also has channel mode messages.
-    PROGRAM_CHANGE = 0xc0
-    CHANNEL_KEY_PRESSURE = 0xd0
-    PITCH_BEND = 0xe0
-    F0_SYSEX = 0xf0
-    F7_SYSEX = 0xf7
-    META = 0xff
+    def __lt__(self, other: "SongEvent"):
+        if self.time < other.time:
+            return True
+        elif self.time > other.time:
+            return False
+        if _EVENT_TYPE_ORDER[self.type] < _EVENT_TYPE_ORDER[other.type]:
+            return True
+        elif _EVENT_TYPE_ORDER[self.type] > _EVENT_TYPE_ORDER[other.type]:
+            return False
+        # if self.channel < other.channel:
+        #     return True
+        # elif self.channel > other.channel:
+        #     return False
+        return self.track < other.track
 
 
 class MetaType(IntEnum):
@@ -108,6 +144,20 @@ class MetaType(IntEnum):
     TIME_SIGNATURE = 0x58,
     KEY_SIGNATURE = 0x59,
     SEQUENCER_SPECIFIC = 0x7f,
+
+
+_EVENT_TYPE_ORDER = {
+    EventType.NOTE_OFF: 10,
+    EventType.NOTE_ON: 100,
+    EventType.POLYPHONIC_KEY_PRESSURE: 40,
+    EventType.CONTROLLER_CHANGE: 1,  # Controller changes are high priority, just lower than program change.
+    EventType.PROGRAM_CHANGE: 0,  # Program changes are high priority.
+    EventType.CHANNEL_KEY_PRESSURE: 50,
+    EventType.PITCH_BEND: 30,
+    EventType.F0_SYSEX: 0,  # Ignored, order doesn't matter.
+    EventType.F7_SYSEX: 0,  # Ignored, order doesn't matter.
+    EventType.META: 0,  # Tempo changes, for example, should be high priority.
+}
 
 
 class ControllerType(IntEnum):
