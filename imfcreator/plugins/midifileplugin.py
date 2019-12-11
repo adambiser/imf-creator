@@ -5,7 +5,7 @@ import typing as _typing
 import imfcreator.midi as _midi
 import imfcreator.plugins._binary as _binary
 import imfcreator.utils as _utils
-from imfcreator.filetypes import SongReader
+from . import plugin, SongFileReader
 
 _HEADER_CHUNK_NAME = b"MThd"
 _HEADER_CHUNK_LENGTH = 6
@@ -18,7 +18,8 @@ def _u8(f):
     return _binary.u8(f.read(1))
 
 
-class MidiReader(SongReader):
+@plugin
+class MidiFileReader(SongFileReader):
     """Reads a MIDI file."""
 
     def __init__(self, fp=None, filename=None):

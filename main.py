@@ -1,11 +1,8 @@
-import logging
 import os
 import imfcreator.instruments as instruments
 from imfcreator.imf_builder import convert_midi_to_imf
 from imfcreator.mainapplication import MainApplication
-from imfcreator.filetypes import SongReader
-
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s\t%(message)s')
+from imfcreator.plugins import SongFileReader
 
 
 def main(song):
@@ -49,7 +46,7 @@ instruments.add_file("GENMIDI.OP2")
 
 
 # reader = SongReader.open_file("test/test-pitchbend.mid")
-reader = SongReader.open_file("test/Ecu_10_Bass_xg-hr.mid")
+reader = SongFileReader.open_file("test/Ecu_10_Bass_xg-hr.mid")
 # reader = SongReader.open_file("exclude/OUT1FM.mid")
 # reader = SongReader.open_file("test/testfmt0.mid")
 # reader = SongReader.open_file("test/testfmt1.mid")
