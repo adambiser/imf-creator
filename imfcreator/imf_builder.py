@@ -6,34 +6,9 @@ from imfcreator.adlib import *
 from imfcreator.plugins.imfmusicfile import ImfMusicFile
 
 
-def _sort_midi(midi):  # , mute_tracks=None, mute_channels=None):
-    # Combine all tracks into one track.
-    events = [_ for _ in midi]
-    # for track in midi.tracks:
-    #     time = 0
-    #     for event in track:
-    #         time += event.delta
-    #         del event.delta
-    #         event = copy.copy(event)
-    #         event.event_time = time
-    #         event.track = track.number
-    #         events.append(event)
-    # if mute_tracks:
-    #     events = filter(lambda event: event.track not in mute_tracks, events)
-    # if mute_channels:
-    #     events = filter(lambda event: not hasattr(event, "channel") or event.channel not in mute_channels, events)
-    # Sort by event time and channel. Note-on events with a velocity should come last at a given time within the song.
-    events = sorted(events, key=lambda event: (
-        event.time,
-        1 if event.type == _midi.EventType.NOTE_ON and event["velocity"] > 0 else 0,
-        event.channel if event.channel is not None else -1,
-    ))
-    return events
-
-
 def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_name="output.wlf",
                         imf_file_type=0):
-    events = _sort_midi(midi)  # , mute_tracks, mute_channels)
+    events = sorted([_ for _ in midi])
     imf = ImfMusicFile()
     # Prepare MIDI and IMF channel variables.
     midi_channels = [{
@@ -50,12 +25,21 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         "last_note": None,
     } for channel in range(1, 9)]
     regs = [None] * 256
-    midi_tempo = 120.0
+    # midi_tempo = 120.0
+
+    def set_tempo(bpm: float):
+        nonlocal ticks_per_beat
+        ticks_per_beat = imf.ticks_per_second * (60.0 / bpm)
+
+    ticks_per_beat = 0
+    set_tempo(120)  # Arbitrary default tempo if none is set by the song.
+    # ticks_per_beat = imf.ticks_per_second * (60.0 / midi_tempo)
 
     # Define helper functions.
     def _calc_imf_ticks(value):
         # return int(imf.ticks_per_second * (float(value) / midi.division) * (60.0 / midi_tempo))
-        return int(imf.ticks_per_second * value * (60.0 / midi_tempo))
+        # return int(imf.ticks_per_second * value * (60.0 / midi_tempo))
+        return int(ticks_per_beat * value)
 
     def _find_imf_channel(instrument, note):
         channel = next(filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] is None, imf_channels),
@@ -121,12 +105,12 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         return next(filter(lambda ch: ch["instrument"] == instrument and ch["last_note"] == note, imf_channels), None)
 
     def _note_off(event: _midi.SongEvent):
+        instrument = _get_event_instrument(event)
+        if instrument is None:
+            return None
         commands = []
         voice = 0
         midi_track = midi_channels[event.channel]
-        instrument = _get_event_instrument(event)
-        if instrument is None:
-            return commands
         note = _get_instrument_note(instrument, event, voice)
         if event.channel != 9:
             # _logging.debug(f"Removing active note: {event['note']} -> {note}, channel {event.channel}")
@@ -235,12 +219,11 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
             ]
 
     def _note_on(event: _midi.SongEvent):
-        commands = []
-        voice = 0
-        midi_track = midi_channels[event.channel]
         instrument = _get_event_instrument(event)
         if instrument is None:
-            return commands
+            return None
+        voice = 0
+        midi_track = midi_channels[event.channel]
         note = _get_instrument_note(instrument, event, voice)
         if event.channel != 9:
             # _logging.debug(f"Adding active note: {event['note']} -> {note}, channel {event.channel}")
@@ -248,6 +231,7 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
                 "note": note,
                 "event": event,
             })
+        commands = []
         channel = _find_imf_channel(instrument, note)
         if channel:
             # Check for instrument change.
@@ -285,10 +269,10 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         return commands
 
     def _pitch_bend(event: _midi.SongEvent):
-        commands = []
         # Can't pitch bend percussion.
         if event.channel == 9:  # TODO Remove magic number!
-            return commands
+            return None
+        commands = []
         amount = event["value"]  # - event["value"] % pitch_bend_resolution
         if midi_channels[event.channel]["pitch_bend"] != amount:
             midi_channels[event.channel]["pitch_bend"] = amount
@@ -311,31 +295,31 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         return commands
 
     def _adjust_volume(event: _midi.SongEvent):
-        commands = []
         # Can't adjust volume of active percussion.
         if event.channel == 9:  # TODO Remove magic number!
-            return commands
+            return None
+        commands = []
         voice = 0
         midi_track = midi_channels[event.channel]
         midi_track["volume"] = event["value"]
-        # instrument = midi_track["instrument"]
-        instrument = _get_event_instrument(event)
-        for note_info in midi_track["active_notes"]:
-            channel = _find_imf_channel_for_instrument_note(instrument, note_info["note"])
-            if channel:
-                volume = int(midi_track["volume"] * note_info["event"]["velocity"] / 127.0)
-                # instrument = instruments[inst_num]
-                commands += _get_volume_commands(channel, instrument, volume)
-                # commands += [
-                #     (
-                #         VOLUME_MSG | MODULATORS[channel["id"]],
-                #         ((127 - volume) / 2) | instrument.modulator[voice].key_scale_level
-                #     ),
-                #     (
-                #         VOLUME_MSG | CARRIERS[channel["id"]],
-                #         ((127 - volume) / 2) | instrument.carrier[voice].key_scale_level
-                #     ),
-                # ]
+        if midi_track["active_notes"]:
+            instrument = _get_event_instrument(event)
+            for note_info in midi_track["active_notes"]:
+                channel = _find_imf_channel_for_instrument_note(instrument, note_info["note"])
+                if channel:
+                    volume = int(midi_track["volume"] * note_info["event"]["velocity"] / 127.0)
+                    # instrument = instruments[inst_num]
+                    commands += _get_volume_commands(channel, instrument, volume)
+                    # commands += [
+                    #     (
+                    #         VOLUME_MSG | MODULATORS[channel["id"]],
+                    #         ((127 - volume) / 2) | instrument.modulator[voice].key_scale_level
+                    #     ),
+                    #     (
+                    #         VOLUME_MSG | CARRIERS[channel["id"]],
+                    #         ((127 - volume) / 2) | instrument.carrier[voice].key_scale_level
+                    #     ),
+                    # ]
         return commands
 
     # Cycle MIDI events and convert to IMF commands.
@@ -374,9 +358,10 @@ def convert_midi_to_imf(midi, mute_tracks=None, mute_channels=None, output_file_
         elif event.type == _midi.EventType.PITCH_BEND:
             commands = _pitch_bend(event)
         elif event.type == _midi.EventType.PROGRAM_CHANGE:
+            # print(f"Program change: {event.channel} = {event['program']}")
             midi_channels[event.channel]["instrument"] = event["program"]
         elif event.type == _midi.EventType.META and event["meta_type"] == _midi.MetaType.SET_TEMPO:
-            midi_tempo = float(event["bpm"])
+            set_tempo(float(event["bpm"]))
         if commands:
             # Set the delay on the current last command.
             # ticks = _calc_imf_ticks(event.time - last_ticks)
