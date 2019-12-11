@@ -2,33 +2,6 @@ from enum import IntEnum
 from functools import total_ordering
 
 
-class EventType(IntEnum):
-    """Song event types.
-
-    Data dictionary for each type:
-     * NOTE_OFF: "note", "velocity"
-     * NOTE_ON: "note", "velocity"
-     * POLYPHONIC_KEY_PRESSURE: "note", "pressure"
-     * CONTROLLER_CHANGE: "controller", "value"
-     * PROGRAM_CHANGE: "program"
-     * CHANNEL_KEY_PRESSURE: "pressure"
-     * PITCH_BEND: "value" from -1.0 to 1.0 where 0 = center.  Bend by current bend amount.
-     * F0_SYSEX: "bytes"
-     * F7_SYSEX: "bytes"
-     * META: See MetaType
-    """
-    NOTE_OFF = 0x80
-    NOTE_ON = 0x90
-    POLYPHONIC_KEY_PRESSURE = 0xa0
-    CONTROLLER_CHANGE = 0xb0  # Also has channel mode messages.
-    PROGRAM_CHANGE = 0xc0
-    CHANNEL_KEY_PRESSURE = 0xd0
-    PITCH_BEND = 0xe0
-    F0_SYSEX = 0xf0
-    F7_SYSEX = 0xf7
-    META = 0xff
-
-
 @total_ordering
 class SongEvent:
     """Represents a song event.
@@ -80,8 +53,8 @@ class SongEvent:
             return False
         if _EVENT_TYPE_ORDER[self.type] != _EVENT_TYPE_ORDER[other.type]:
             return False
-        # if self.channel != other.channel:
-        #     return False
+        if self.channel != other.channel:
+            return False
         if self.track != other.track:
             return False
         return True
@@ -95,11 +68,55 @@ class SongEvent:
             return True
         elif _EVENT_TYPE_ORDER[self.type] > _EVENT_TYPE_ORDER[other.type]:
             return False
-        # if self.channel < other.channel:
-        #     return True
-        # elif self.channel > other.channel:
-        #     return False
+        # Non-channel events are "less than" channel events.
+        selfchannel = -1 if self.channel is None else self.channel
+        otherchannel = -1 if other.channel is None else other.channel
+        if selfchannel < otherchannel:
+            return True
+        elif selfchannel > otherchannel:
+            return False
         return self.track < other.track
+
+
+class EventType(IntEnum):
+    """Song event types.
+
+    Data dictionary for each type:
+     * NOTE_OFF: "note", "velocity"
+     * NOTE_ON: "note", "velocity"
+     * POLYPHONIC_KEY_PRESSURE: "note", "pressure"
+     * CONTROLLER_CHANGE: "controller", "value"
+     * PROGRAM_CHANGE: "program"
+     * CHANNEL_KEY_PRESSURE: "pressure"
+     * PITCH_BEND: "value" from -1.0 to 1.0 where 0 = center.  Bend by current bend amount.
+     * F0_SYSEX: "bytes"
+     * F7_SYSEX: "bytes"
+     * META: See MetaType
+    """
+    NOTE_OFF = 0x80
+    NOTE_ON = 0x90
+    POLYPHONIC_KEY_PRESSURE = 0xa0
+    CONTROLLER_CHANGE = 0xb0  # Also has channel mode messages.
+    PROGRAM_CHANGE = 0xc0
+    CHANNEL_KEY_PRESSURE = 0xd0
+    PITCH_BEND = 0xe0
+    F0_SYSEX = 0xf0
+    F7_SYSEX = 0xf7
+    META = 0xff
+
+
+_EVENT_TYPE_ORDER = {
+    EventType.NOTE_OFF: 10,
+    EventType.NOTE_ON: 100,
+    EventType.POLYPHONIC_KEY_PRESSURE: 40,
+    EventType.CONTROLLER_CHANGE: 2,  # Controller changes are high priority (volume), just lower than program change.
+    EventType.PROGRAM_CHANGE: 1,  # Program changes are high priority.
+    EventType.CHANNEL_KEY_PRESSURE: 50,
+    EventType.PITCH_BEND: 30,
+    EventType.F0_SYSEX: 0,
+    EventType.F7_SYSEX: 0,
+    EventType.META: 0,  # Tempo changes, for example, should be high priority.
+}
 
 
 class MetaType(IntEnum):
@@ -144,20 +161,6 @@ class MetaType(IntEnum):
     TIME_SIGNATURE = 0x58,
     KEY_SIGNATURE = 0x59,
     SEQUENCER_SPECIFIC = 0x7f,
-
-
-_EVENT_TYPE_ORDER = {
-    EventType.NOTE_OFF: 10,
-    EventType.NOTE_ON: 100,
-    EventType.POLYPHONIC_KEY_PRESSURE: 40,
-    EventType.CONTROLLER_CHANGE: 1,  # Controller changes are high priority, just lower than program change.
-    EventType.PROGRAM_CHANGE: 0,  # Program changes are high priority.
-    EventType.CHANNEL_KEY_PRESSURE: 50,
-    EventType.PITCH_BEND: 30,
-    EventType.F0_SYSEX: 0,  # Ignored, order doesn't matter.
-    EventType.F7_SYSEX: 0,  # Ignored, order doesn't matter.
-    EventType.META: 0,  # Tempo changes, for example, should be high priority.
-}
 
 
 class ControllerType(IntEnum):
