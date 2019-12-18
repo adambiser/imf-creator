@@ -1,8 +1,9 @@
+import argparse
 import os
 import imfcreator.instruments as instruments
-from imfcreator.imf_builder import convert_midi_to_imf
+# from imfcreator.imf_builder import convert_midi_to_imf
 from imfcreator.mainapplication import MainApplication
-from imfcreator.plugins import SongFileReader
+from imfcreator.plugins import SongFileReader, AdlibSong
 
 
 def main(song):
@@ -44,6 +45,9 @@ if not os.path.isfile("GENMIDI.OP2"):
 
 instruments.add_file("GENMIDI.OP2")
 
+# parser = argparse.ArgumentParser(description='An AppGameKit build automation script.')
+# parser.add_argument('buildfile', metavar='buildfile', type=str, help='The agkbuild file to process.')
+# args = parser.parse_args()
 
 # reader = SongReader.open_file("test/test-pitchbend.mid")
 reader = SongFileReader.open_file("test/Ecu_10_Bass_xg-hr.mid")
@@ -51,10 +55,16 @@ reader = SongFileReader.open_file("test/Ecu_10_Bass_xg-hr.mid")
 # reader = SongReader.open_file("test/testfmt0.mid")
 # reader = SongReader.open_file("test/testfmt1.mid")
 # reader = SongReader.open_file("test/test-velocity.mid")
-imf = convert_midi_to_imf(reader)   # , instruments)  # , mute_channels=[9])
+settings = {"title": "Hello"}
+song = AdlibSong.convert_from(reader, "imf1", settings)
+song.save_file("output.wlf")
+# if data:
+#     with open("output.wlf", "wb") as f:
+#         f.write(data)
+# imf = convert_midi_to_imf(reader)   # , instruments)  # , mute_channels=[9])
 # imf = convert_midi_to_imf(reader, instruments, mute_tracks=[1], mute_channels=[9])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[3])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[0, 1, 2])
 # convert_midi_to_imf(reader, instruments, mute_tracks=[0, 1, 2], mute_channels=[9])
 
-main(imf)
+main(song)
