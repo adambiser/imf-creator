@@ -1,6 +1,6 @@
 from imfcreator import resources
-from imfcreator.plugins.imfmusicfile import ImfMusicFile
-from imfcreator.player import ImfPlayer, PlayerState
+# from imfcreator.plugins.imfmusicfile import ImfMusicFile
+from imfcreator.player import AdlibPlayer, PlayerState
 
 try:
     # noinspection PyPep8Naming
@@ -18,9 +18,9 @@ class MainApplication(tix.Tk):
         # self.tk.call('wm', 'iconbitmap', self._w, '-default', os.path.join(Resources.PATH, 'icon.ico'))
         # self.settings = Settings()
         self.protocol("WM_DELETE_WINDOW", self._onclosing)
-        self.player = ImfPlayer()
+        self.player = AdlibPlayer()
         # self.player.load("test.wlf")
-        self.player.set_song(ImfMusicFile("test/testtag.wlf"))
+        # self.player.set_song(ImfSong("test/testtag.wlf"))
         # self.player.load("wolf3d.wlf")
         # print(fileinfo)
         self.play_button = tix.Button(self, text='Play', command=self.toggle_play)

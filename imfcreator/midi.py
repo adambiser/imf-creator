@@ -10,7 +10,8 @@ class SongEvent:
     The data dictionary will vary per event_type.  See EventType.
     """
 
-    def __init__(self, track: int, time: float, event_type: "EventType", data: dict = None, channel: int = None):
+    def __init__(self, track: int, time: float, event_type: "EventType", data: dict = None, channel: int = None,
+                 is_percussion: bool = False):
         """Creates a song event.
 
         :param track: The track number for the event.
@@ -18,6 +19,7 @@ class SongEvent:
         :param event_type: The event type.
         :param data: A data dictionary for the event.  Contents will vary per event_type.
         :param channel: The event channel.  Must be None for sysex and meta event types and an integer for all others.
+        :param is_percussion: For channel events, sets whether the event is on a percussion channel.
         """
         # Validate arguments.
         if event_type in [EventType.F0_SYSEX, EventType.F7_SYSEX, EventType.META]:
@@ -33,6 +35,7 @@ class SongEvent:
         self.type = event_type
         self._data = data
         self.channel = channel
+        self.is_percussion = is_percussion
 
     def __repr__(self):
         text = f"{self.time:0.3f}: {str(self.type)}"

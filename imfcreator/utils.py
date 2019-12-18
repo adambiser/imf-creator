@@ -12,6 +12,10 @@ def get_file_size(fp):
     return _os.fstat(fp.fileno()).st_size
 
 
+def get_file_extension(filename):
+    return _os.path.splitext(filename)[1]
+
+
 # def get_all_subclasses(cls):
 #     """Returns a list of all subclasses of the given class recusively."""
 #     subclasses = cls.__subclasses__()

@@ -202,7 +202,8 @@ class MidiFileReader(SongFileReader):
 
             # Create the event instance.
             event_type = _midi.EventType(event_type)
-            events.append(_midi.SongEvent(track_number, event_time / self._division, event_type, event_data, channel))
+            events.append(_midi.SongEvent(track_number, event_time / self._division, event_type, event_data, channel,
+                                          channel == _PERCUSSION_CHANNEL))
         return events
 
     @property

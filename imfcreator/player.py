@@ -15,7 +15,7 @@ class PlayerState(IntEnum):
     PAUSED = auto()
 
 
-class ImfPlayer:
+class AdlibPlayer:
     """A streaming IMF music player."""
     FREQUENCY = 44100
     SAMPLE_SIZE = 2  # 16-bit
@@ -29,18 +29,18 @@ class ImfPlayer:
         # Prepare PyAudio
         self._audio = pyaudio.PyAudio()
         # Prepare buffers.
-        self._data = bytearray(ImfPlayer.BUFFER_SAMPLE_COUNT * ImfPlayer.SAMPLE_SIZE * ImfPlayer.CHANNELS)
+        self._data = bytearray(AdlibPlayer.BUFFER_SAMPLE_COUNT * AdlibPlayer.SAMPLE_SIZE * AdlibPlayer.CHANNELS)
         if sys.version_info[0] < 3:
             # noinspection PyUnresolvedReferences
             self._buffer = buffer(self._data)  # Wraps self.data. Used by PyAudio.
         else:
             # Since Python 3 doesn't have buffer() and PyAudio doesn't support memoryview.
             # noinspection PyShadowingNames
-            ImfPlayer._buffer = property(lambda self: bytes(self._data))
+            AdlibPlayer._buffer = property(lambda self: bytes(self._data))
 
         # Prepare stream attribute and opl player.
         self._stream = None  # Created later.
-        self._opl = pyopl.opl(freq=freq, sampleSize=ImfPlayer.SAMPLE_SIZE, channels=ImfPlayer.CHANNELS)
+        self._opl = pyopl.opl(freq=freq, sampleSize=AdlibPlayer.SAMPLE_SIZE, channels=AdlibPlayer.CHANNELS)
         # reset
         # self._commands = []
         self._song = None
@@ -56,9 +56,9 @@ class ImfPlayer:
     def _create_stream(self, start: bool = True):
         """Create a new PyAudio stream."""
         self._stream = self._audio.open(
-            format=self._audio.get_format_from_width(ImfPlayer.SAMPLE_SIZE),
-            channels=ImfPlayer.CHANNELS,
-            frames_per_buffer=ImfPlayer.BUFFER_SAMPLE_COUNT,
+            format=self._audio.get_format_from_width(AdlibPlayer.SAMPLE_SIZE),
+            channels=AdlibPlayer.CHANNELS,
+            frames_per_buffer=AdlibPlayer.BUFFER_SAMPLE_COUNT,
             rate=self._freq,
             output=True,
             start=start,  # Don't start playing immediately!
@@ -128,7 +128,7 @@ class ImfPlayer:
         """Processes the command at the current position and moves to the next command.
         The delay is also incremented if the command has a ticks value.
         """
-        reg, value, ticks = self._song.commands[self._position]
+        reg, value, ticks = self._song._commands[self._position]
         self.writereg(reg, value)
         self._position += 1
         if ticks:
@@ -155,14 +155,14 @@ class ImfPlayer:
     # noinspection PyUnusedLocal
     def _callback(self, input_data, frame_count, time_info, status):
         # Build enough of a delay to fill the buffer.
-        while self._delay < ImfPlayer.BUFFER_SAMPLE_COUNT and self._position < self._song.command_count:
+        while self._delay < AdlibPlayer.BUFFER_SAMPLE_COUNT and self._position < self._song.command_count:
             self._process_command()
             if self.repeat and self._position == self._song.command_count:
                 self._position = 0
         # If we have enough to fill the buffer, do so. Otherwise quit.
-        if self._delay >= ImfPlayer.BUFFER_SAMPLE_COUNT:
+        if self._delay >= AdlibPlayer.BUFFER_SAMPLE_COUNT:
             self._opl.getSamples(self._data)
-            self._delay -= ImfPlayer.BUFFER_SAMPLE_COUNT
+            self._delay -= AdlibPlayer.BUFFER_SAMPLE_COUNT
             return self._buffer, pyaudio.paContinue
         else:
             self.rewind()
