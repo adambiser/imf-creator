@@ -28,7 +28,7 @@ class Op2FilePlugin(InstrumentFile):
 
     def _load_file(self):
         if not Op2FilePlugin.accept(self.fp.read(8), self.file):
-            raise ValueError("Unexpected file type.")
+            raise ValueError("Bad OP2 file!")
         for index in range(Op2FilePlugin._ENTRY_COUNT):
             self.instruments.update([self._get_instrument(index)])
 
@@ -55,7 +55,7 @@ class Op2FilePlugin(InstrumentFile):
         else:
             inst_type = _instruments.PERCUSSION
             program = index - Op2FilePlugin._FIRST_PERCUSSION_ENTRY + Op2FilePlugin._FIRST_PERCUSSION_PROGRAM
-        return InstrumentId(inst_type, program, 0), instrument
+        return InstrumentId(inst_type, 0, program), instrument
 
     @staticmethod
     def _read_voice(instrument, voice_number, data):

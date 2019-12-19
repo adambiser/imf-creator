@@ -8,7 +8,7 @@ from imfcreator.midi import SongEvent as _SongEvent
 
 _PLUGIN_TYPES = []  # List of plugin type classes.
 FileTypeInfo = _namedtuple("FileTypeInfo", ["description", "default_extension"])
-InstrumentId = _namedtuple("InstrumentId", ["instrument_type", "program", "bank"])
+InstrumentId = _namedtuple("InstrumentId", ["instrument_type", "bank", "program"])
 
 
 def _plugin_type(cls):
@@ -49,9 +49,9 @@ class InstrumentFile:
         finally:
             del self.fp
 
-    def __iter__(self):
-        for instrument in self.instruments:
-            yield instrument
+    # def __iter__(self):
+    #     for instrument in self.instruments:
+    #         yield instrument
 
     @classmethod
     def accept(cls, preview: bytes, path: str) -> bool:
@@ -110,9 +110,9 @@ class MidiSongFile:
         finally:
             del self.fp
 
-    def __iter__(self):
-        for song_event in self.events:
-            yield song_event
+    # def __iter__(self):
+    #     for song_event in self.events:
+    #         yield song_event
 
     @classmethod
     def accept(cls, preview: bytes, path: str) -> bool:
