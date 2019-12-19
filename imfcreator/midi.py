@@ -169,23 +169,16 @@ class MetaType(IntEnum):
 class ControllerType(IntEnum):
     """MIDI controller type codes."""
     BANK_SELECT_MSB = 0,  # Allows user to switch bank for patch selection. Program change used with Bank Select.
-                          # MIDI can access 16,384 patches per MIDI channel.
-    MODULATION_WHEEL_MSB = 1,  # Generally this CC controls a vibrato effect (pitch, loudness, brighness).
-                               # What is modulated is based on the patch.
-    BREATH_CONTROLLER_MSB = 2,  # Often times associated with aftertouch messages. It was originally intended for use
-                                # with a breath MIDI controller in which blowing harder produced higher MIDI control
-                                # values. It can be used for modulation as well.
+    MODULATION_WHEEL_MSB = 1,  # Generally controls a vibrato effect (pitch, loudness, brighness), depends on patch.
+    BREATH_CONTROLLER_MSB = 2,  # Often used with aftertouch messages. Can be used for modulation as well.
     # 3 is undefined
-    FOOT_CONTROLLER_MSB = 4,  # Often used with aftertouch messages. It can send a continuous stream of values based on
-                              # how the pedal is used.
+    FOOT_CONTROLLER_MSB = 4,  # Often used with aftertouch messages. Values based on how the pedal is used.
     PORTAMENTO_TIME_MSB = 5,  # Controls portamento rate to slide between 2 notes played subsequently.
     DATA_ENTRY_MSB = 6,  # Controls Value for NRPN or RPN parameters.
     VOLUME_MSB = 7,  # Control the volume of the channel
-    BALANCE_MSB = 8,  # Controls the left and right balance, generally for stereo patches.
-                      # 0 = hard left, 64 = center, 127 = hard right
+    BALANCE_MSB = 8,  # Controls balance, generally for stereo patches.  0 = hard left, 64 = center, 127 = hard right
     # 9 is undefined
-    PAN_MSB = 10,  # Controls the left and right balance, generally for mono patches.
-                   # 0 = hard left, 64 = center, 127 = hard right
+    PAN_MSB = 10,  # Controls panning, generally for mono patches.  0 = hard left, 64 = center, 127 = hard right
     EXPRESSION_MSB = 11,  # Expression is a percentage of volume (CC7).
     EFFECT_1_MSB = 12,  # Usually used to control a parameter of an effect within the synth/workstation.
     EFFECT_2_MSB = 13,  # Usually used to control a parameter of an effect within the synth/workstation.
@@ -215,17 +208,13 @@ class ControllerType(IntEnum):
     GENERAL_PURPOSE_3_LSB = 50,
     GENERAL_PURPOSE_4_LSB = 51,
     # 52-63 are undefined
-    SUSTAIN_PEDAL_SWITCH = 64,  # On/Off switch that controls sustain. (See also Sostenuto CC 66)
-                                # 0-63 = Off, 64-127 = On
-    PORTAMENTO_SWITCH = 65,  # On/Off switch 0 to 63 = Off, 64 to 127 = On
-    SOSTENUTO_SWITCH = 66,  # On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that
-                            # were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies
-                            # over the held chord.  0 to 63 = Off, 64 to 127 = On
-    SOFT_PEDAL_SWITCH = 67,  # On/Off switch - Lowers the volume of notes played. 0 to 63 = Off, 64 to 127 = On
-    LEGATO_FOOTSWITCH = 68,  # On/Off switch - Turns Legato effect between 2 subsequent notes On or Off.
-                             # 0 to 63 = Off, 64 to 127 = On
-    HOLD_2_SWITCH = 69,  # Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out
-                         # according to their release parameter rather than when the pedal is released.
+    # For On/Off switches: 0..63 = Off, 64..127 = On
+    SUSTAIN_PEDAL_SWITCH = 64,  # On/Off switch for sustain. (See also Sostenuto CC 66.)
+    PORTAMENTO_SWITCH = 65,  # On/Off switch.
+    SOSTENUTO_SWITCH = 66,  # On/Off switch.  Holds notes that are currently "on". (See also Sustain CC 64)
+    SOFT_PEDAL_SWITCH = 67,  # On/Off switch. Lowers the volume of notes played.
+    LEGATO_FOOTSWITCH = 68,  # On/Off switch. Turns Legato effect between two subsequent notes On or Off.
+    HOLD_2_SWITCH = 69,  # On/Off switch.  Holds notes, but fades using their release param not pedal.  (see CC 64, 66)
     SOUND_CONTROLLER_1 = 70,  # Usually controls the way a sound is produced. Default = Sound Variation.
     SOUND_CONTROLLER_2 = 71,  # Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance
     SOUND_CONTROLLER_3 = 72,  # Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time
@@ -236,10 +225,10 @@ class ControllerType(IntEnum):
     SOUND_CONTROLLER_8 = 77,
     SOUND_CONTROLLER_9 = 78,
     SOUND_CONTROLLER_10 = 79,
-    GENERAL_PURPOSE_5 = 80,  # Generic On/Off switch, 0 to 63 = Off, 64 to 127 = On
-    GENERAL_PURPOSE_6 = 81,  # Generic On/Off switch, 0 to 63 = Off, 64 to 127 = On
-    GENERAL_PURPOSE_7 = 82,  # Generic On/Off switch, 0 to 63 = Off, 64 to 127 = On
-    GENERAL_PURPOSE_8 = 83,  # Generic On/Off switch, 0 to 63 = Off, 64 to 127 = On
+    GENERAL_PURPOSE_5 = 80,  # Generic On/Off switch
+    GENERAL_PURPOSE_6 = 81,  # Generic On/Off switch
+    GENERAL_PURPOSE_7 = 82,  # Generic On/Off switch
+    GENERAL_PURPOSE_8 = 83,  # Generic On/Off switch
     PORTAMENTO_AMOUNT = 84,
     # 85-90 are undefined
     EFFECTS_1_DEPTH = 91,  # Usually controls reverb send amount
