@@ -220,6 +220,7 @@ class ControllerType(IntEnum):
     SOUND_CONTROLLER_3 = 72,  # Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time
     SOUND_CONTROLLER_4 = 73,  # Controls the “Attack’ of a sound.
     SOUND_CONTROLLER_5 = 74,  # Controls VCFs cutoff frequency of the filter.
+    XG_BRIGHTNESS = SOUND_CONTROLLER_5
     SOUND_CONTROLLER_6 = 75,
     SOUND_CONTROLLER_7 = 76,
     SOUND_CONTROLLER_8 = 77,
