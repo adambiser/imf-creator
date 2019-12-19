@@ -110,7 +110,7 @@ class ImfSong(AdlibSongFile):
         # Load settings.
         song = ImfSong(filetype, **settings)
         # Set up variables.
-        events = sorted([_ for _ in events])
+        # events = sorted([_ for _ in events])
         midi_channels = [_MidiChannelInfo(ch) for ch in range(16)]
         imf_channels = [_ImfChannelInfo(ch) for ch in range(1, 9)]
         regs = [None] * 256
@@ -228,7 +228,7 @@ class ImfSong(AdlibSongFile):
             bank = 0
             if song_event.is_percussion:
                 # _logging.debug(f"Searching for PERCUSSION instrument {event['note']}")
-                return instruments.get(instruments.PERCUSSION, song_event["note"], bank)
+                return instruments.get(instruments.PERCUSSION, bank, song_event["note"])
             else:
                 midi_channel = midi_channels[song_event.channel]
                 inst_num = midi_channel.instrument
@@ -237,7 +237,7 @@ class ImfSong(AdlibSongFile):
                     midi_channel.instrument = 0
                     inst_num = 0
                 # _logging.debug(f"Searching for MELODIC instrument {inst_num}")
-                return instruments.get(instruments.MELODIC, inst_num, bank)
+                return instruments.get(instruments.MELODIC, bank, inst_num)
 
         def get_instrument_note(instrument: AdlibInstrument, song_event: _midi.SongEvent, voice: int = 0):
             note = song_event["note"]

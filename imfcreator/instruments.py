@@ -8,8 +8,8 @@ Use `get_name` to get the instrument name
 """
 import logging as _logging
 import typing as _typing
-import imfcreator.adlib as _adlib
-from imfcreator.plugins import InstrumentId, InstrumentFile as _InstrumentFile
+from imfcreator.adlib import AdlibInstrument as _AdlibInstrument
+from imfcreator.plugins import InstrumentId, InstrumentFile as _InstrumentFile, MidiSongFile as _MidiSongFile
 # TODO Add GM2 drum instrument mapping flag and dictionary.
 
 # Instrument types.
@@ -17,27 +17,39 @@ MELODIC = 0
 PERCUSSION = 1
 _TYPE_NAMES = {MELODIC: "MELODIC", PERCUSSION: "PERCUSSION"}
 
-# The key is (inst_type, program, bank), value is the Adlib instrument.
-_INSTRUMENTS = {}  # type: _typing.Dict[InstrumentId, _adlib.AdlibInstrument]
+# The key is (inst_type, bank, program), value is the Adlib instrument.
+_INSTRUMENTS = {}  # type: _typing.Dict[InstrumentId, _AdlibInstrument]
 
 # List of searches that gave no results.
 _WARNINGS = []
 
 
-def add(inst_type: int, program: int, bank: int, adlib_instrument: _adlib.AdlibInstrument):
+def add(inst_type: int, bank: int, program: int, adlib_instrument: _AdlibInstrument):
     """Add an instrument to the instrument manager.
 
     :param inst_type: The instrument type.  MELODIC or PERCUSSION.
-    :param program: The program or patch number.
     :param bank: The instrument bank.
+    :param program: The program or patch number.
     :param adlib_instrument: The Adlib instrument.
     :return: None
     """
-    key = (inst_type, program, bank)
-    _validate_args(inst_type, program, bank)
+    key = (inst_type, bank, program)
+    _validate_args(inst_type, bank, program)
     if key in _INSTRUMENTS:
         _logging.info(f"Replacing instrument {key}")
     _INSTRUMENTS[InstrumentId(*key)] = adlib_instrument
+
+
+def update(instruments: _typing.Dict[InstrumentId, _AdlibInstrument]):
+    """Updates the instrument dictionary with another instrument dictionary.
+
+    :param instruments: The new instrument dictionary.
+    """
+    # _INSTRUMENTS.update(instruments)
+    if instruments:
+        for key, instrument in instruments.items():
+            add(key.instrument_type, key.bank, key.program, instrument)
+        _logging.info(f"Total instruments loaded: {count()}")
 
 
 def add_file(f):
@@ -45,11 +57,11 @@ def add_file(f):
 
     :param f: A filename or file object.
     """
-    instrument_file = _InstrumentFile.load_file(f)
-    _INSTRUMENTS.update(instrument_file.instruments)
-    # for key, instrument in instrument_file.instruments.items():
-    #     add(key.instrument_type, key.program, key.bank, instrument)
-    _logging.info(f"Loaded instruments: {count()}")
+    try:
+        instrument_file = _InstrumentFile.load_file(f)
+    except ValueError:
+        instrument_file = _MidiSongFile.load_file(f)
+    update(instrument_file.instruments)
 
 
 def count() -> int:
@@ -57,50 +69,50 @@ def count() -> int:
     return len(_INSTRUMENTS)
 
 
-def get(inst_type: int, program: int, bank: int) -> _adlib.AdlibInstrument:
+def get(inst_type: int, bank: int, program: int) -> _AdlibInstrument:
     """Returns the Adlib instrument based on the given type, program, and bank.
 
     :param inst_type: The instrument type.  MELODIC or PERCUSSION.
-    :param program: The program or patch number.
     :param bank: The instrument bank.
+    :param program: The program or patch number.
     :return: An Adlib instrument if a match is found; otherwise None.
     """
-    _validate_args(inst_type, program, bank)
-    key = (inst_type, program, bank)
+    _validate_args(inst_type, bank, program)
+    key = (inst_type, bank, program)
     instrument = _INSTRUMENTS.get(key)
     if instrument is None:
         if key not in _WARNINGS:
             _WARNINGS.append(key)
-            _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: program {program}, bank {bank}")
+            _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank}, program {program}")
     return instrument
 
 
-def has(inst_type: int, program: int, bank: int) -> bool:
+def has(inst_type: int, bank: int, program: int) -> bool:
     """Tests whether an Adlib instrument has been assigned based on the given type, program, and bank.
 
     :param inst_type: The instrument type.  MELODIC or PERCUSSION.
-    :param program: The program or patch number.
     :param bank: The instrument bank.
+    :param program: The program or patch number.
     :return: A boolean.
     """
-    _validate_args(inst_type, program, bank)
-    key = (inst_type, program, bank)
+    _validate_args(inst_type, bank, program)
+    key = (inst_type, bank, program)
     return key in _INSTRUMENTS
 
 
-def _validate_args(inst_type: int, program: int, bank: int):
+def _validate_args(inst_type: int, bank: int, program: int):
     """Validates the entry argument values."""
     if inst_type not in [MELODIC, PERCUSSION]:
         raise ValueError("inst_type must be 0 (MELODIC) or 1 (PERCUSSION).")
+    if bank < 0 or bank > 16383:
+        raise ValueError("bank must be between 0 and 16383 (inclusive).")
     if program < 0 or program > 127:
         raise ValueError("program must be between 0 and 127 (inclusive).")
-    if bank < 0 or bank > 65535:
-        raise ValueError("bank must be between 0 and 65535 (inclusive).")
 
 
 def get_name(inst_type: int, program: int) -> str:
     """Returns the instrument name as defined by the MIDI standard."""
-    _validate_args(inst_type, program)
+    _validate_args(inst_type, 0, program)
     if inst_type == MELODIC:
         return _MELODIC_NAMES[program]
     elif inst_type == PERCUSSION:
