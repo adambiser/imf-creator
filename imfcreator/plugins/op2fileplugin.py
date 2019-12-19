@@ -1,12 +1,12 @@
 import imfcreator.adlib as _adlib
 import imfcreator.instruments as _instruments
 import imfcreator.utils as _utils
-from . import plugin, InstrumentFileReader
+from . import plugin, InstrumentFile, InstrumentId
 from ._binary import u8, u16le, s16le
 
 
 @plugin
-class Op2FilePlugin(InstrumentFileReader):
+class Op2FilePlugin(InstrumentFile):
     """Read instruments from a DMX Sound Library file."""
     DESCRIPTION = "DMX Sound Library"
     _FILE_SIGNATURE = b"#OPL_II#"
@@ -23,20 +23,16 @@ class Op2FilePlugin(InstrumentFileReader):
     _FLAG_USE_SECONDARY_VOICE = 4
 
     @classmethod
-    def accept(cls, preview: bytes):
-        return preview[0:8] == Op2FilePlugin._FILE_SIGNATURE
+    def accept(cls, preview: bytes, file: str):
+        return preview[0:8] == Op2FilePlugin._FILE_SIGNATURE and _utils.get_file_size(file) == cls._FILE_SIZE
 
-    def _open(self):
-        if _utils.get_file_size(self.fp) != Op2FilePlugin._FILE_SIZE:
-            raise ValueError("Unexpected file size.")
-        if not Op2FilePlugin.accept(self.fp.read(8)):
-            raise ValueError("Unexpected file signature.")
+    def _load_file(self):
+        if not Op2FilePlugin.accept(self.fp.read(8), self.file):
+            raise ValueError("Unexpected file type.")
+        for index in range(Op2FilePlugin._ENTRY_COUNT):
+            self.instruments.update([self._get_instrument(index)])
 
-    @property
-    def instrument_count(self) -> int:
-        return Op2FilePlugin._ENTRY_COUNT
-
-    def get_instrument(self, index: int) -> (int, int, _adlib.AdlibInstrument, int):
+    def _get_instrument(self, index: int) -> (InstrumentId, _adlib.AdlibInstrument):
         entry_offset = Op2FilePlugin._ENTRY_START + index * Op2FilePlugin._ENTRY_SIZE
         name_offset = Op2FilePlugin._NAME_START + index * Op2FilePlugin._NAME_SIZE
         # Read entry and name from file.
@@ -59,7 +55,7 @@ class Op2FilePlugin(InstrumentFileReader):
         else:
             inst_type = _instruments.PERCUSSION
             program = index - Op2FilePlugin._FIRST_PERCUSSION_ENTRY + Op2FilePlugin._FIRST_PERCUSSION_PROGRAM
-        return inst_type, program, instrument
+        return InstrumentId(inst_type, program, 0), instrument
 
     @staticmethod
     def _read_voice(instrument, voice_number, data):

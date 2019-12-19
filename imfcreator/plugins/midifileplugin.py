@@ -1,11 +1,10 @@
 import logging as _logging
 import os as _os
 import struct as _struct
-import typing as _typing
 import imfcreator.midi as _midi
 import imfcreator.plugins._binary as _binary
 import imfcreator.utils as _utils
-from . import plugin, SongFileReader
+from . import MidiSongFile, plugin
 
 _HEADER_CHUNK_NAME = b"MThd"
 _HEADER_CHUNK_LENGTH = 6
@@ -19,19 +18,18 @@ def _u8(f):
 
 
 @plugin
-class MidiFileReader(SongFileReader):
+class MidiFile(MidiSongFile):
     """Reads a MIDI file."""
 
     def __init__(self, fp=None, filename=None):
-        self._events = None
         self._division = 0.0
         super().__init__(fp, filename)
 
     @classmethod
-    def accept(cls, preview: bytes) -> bool:
+    def accept(cls, preview: bytes, file: str) -> bool:
         return preview[0:4] == _HEADER_CHUNK_NAME and _binary.u32be(preview[4:8]) == _HEADER_CHUNK_LENGTH
 
-    def _open(self):
+    def _load_file(self):
         """Loads a MIDI file into the reader object."""
         chunk_name, chunk_length = self._read_chunk_header()
         if chunk_name != _HEADER_CHUNK_NAME:
@@ -43,14 +41,13 @@ class MidiFileReader(SongFileReader):
         if file_format not in (0, 1):
             raise ValueError(f"Unsupported MIDI file format: {file_format}")
         # Process remaining chunks.
-        self._events = []
         for track_number in range(track_count):
             chunk_name, chunk_length = self._read_chunk_header()
             if chunk_name != _TRACK_CHUNK_NAME:
                 _logging.info(f"Skipping unrecognized chunk: {chunk_name}.")
                 self.fp.seek(chunk_length, _os.SEEK_CUR)
             else:
-                self._events.extend(self._read_events(chunk_length, track_number))
+                self._read_events(chunk_length, track_number)
 
     def _read_chunk_header(self) -> (str, int):
         """Returns the chunk name and length at the current file position or None if at the end of the file."""
@@ -60,8 +57,8 @@ class MidiFileReader(SongFileReader):
         chunk_length = _binary.u32be(self.fp.read(4))
         return chunk_name, chunk_length
 
-    def _read_events(self, chunk_length, track_number) -> _typing.List[_midi.SongEvent]:
-        """Reads all of the events in a track"""
+    def _read_events(self, chunk_length, track_number):
+        """Reads all of the events in a track chunk."""
 
         def _read_var_length():
             """Reads a length using MIDI's variable length format."""
@@ -75,7 +72,6 @@ class MidiFileReader(SongFileReader):
         chunk_end = self.fp.tell() + chunk_length
         running_status = None
         event_time = 0
-        events = []
         while self.fp.tell() < chunk_end:
             # Read a MIDI event at the current file position.
             delta_time = _read_var_length()
@@ -202,24 +198,5 @@ class MidiFileReader(SongFileReader):
 
             # Create the event instance.
             event_type = _midi.EventType(event_type)
-            events.append(_midi.SongEvent(track_number, event_time / self._division, event_type, event_data, channel,
-                                          channel == _PERCUSSION_CHANNEL))
-        return events
-
-    @property
-    def event_count(self) -> int:
-        """Returns the number of events in the file.
-
-        :return: An integer greater than 0.
-        """
-        return len(self._events)
-
-    def get_event(self, index: int) -> _midi.SongEvent:
-        """Returns the song event for the given index.
-        Implementations must be able to retrieve events in an arbitrary order, not just file order.
-
-        :param index: The index of the event to return.
-        :return: A list of song events.
-        :exception ValueError: When file data is not recognized.
-        """
-        return self._events[index]
+            self.events.append(_midi.SongEvent(track_number, event_time / self._division, event_type, event_data,
+                                               channel, channel == _PERCUSSION_CHANNEL))
