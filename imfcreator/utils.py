@@ -7,9 +7,12 @@ def clamp(value, minimum, maximum):
     return max(minimum, min(value, maximum))
 
 
-def get_file_size(fp):
-    """Returns the file size for the given file object."""
-    return _os.fstat(fp.fileno()).st_size
+def get_file_size(f):
+    """Returns the file size for the given file object or file path."""
+    try:
+        return _os.fstat(f.fileno()).st_size
+    except AttributeError:
+        return _os.stat(f).st_size
 
 
 def get_file_extension(filename):
