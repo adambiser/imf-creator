@@ -81,7 +81,7 @@ class AdlibInstrument(object):
     This is based upon the instrument information in an OP2 file.
     """
 
-    def __init__(self, name=None, num_voices=1):
+    def __init__(self, name=None, num_voices: int = 1):
         self.name = name
         """The name of the instrument, if one is available."""
         self.use_given_note = False
