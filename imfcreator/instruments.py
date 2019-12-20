@@ -2,8 +2,11 @@
 
 This loads and stores instruments that the conversion process uses.
 
-Instruments are added using `add` and `add_file`.
+Instruments are added using `add`, `add_file`, or `update`.
 They are retrieved using `get`.
+
+Bank numbers should be MSB << 7 + LSB since the MSB and LSB values are limited to 0..127.
+
 Use `get_name` to get the instrument name
 """
 import logging as _logging
@@ -40,28 +43,30 @@ def add(inst_type: int, bank: int, program: int, adlib_instrument: _AdlibInstrum
     _INSTRUMENTS[InstrumentId(*key)] = adlib_instrument
 
 
-def update(instruments: _typing.Dict[InstrumentId, _AdlibInstrument]):
+def update(instruments: _typing.Dict[InstrumentId, _AdlibInstrument], bank_offset: int = 0):
     """Updates the instrument dictionary with another instrument dictionary.
 
     :param instruments: The new instrument dictionary.
+    :param bank_offset: Offset by which instrument banks are adjusted.
     """
     # _INSTRUMENTS.update(instruments)
     if instruments:
         for key, instrument in instruments.items():
-            add(key.instrument_type, key.bank, key.program, instrument)
+            add(key.instrument_type, key.bank + bank_offset, key.program, instrument)
         _logging.info(f"Total instruments loaded: {count()}")
 
 
-def add_file(f):
+def add_file(f, bank_offset: int = 0):
     """Adds all of the instruments in a file.
 
     :param f: A filename or file object.
+    :param bank_offset: Offset by which instrument banks are adjusted.
     """
     try:
         instrument_file = _InstrumentFile.load_file(f)
     except ValueError:
         instrument_file = _MidiSongFile.load_file(f)
-    update(instrument_file.instruments)
+    update(instrument_file.instruments, bank_offset)
 
 
 def count() -> int:
@@ -79,11 +84,19 @@ def get(inst_type: int, bank: int, program: int) -> _AdlibInstrument:
     """
     _validate_args(inst_type, bank, program)
     key = (inst_type, bank, program)
+    if bank > 0:
+        if key not in _INSTRUMENTS:
+            if key not in _WARNINGS:
+                _WARNINGS.append(key)
+                _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank:#06x}, "
+                                 f"program {program}.  Trying bank 0.")
+            bank = 0
+            key = (inst_type, 0, program)
     instrument = _INSTRUMENTS.get(key)
     if instrument is None:
         if key not in _WARNINGS:
             _WARNINGS.append(key)
-            _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank}, program {program}")
+            _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank:#06x}, program {program}")
     return instrument
 
 
