@@ -32,15 +32,18 @@ def main():
     # if not os.path.isfile("GENMIDI.OP2"):
     #     shutil.copy("genmidi/GENMIDI.OP2", "GENMIDI.OP2")
 
-    instruments.add_file("GENMIDI.OP2")
+    # instruments.add_file("GENMIDI.OP2")
+    instruments.add_file("test/apogee_xenophage.wopl")
     # reader = SongReader.open_file("test/test-pitchbend.mid")
     midi_song = MidiSongFile.load_file("test/Ecu_10_Bass_xg-hr.mid")
+    # Add any instruments located within the midi song file.
+    instruments.update(midi_song.instruments)
     # reader = SongReader.open_file("exclude/OUT1FM.mid")
     # reader = SongReader.open_file("test/testfmt0.mid")
     # reader = SongReader.open_file("test/testfmt1.mid")
     # reader = SongReader.open_file("test/test-velocity.mid")
     settings = {"title": "Hello"}
-    song = AdlibSongFile.convert_from(midi_song, "imf1", settings)
+    song = AdlibSongFile.convert_from(midi_song.events, "imf1", settings)
     song.save_file("output.wlf")
     # if data:
     #     with open("output.wlf", "wb") as f:
