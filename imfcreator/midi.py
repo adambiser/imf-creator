@@ -2,6 +2,17 @@ from enum import IntEnum
 from functools import total_ordering
 
 
+def calculate_msb_lsb(msb: int, lsb: int) -> int:
+    assert msb & ~0x7f == 0
+    assert lsb & ~0x7f == 0
+    return (msb << 7) + lsb
+
+
+def split_msb_lsb(value) -> (int, int):
+    assert value & ~0x3fff == 0
+    return value >> 7, value & 0x7f
+
+
 @total_ordering
 class SongEvent:
     """Represents a song event.
@@ -10,10 +21,11 @@ class SongEvent:
     The data dictionary will vary per event_type.  See EventType.
     """
 
-    def __init__(self, track: int, time: float, event_type: "EventType", data: dict = None, channel: int = None,
-                 is_percussion: bool = False):
+    def __init__(self, index: int, track: int, time: float, event_type: "EventType", data: dict = None,
+                 channel: int = None, is_percussion: bool = False):
         """Creates a song event.
 
+        :param index: The index of the event in the MIDI track (used when sorting).
         :param track: The track number for the event.
         :param time: The time of the event from the start of the song, in beats.
         :param event_type: The event type.
@@ -30,6 +42,7 @@ class SongEvent:
         if event_type == EventType.META and "meta_type" not in data:
             raise ValueError(f"{event_type} events must have a 'meta_type' data entry.")
         # Set fields.
+        self.index = index
         self.track = track
         self.time = time
         self.type = event_type
@@ -60,6 +73,8 @@ class SongEvent:
             return False
         if self.track != other.track:
             return False
+        if self.index != other.index:
+            return False
         return True
 
     def __lt__(self, other: "SongEvent"):
@@ -72,13 +87,17 @@ class SongEvent:
         elif _EVENT_TYPE_ORDER[self.type] > _EVENT_TYPE_ORDER[other.type]:
             return False
         # Non-channel events are "less than" channel events.
-        selfchannel = -1 if self.channel is None else self.channel
-        otherchannel = -1 if other.channel is None else other.channel
-        if selfchannel < otherchannel:
+        self_channel = -1 if self.channel is None else self.channel
+        other_channel = -1 if other.channel is None else other.channel
+        if self_channel < other_channel:
             return True
-        elif selfchannel > otherchannel:
+        elif self_channel > other_channel:
             return False
-        return self.track < other.track
+        if self.track < other.track:
+            return True
+        elif self.track > other.track:
+            return False
+        return self.index < other.index
 
 
 class EventType(IntEnum):
@@ -215,17 +234,24 @@ class ControllerType(IntEnum):
     SOFT_PEDAL_SWITCH = 67,  # On/Off switch. Lowers the volume of notes played.
     LEGATO_FOOTSWITCH = 68,  # On/Off switch. Turns Legato effect between two subsequent notes On or Off.
     HOLD_2_SWITCH = 69,  # On/Off switch.  Holds notes, but fades using their release param not pedal.  (see CC 64, 66)
-    SOUND_CONTROLLER_1 = 70,  # Usually controls the way a sound is produced. Default = Sound Variation.
-    SOUND_CONTROLLER_2 = 71,  # Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance
+    SOUND_CONTROLLER_1 = 70,  # Usually controls the way a sound is produced. Default = Sound Variation
+    SOUND_CONTROLLER_2 = 71,  # Allows shaping the Voltage Controlled Filter (VCF). Default = Timbre/Harmonic Intensity
     SOUND_CONTROLLER_3 = 72,  # Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time
     SOUND_CONTROLLER_4 = 73,  # Controls the “Attack’ of a sound.
-    SOUND_CONTROLLER_5 = 74,  # Controls VCFs cutoff frequency of the filter.
-    XG_BRIGHTNESS = SOUND_CONTROLLER_5
-    SOUND_CONTROLLER_6 = 75,
-    SOUND_CONTROLLER_7 = 76,
-    SOUND_CONTROLLER_8 = 77,
-    SOUND_CONTROLLER_9 = 78,
+    SOUND_CONTROLLER_5 = 74,  # Controls VCFs cutoff frequency of the filter.  Brightness
+    SOUND_CONTROLLER_6 = 75,  # Default: Decay Time
+    SOUND_CONTROLLER_7 = 76,  # Default: Vibrato Rate
+    SOUND_CONTROLLER_8 = 77,  # Default: Vibrato Depth
+    SOUND_CONTROLLER_9 = 78,  # Default: Vibrato Delay
     SOUND_CONTROLLER_10 = 79,
+    XG_FILTER_RESONANCE = SOUND_CONTROLLER_2
+    XG_RELEASE_TIME = SOUND_CONTROLLER_3
+    XG_ATTACK_TIME = SOUND_CONTROLLER_4
+    XG_BRIGHTNESS = SOUND_CONTROLLER_5
+    XG_DECAY_TIME = SOUND_CONTROLLER_6
+    XG_VIBRATO_RATE = SOUND_CONTROLLER_7
+    XG_VIBRATO_DEPTH = SOUND_CONTROLLER_8
+    XG_VIBRATO_DELAY = SOUND_CONTROLLER_9
     GENERAL_PURPOSE_5 = 80,  # Generic On/Off switch
     GENERAL_PURPOSE_6 = 81,  # Generic On/Off switch
     GENERAL_PURPOSE_7 = 82,  # Generic On/Off switch
