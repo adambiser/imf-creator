@@ -72,6 +72,7 @@ class MidiFile(MidiSongFile):
         chunk_end = self.fp.tell() + chunk_length
         running_status = None
         event_time = 0
+        event_index = 0
         while self.fp.tell() < chunk_end:
             # Read a MIDI event at the current file position.
             delta_time = _read_var_length()
@@ -189,7 +190,7 @@ class MidiFile(MidiSongFile):
                         "pressure": _u8(self.fp),
                     }
                 elif event_type == _midi.EventType.PITCH_BEND:
-                    value = (_u8(self.fp) + _u8(self.fp) * 0x80) - 0x2000
+                    value = (_u8(self.fp) + (_u8(self.fp) << 7)) - 0x2000
                     event_data = {
                         "value": _utils.clamp(value / float(0x1fff), -1.0, 1.0),
                     }
@@ -198,5 +199,6 @@ class MidiFile(MidiSongFile):
 
             # Create the event instance.
             event_type = _midi.EventType(event_type)
-            self.events.append(_midi.SongEvent(track_number, event_time / self._division, event_type, event_data,
-                                               channel, channel == _PERCUSSION_CHANNEL))
+            self.events.append(_midi.SongEvent(event_index, track_number, event_time / self._division, event_type,
+                                               event_data, channel, channel == _PERCUSSION_CHANNEL))
+            event_index += 1
