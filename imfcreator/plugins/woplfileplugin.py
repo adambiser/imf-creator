@@ -75,7 +75,6 @@ class WoplFilePlugin(InstrumentFile):
             inst_type = _instruments.MELODIC
         else:
             inst_type = _instruments.PERCUSSION
-        program = index % 128
         instrument = _adlib.AdlibInstrument(name=entry[0:32].decode('utf-8'), num_voices=2)
         instrument.note_offset[0] = s16be(entry[32:34]) - 12
         instrument.note_offset[1] = s16be(entry[34:36]) - 12
@@ -94,6 +93,7 @@ class WoplFilePlugin(InstrumentFile):
         WoplFilePlugin._read_voice(instrument, 1, u8(entry[41]), entry[52:62])
         bank_entry = self._get_bank_entry(index)
         bank = bank_entry.msb * 128 + bank_entry.lsb if bank_entry else 0
+        program = index % 128
         return InstrumentId(inst_type, bank, program), instrument
 
     def _get_bank_entry(self, index) -> _typing.Optional[_BANK_ENTRY]:
