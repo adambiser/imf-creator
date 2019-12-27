@@ -5,15 +5,9 @@ import typing as _typing
 import imfcreator.instruments as instruments
 import imfcreator.midi as _midi
 import imfcreator.utils as _utils
-from . import AdlibSongFile, FileTypeInfo, plugin
-from collections import namedtuple as _namedtuple
+from . import AdlibSongFile, FileTypeInfo, MidiSongFile, plugin
+from ._midiengine import ActiveNote, MidiEngine, MidiChannelInfo
 from imfcreator.adlib import *
-
-_ActiveNote = _namedtuple("_ActiveNote", ["note", "song_event"])
-
-_GM_DRUM_BANK = _midi.calculate_msb_lsb(120, 0)
-_XG_DRUM_BANK = _midi.calculate_msb_lsb(127, 0)
-_DRUM_BANKS = [_GM_DRUM_BANK, _XG_DRUM_BANK]
 
 
 @plugin
@@ -109,12 +103,12 @@ class ImfSong(AdlibSongFile):
             fp.write(b"\x00")
 
     @classmethod
-    def _convert_from(cls, events: _typing.Iterable[_midi.SongEvent], filetype: str,
-                      settings: _typing.Dict) -> "ImfSong":
+    def _convert_from(cls, midi_song: MidiSongFile, filetype: str, settings: _typing.Dict) -> "ImfSong":
         # Load settings.
-        song = ImfSong(filetype, **settings)
+        song = cls(filetype, **settings)
         # Set up variables.
-        midi_channels = [_MidiChannelInfo(ch) for ch in range(16)]
+        engine = MidiEngine(midi_song)
+        # midi_channels = [_MidiChannelInfo(ch) for ch in range(16)]
         imf_channels = [_ImfChannelInfo(ch) for ch in range(1, 9)]
         regs = [None] * 256
 
@@ -124,38 +118,20 @@ class ImfSong(AdlibSongFile):
         tempo_start_time = 0.0  # The time, in beats, at which the last tempo change occurred.
 
         # Define helper functions.
-        def set_tempo(bpm: float, event_time: float = 0):
+        # noinspection PyUnusedLocal
+        def on_tempo_change(event_time: float, bpm: float, track: int = 0):
             nonlocal ticks_per_beat, tempo_start_time
             ticks_per_beat = song.ticks * (60.0 / bpm)
             tempo_start_time = event_time
-
-        def calc_imf_ticks(value):
-            return int(ticks_per_beat * value)
 
         def add_delay(time, command_index: int):
             nonlocal last_command_ticks, song
             # To reduce rounding errors, calculate the ticks from the last tempo change and subtract the ticks at which
             # the last command took place.
-            ticks = calc_imf_ticks(time - tempo_start_time)
+            ticks = int(ticks_per_beat * (time - tempo_start_time))
             # noinspection PyProtectedMember
             song._commands[command_index] = song._commands[command_index][0:2] + (ticks - last_command_ticks,)
             last_command_ticks = ticks
-
-        def is_percussion_event(song_event: _midi.SongEvent) -> bool:
-            return song_event.is_percussion or midi_channels[song_event.channel].get_bank() in _DRUM_BANKS
-
-        # noinspection PyUnusedLocal
-        def find_imf_channel(instrument, note):
-            # Find a channel that is set to the given instrument and is not currently playing a note.
-            channel = next(filter(lambda ch: ch.instrument == instrument and ch.last_note is None, imf_channels), None)
-            if channel:
-                return channel
-            # Find a channel that isn't playing a note.
-            channel = next(filter(lambda ch: ch.last_note is None, imf_channels), None)
-            if channel:
-                return channel
-            # TODO Aggressive channel find.
-            return None
 
         def add_command(reg: int, value: int, delay: int = 0):
             """Adds a command to the song."""
@@ -171,6 +147,27 @@ class ImfSong(AdlibSongFile):
                 raise
             regs[reg] = value
             song._commands.append((reg, value, delay))
+
+        def add_commands(event_time: float, commands):
+            old_commands_length = len(song._commands)
+            # Now add the new commands
+            for command in commands:
+                add_command(*command)
+            if old_commands_length != len(song._commands):
+                add_delay(event_time, old_commands_length - 1)
+
+        # noinspection PyUnusedLocal
+        def find_imf_channel(instrument, note):
+            # Find a channel that is set to the given instrument and is not currently playing a note.
+            channel = next(filter(lambda ch: ch.instrument == instrument and ch.last_note is None, imf_channels), None)
+            if channel:
+                return channel
+            # Find a channel that isn't playing a note.
+            channel = next(filter(lambda ch: ch.last_note is None, imf_channels), None)
+            if channel:
+                return channel
+            # TODO Aggressive channel find.
+            return None
 
         def get_block_and_freq(note, scaled_pitch_bend):
             assert note < 128
@@ -209,65 +206,34 @@ class ImfSong(AdlibSongFile):
         def find_imf_channel_for_instrument_note(instrument, note):
             return next(filter(lambda ch: ch.instrument == instrument and ch.last_note == note, imf_channels), None)
 
-        def note_off(song_event: _midi.SongEvent):
-            instrument = get_event_instrument(song_event)
-            if instrument is None:
-                return None
-            commands = []
-            voice = 0
-            note = get_instrument_note(instrument, song_event, voice)
-            if not is_percussion_event(song_event):
-                midi_channel = midi_channels[song_event.channel]
-                match = next(filter(lambda note_info: note_info.song_event["note"] == song_event['note'],
-                                    midi_channel.active_notes), None)  # type: _ActiveNote
-                if match:
-                    note = match.note
-                    # inst_num = match["inst_num"]
-                    midi_channel.active_notes.remove(match)
-                else:
-                    raise ValueError(f"Tried to remove non-active note: track {song_event.track}, note {note}")
-            channel = find_imf_channel_for_instrument_note(instrument, note)
-            if channel:
-                channel.last_note = None
-                # block, freq = get_block_and_freq(event)
-                commands += [
-                    # (BLOCK_MSG | channel.number, KEY_OFF_MASK | (block << 2) | (freq >> 8)),
-                    # (BLOCK_MSG | channel.number, KEY_OFF_MASK),
-                    (BLOCK_MSG | channel.number, regs[BLOCK_MSG | channel.number] & ~KEY_ON_MASK),
-                    # Release notes quickly.
-                    # (SUSTAIN_RELEASE_MSG | MODULATORS[channel.number], 0xf),
-                    # (SUSTAIN_RELEASE_MSG | CARRIERS[channel.number], 0xf),
-                ]
-            # else:
-            #     print(f"Could not find note to shut off! inst: {inst_num}, note: {note}")
-            return commands
-
-        def get_event_instrument(song_event: _midi.SongEvent) -> AdlibInstrument:
-            midi_channel = midi_channels[song_event.channel]
-            bank = midi_channel.get_bank()
-            if is_percussion_event(song_event):
+        def get_event_instrument(channel: int, note: int = 0) -> AdlibInstrument:
+            midi_channel = engine.channels[channel]
+            bank = midi_channel.bank
+            if engine.is_percussion_channel(channel):
                 # _logging.debug(f"Searching for PERCUSSION instrument {event['note']}")
-                return instruments.get(instruments.PERCUSSION, bank, song_event["note"])
+                return instruments.get(instruments.PERCUSSION, bank, note)
             else:
                 inst_num = midi_channel.instrument
                 if inst_num is None:
-                    _logging.warning(f"No instrument assigned to channel {song_event.channel}, defaulting to 0.")
+                    _logging.warning(f"No instrument assigned to channel {channel}, defaulting to 0.")
                     midi_channel.instrument = 0
                     inst_num = 0
                 # _logging.debug(f"Searching for MELODIC instrument {inst_num}")
                 return instruments.get(instruments.MELODIC, bank, inst_num)
 
-        def get_instrument_note(instrument: AdlibInstrument, song_event: _midi.SongEvent, voice: int = 0):
-            note = song_event["note"]
+        def get_instrument_note(instrument: AdlibInstrument, note: int, voice: int = 0):
             if instrument.use_given_note:
                 note = instrument.given_note
             note += instrument.note_offset[voice]
             if note < 0 or note > 127:
-                _logging.error(f"Note out of range: {song_event}")
+                _logging.error(f"Note out of range: {note}")
                 note = 60
             return note
 
-        def get_volume_commands(channel, instrument, midi_channel: _MidiChannelInfo, note_velocity: int, voice=0):
+        def get_volume_commands(imf_channel: _ImfChannelInfo, instrument: AdlibInstrument,
+                                midi_channel: MidiChannelInfo, note_velocity: int, voice: int = 0):
+            # https://github.com/lantus/Strife/blob/master/i_oplmusic.c#L288
+            # https://github.com/chocolate-doom/chocolate-doom/blob/master/src/i_oplmusic.c#L285
             volume_table = [
                 0, 1, 3, 5, 6, 8, 10, 11,
                 13, 14, 16, 17, 19, 20, 22, 23,
@@ -286,185 +252,151 @@ class ImfSong(AdlibSongFile):
                 120, 121, 121, 122, 122, 123, 123, 123,
                 124, 124, 125, 125, 126, 126, 127, 127
             ]
-            midi_volume = (midi_channel.controllers[_midi.ControllerType.VOLUME_MSB]
-                           * midi_channel.controllers[_midi.ControllerType.EXPRESSION_MSB]
-                           * note_velocity) // 16129
-            if midi_volume > 127:
-                midi_volume = 127
-            midi_brightness = midi_channel.controllers[_midi.ControllerType.XG_BRIGHTNESS]
+            midi_volume = int(midi_channel.volume * midi_channel.expression * note_velocity)
+            # if midi_volume > 127:
+            #     midi_volume = 127
+            midi_brightness = midi_channel.get_controller_value(_midi.ControllerType.XG_BRIGHTNESS)
             midi_brightness = 127 if midi_brightness >= 64 else midi_brightness * 2
 
             def get_operator_volume(op_volume):
                 n = 0x3f - (op_volume & 0x3f)
-                # n = (n * volume_table[midi_volume]) >> 7
-                n = ((n * 2) * volume_table[midi_volume]) >> 8
+                volume = volume_table[midi_volume] // 2
+                n = (n * volume) >> 6
                 return 0x3f - n
 
             def get_operator_brightness(op_volume):
                 if midi_brightness == 127:
                     return op_volume & 0x3f
                 n = 0x3f - (op_volume & 0x3f)
-                # brightness = int(round(127 * _math.sqrt(midi_brightness / 127.0)) // 2)
-                # n = (n * brightness) >> 6
-                brightness = int(round(127.0 * _math.sqrt(float(midi_brightness) * (1.0 / 127.0))) / 2.0)
-                n = (n * brightness) // 0x3f
+                brightness = int(round(127 * _math.sqrt(midi_brightness / 127.0)) // 2)
+                n = (n * brightness) >> 6
                 return 0x3f - n
 
             # For AM, volume changes both modulator and carrier.
             # For FM, brightness changes modulator and volume only changes the carrier.
-            get_modulator_volume = get_operator_volume if instrument.feedback[voice] & 0x01 else get_operator_brightness
-            # if instrument.feedback[voice] & 0x01:
-            #     modulator_volume = get_modulator_volume(instrument.modulator[voice].output_level)
-            # else:
-            #     modulator_volume = instrument.modulator[voice].output_level & 0x3f
+            get_modulator_volume = get_operator_volume if instrument.feedback[voice] & 0x1 else get_operator_brightness
             modulator_volume = get_modulator_volume(instrument.modulator[voice].output_level)
             carrier_volume = get_operator_volume(instrument.carrier[voice].output_level)
             return [
                 (
-                    VOLUME_MSG | MODULATORS[channel.number],
+                    VOLUME_MSG | MODULATORS[imf_channel.number],
                     modulator_volume | (instrument.modulator[voice].key_scale_level << 6)
                 ),
                 (
-                    VOLUME_MSG | CARRIERS[channel.number],
+                    VOLUME_MSG | CARRIERS[imf_channel.number],
                     carrier_volume | (instrument.carrier[voice].key_scale_level << 6)
                 ),
             ]
 
-        def note_on(song_event: _midi.SongEvent):
-            instrument = get_event_instrument(song_event)
+        # noinspection PyUnusedLocal
+        def on_note_on(event_time: float, track: int, channel: int, note: int, velocity: int):
+            instrument = get_event_instrument(channel, note)
             if instrument is None:
-                return None
+                return
             voice = 0
-            midi_channel = midi_channels[song_event.channel]
-            note = get_instrument_note(instrument, song_event, voice)
-            if not is_percussion_event(song_event):
+            midi_channel = engine.channels[channel]
+            adjusted_note = get_instrument_note(instrument, note, voice)
+            if not engine.is_percussion_channel(channel):
                 # _logging.debug(f"Adding active note: {event['note']} -> {note}, channel {event.channel}")
-                midi_channel.active_notes.append(_ActiveNote(note, song_event))
-            commands = []
-            channel = find_imf_channel(instrument, note)
-            if channel:
+                midi_channel.active_notes.append(ActiveNote(note, velocity, adjusted_note))
+            imf_channel = find_imf_channel(instrument, adjusted_note)
+            if imf_channel:
+                commands = []
                 # Check for instrument change.
-                # instrument = instruments[inst_num]
-                if channel.instrument != instrument:
+                if imf_channel.instrument != instrument:
                     # Removed volume messages. Volume will initialize to OFF.
-                    commands += [cmd for cmd in instrument.get_regs(channel.number, voice) if
+                    commands += [cmd for cmd in instrument.get_regs(imf_channel.number, voice) if
                                  (cmd[0] & 0xf0) != VOLUME_MSG]
                     # commands += [
                     #     (VOLUME_MSG | MODULATORS[channel.number], 0x3f),
                     #     (VOLUME_MSG | CARRIERS[channel.number], 0x3f),
                     # ]
-                    # adlib_write_channel(0x20, slot,
-                    #                     (instr[6] & 1) ? (instr[7] | state): instr[0],
-                    #                                                          instr[7] | state);
-                    # }
-                    channel.instrument = instrument
-                channel.last_note = note
-                block, freq = get_block_and_freq(note, midi_channel.scaled_pitch_bend)
+                    imf_channel.instrument = instrument
+                imf_channel.last_note = adjusted_note
+                block, freq = get_block_and_freq(adjusted_note, midi_channel.scaled_pitch_bend)
                 # volume = calculate_volume(midi_channel, song_event["velocity"])
-                commands += get_volume_commands(channel, instrument, midi_channel, song_event["velocity"])
+                commands += get_volume_commands(imf_channel, instrument, midi_channel, velocity)
                 commands += [
-                    # (
-                    #     VOLUME_MSG | MODULATORS[channel.number],
-                    #     ((127 - volume) / 2) | instrument.modulator[voice].key_scale_level
-                    # ),
-                    # (
-                    #     VOLUME_MSG | CARRIERS[channel.number],
-                    #     ((127 - volume) / 2) | instrument.carrier[voice].key_scale_level
-                    # ),
-                    (FREQ_MSG | channel.number, freq & 0xff),
-                    (BLOCK_MSG | channel.number, KEY_ON_MASK | (block << 2) | (freq >> 8)),
+                    (FREQ_MSG | imf_channel.number, freq & 0xff),
+                    (BLOCK_MSG | imf_channel.number, KEY_ON_MASK | (block << 2) | (freq >> 8)),
                 ]
-            # else:
+                add_commands(event_time, commands)
+                # else:
             #     print(f"Could not find channel for note on! inst: {inst_num}, note: {note}")
-            return commands
+            # return commands
 
-        def pitch_bend(song_event: _midi.SongEvent):
+        # noinspection PyUnusedLocal
+        def on_note_off(event_time: float, track: int, channel: int, note: int, velocity: int):
+            instrument = get_event_instrument(channel, note)
+            if instrument is None:
+                return
+            voice = 0
+            adjusted_note = get_instrument_note(instrument, note, voice)
+            if not engine.is_percussion_channel(channel):
+                midi_channel = engine.channels[channel]
+                match = next(filter(lambda note_info: note_info.given_note == note,
+                                    midi_channel.active_notes), None)  # type: ActiveNote
+                if match:
+                    adjusted_note = match.adjusted_note
+                    # inst_num = match["inst_num"]
+                    midi_channel.active_notes.remove(match)
+                else:
+                    raise ValueError(f"Tried to remove non-active note: track {track}, note {adjusted_note}")
+            imf_channel = find_imf_channel_for_instrument_note(instrument, adjusted_note)
+            if imf_channel:
+                imf_channel.last_note = None
+                # block, freq = get_block_and_freq(event)
+                add_commands(event_time, [
+                    (BLOCK_MSG | imf_channel.number, regs[BLOCK_MSG | imf_channel.number] & ~KEY_ON_MASK),
+                ])
+            # else:
+            #     print(f"Could not find note to shut off! inst: {inst_num}, note: {note}")
+
+        # noinspection PyUnusedLocal
+        def on_pitch_bend(event_time: float, track: int, channel: int, value: float):
             # Can't pitch bend percussion.
-            if is_percussion_event(song_event):
-                return None
-            commands = []
-            amount = song_event["value"]  # This has a range of -1..1  # - event["value"] % pitch_bend_resolution
-            midi_channel = midi_channels[song_event.channel]
-            if midi_channel.pitch_bend != amount:
-                midi_channel.pitch_bend = amount
-                # Scale pitch bend to -1..1
-                scaled_pitch_bend = amount  # / -pitch_bend_range[0] if amount < 0 else amount / pitch_bend_range[1]
-                print(f"pitch bend: {scaled_pitch_bend}")
-                scaled_pitch_bend *= 2  # TODO Read from controller messages. 2 semi-tones is the default.
-                midi_channel.scaled_pitch_bend = scaled_pitch_bend
-                instrument = get_event_instrument(song_event)  # midi_channels[event.channel]["instrument"]
-                for note_info in midi_channel.active_notes:
-                    note = note_info.note
-                    channel = find_imf_channel_for_instrument_note(instrument, note)
-                    if channel:
-                        block, freq = get_block_and_freq(note, scaled_pitch_bend)
-                        commands += [
-                            (FREQ_MSG | channel.number, freq & 0xff),
-                            (BLOCK_MSG | channel.number, KEY_ON_MASK | (block << 2) | (freq >> 8)),
-                        ]
-                    else:
-                        _logging.warning(f"Could not find Adlib channel for channel {song_event.channel} note {note}.")
-            return commands
+            if engine.is_percussion_channel(channel):
+                return
+            midi_channel = engine.channels[channel]
+            pitch_bend = midi_channel.scaled_pitch_bend
+            instrument = get_event_instrument(channel)  # midi_channels[event.channel]["instrument"]
+            for note_info in midi_channel.active_notes:
+                note = note_info.adjusted_note
+                imf_channel = find_imf_channel_for_instrument_note(instrument, note)
+                if imf_channel:
+                    block, freq = get_block_and_freq(note, pitch_bend)
+                    add_commands(event_time, [
+                        (FREQ_MSG | imf_channel.number, freq & 0xff),
+                        (BLOCK_MSG | imf_channel.number, KEY_ON_MASK | (block << 2) | (freq >> 8)),
+                    ])
+                else:
+                    _logging.warning(f"Could not find Adlib channel for channel {channel} note {note}.")
 
-        def adjust_volume(song_event: _midi.SongEvent):
-            # Can't adjust volume of active percussion.
-            if song_event.is_percussion:
-                return None
-            commands = []
-            midi_channel = midi_channels[song_event.channel]
-            if midi_channel.active_notes:
-                instrument = get_event_instrument(song_event)
-                for note_info in midi_channel.active_notes:
-                    imf_channel = find_imf_channel_for_instrument_note(instrument, note_info.note)
-                    if imf_channel:
-                        commands += get_volume_commands(imf_channel, instrument, midi_channel,
-                                                        note_info.song_event["velocity"])
-            return commands
+        # noinspection PyUnusedLocal
+        def on_controller_change(event_time: float, track: int, channel: int, controller: _midi.ControllerType,
+                                 value: int):
+            if controller in (_midi.ControllerType.VOLUME_MSB,
+                              _midi.ControllerType.EXPRESSION_MSB,
+                              _midi.ControllerType.XG_BRIGHTNESS,
+                              ):
+                # Can't adjust volume of active percussion.
+                if engine.is_percussion_channel(channel):
+                    return
+                midi_channel = engine.channels[channel]
+                if midi_channel.active_notes:
+                    commands = []
+                    instrument = get_event_instrument(channel)
+                    for note_info in midi_channel.active_notes:
+                        imf_channel = find_imf_channel_for_instrument_note(instrument, note_info.adjusted_note)
+                        if imf_channel:
+                            commands += get_volume_commands(imf_channel, instrument, midi_channel, note_info.velocity)
+                    add_commands(event_time, commands)
 
-        def process_events():
-            for event in events:
-                # TODO Perform muting
-                # if mute_tracks:
-                #     if event.track in mute_tracks:
-                #         continue
-                # if mute_channels:
-                #     if event.channel in mute_channels:
-                #         continue
-                # Handle events.
-                commands = None  # list of (reg, value) tuples.
-                if event.type == _midi.EventType.NOTE_OFF or (
-                        event.type == _midi.EventType.NOTE_ON and event["velocity"] == 0):
-                    commands = note_off(event)
-                elif event.type == _midi.EventType.NOTE_ON:
-                    commands = note_on(event)
-                elif event.type == _midi.EventType.CONTROLLER_CHANGE:
-                    controller = event["controller"]  # type: _midi.ControllerType
-                    midi_channels[event.channel].controllers[controller] = event["value"]
-                    if controller in (_midi.ControllerType.VOLUME_MSB,
-                                      _midi.ControllerType.EXPRESSION_MSB,
-                                      _midi.ControllerType.XG_BRIGHTNESS,
-                                      ):
-                        commands = adjust_volume(event)
-                elif event.type == _midi.EventType.PITCH_BEND:
-                    commands = pitch_bend(event)
-                elif event.type == _midi.EventType.PROGRAM_CHANGE:
-                    midi_channels[event.channel].instrument = event["program"]
-                elif event.type == _midi.EventType.META and event["meta_type"] == _midi.MetaType.SET_TEMPO:
-                    set_tempo(float(event["bpm"]), event.time)
-                if commands:
-                    # TODO Filter out same-register commands on the same tick.
-                    old_commands_length = len(song._commands)
-                    # add_delay(event.time)
-                    # Now add the new commands
-                    for command in commands:
-                        add_command(*command)
-                    if old_commands_length != len(song._commands):
-                        add_delay(event.time, old_commands_length - 1)
-            # Add any remaining delay to the final command for wrap-around timing.
-            add_delay(max([event.time for event in events]), -1)
+        def on_end_of_song(event_time: float):
+            add_delay(event_time, -1)
 
         # Cycle MIDI events and convert to IMF commands.
-        set_tempo(120)  # Arbitrary default tempo if none is set by the song.
+        on_tempo_change(0.0, 120)  # Arbitrary default tempo if none is set by the song.
         # ticks = 0
         # pitch_bend_resolution = 0x200
         # pitch_bend_range = (-8192.0 - -8192 % -pitch_bend_resolution, 8191.0 - 8191 % pitch_bend_resolution)
@@ -473,94 +405,38 @@ class ImfSong(AdlibSongFile):
             (0xBD, 0, 0),
             (0x8, 0, 0),
         ]
-        process_events()
 
-        for mc in midi_channels:
+        # process_events()
+        engine.on_tempo_change = on_tempo_change
+        engine.on_note_on = on_note_on
+        engine.on_note_off = on_note_off
+        engine.on_pitch_bend = on_pitch_bend
+        engine.on_controller_change = on_controller_change
+        engine.on_end_of_song = on_end_of_song
+        engine.start()
+
+        for mc in engine.channels:
             if mc.active_notes:
-                print(f"midi track {mc.number} had open notes: {mc.active_notes}")
+                _logging.warning(f"midi track {mc.number} had open notes: {mc.active_notes}")
         for ch in imf_channels:
             if ch.last_note:
-                print(f"imf channel {ch.number} had open note: {ch.last_note}")
+                _logging.warning(f"imf channel {ch.number} had open note: {ch.last_note}")
+
+        # Remove commands that do nothing, ie: register value changes with no delay.
+        # temp_commands = []
+        # removed_commands = 0
+        # for index in range(len(song._commands)):
+        #     command = song._commands[index]
+        #     if command[2] == 0:
+        #         regs = [None] * 256
+        #     if regs[command[0]] is None:
+        #         regs[command[0]] = regs[command[1]]
+        #         temp_commands.append(command)
+        #     else:
+        #         removed_commands += 1
+        # _logging.debug(f"Removed {removed_commands} commands.")
 
         return song
-
-
-class _MidiChannelInfo:
-    PITCH_BEND_SENSITIVITY_RPN = _midi.calculate_msb_lsb(0, 0)
-    FINE_TUNING_RPN = _midi.calculate_msb_lsb(0, 1)
-    COARSE_TUNING_RPN = _midi.calculate_msb_lsb(0, 2)
-    TUNING_PROGRAM_SELECT_RPN = _midi.calculate_msb_lsb(0, 3)
-    TUNING_BANK_SELECT_RPN = _midi.calculate_msb_lsb(0, 4)
-    NULL_RPN = _midi.calculate_msb_lsb(127, 127)
-
-    def __init__(self, number):
-        self.number = number
-        self.instrument = None
-        self.active_notes = []  # type: _typing.List[_ActiveNote]
-        self.pitch_bend = 0
-        self.controllers = [0] * 128
-        # http://www.philrees.co.uk/nrpnq.htm
-        self.rpn = {
-            _MidiChannelInfo.PITCH_BEND_SENSITIVITY_RPN: [0, 0],  # MSB = semitones, LSB = cents
-            _MidiChannelInfo.FINE_TUNING_RPN: [0, 0],  # 8192 = Center/A440, 0 = 1 semitone down, 16383 = 1 semitone up
-            _MidiChannelInfo.COARSE_TUNING_RPN: [0, 0],  # MSB = semitones; 64 = center, LSB = unused
-            _MidiChannelInfo.TUNING_PROGRAM_SELECT_RPN: [0, 0],  # MIDI Tuning Standard.  Not widely implemented.
-            _MidiChannelInfo.TUNING_BANK_SELECT_RPN: [0, 0],  # MIDI Tuning Standard.  Not widely implemented.
-        }
-        # TODO Ignore NRPN for CC6 and 38
-        # self.pitch_bend_sensitivity = [0, 0]
-        self.reset_controllers()
-
-    def reset_controllers(self):
-        for x in range(len(self.controllers)):
-            self.controllers[x] = 0
-        self.controllers[_midi.ControllerType.VOLUME_MSB] = 100
-        self.controllers[_midi.ControllerType.XG_BRIGHTNESS] = 127
-        self.controllers[_midi.ControllerType.EXPRESSION_MSB] = 127
-        self.controllers[_midi.ControllerType.RPN_MSB] = 127
-        self.controllers[_midi.ControllerType.RPN_LSB] = 127
-        self.rpn[_MidiChannelInfo.PITCH_BEND_SENSITIVITY_RPN] = [2, 0]
-        self.rpn[_MidiChannelInfo.FINE_TUNING_RPN] = list(_midi.split_msb_lsb(8192))
-        self.rpn[_MidiChannelInfo.COARSE_TUNING_RPN][0] = 64
-
-    def _get_msb_lsb(self, msb_controller: _midi.ControllerType, lsb_controller: _midi.ControllerType):
-        assert msb_controller + 32 == lsb_controller
-        return _midi.calculate_msb_lsb(self.controllers[msb_controller], self.controllers[lsb_controller])
-
-    def get_bank(self):
-        return self._get_msb_lsb(_midi.ControllerType.BANK_SELECT_MSB, _midi.ControllerType.BANK_SELECT_LSB)
-
-    # BANK_SELECT_MSB = 0,  # Allows user to switch bank for patch selection. Program change used with Bank Select.
-    # MODULATION_WHEEL_MSB = 1,  # Generally controls a vibrato effect (pitch, loudness, brighness), depends on patch.
-    # BREATH_CONTROLLER_MSB = 2,  # Often used with aftertouch messages. Can be used for modulation as well.
-    # # 3 is undefined
-    # FOOT_CONTROLLER_MSB = 4,  # Often used with aftertouch messages. Values based on how the pedal is used.
-    # PORTAMENTO_TIME_MSB = 5,  # Controls portamento rate to slide between 2 notes played subsequently.
-    # DATA_ENTRY_MSB = 6,  # Controls Value for NRPN or RPN parameters.
-    # VOLUME_MSB = 7,  # Control the volume of the channel
-    # BALANCE_MSB = 8,  # Controls balance, generally for stereo patches.  0 = hard left, 64 = center, 127 = hard right
-    # # 9 is undefined
-    # PAN_MSB = 10,  # Controls panning, generally for mono patches.  0 = hard left, 64 = center, 127 = hard right
-    # EXPRESSION_MSB = 11,  # Expression is a percentage of volume (CC7).
-    # EFFECT_1_MSB = 12,  # Usually used to control a parameter of an effect within the synth/workstation.
-    # EFFECT_2_MSB = 13,  # Usually used to control a parameter of an effect within the synth/workstation.
-    # # 14-15 are undefined
-    # GENERAL_PURPOSE_1_MSB = 16,
-    # GENERAL_PURPOSE_2_MSB = 17,
-    # GENERAL_PURPOSE_3_MSB = 18,
-    # GENERAL_PURPOSE_4_MSB = 19,
-
-    def get_pitch_bend(self):
-        amount = self._get_msb_lsb(_midi.ControllerType.)
-
-    # def add_active_note(self):
-    #     pass
-    #
-    # def get_active_note(self):
-    #     pass
-    #
-    # def remove_active_note(self):
-    #     pass
 
 
 class _ImfChannelInfo:

@@ -93,7 +93,7 @@ class MidiFile(MidiSongFile):
             # Read event type data
             if event_type in [_midi.EventType.F0_SYSEX, _midi.EventType.F7_SYSEX]:
                 data_length = _read_var_length()
-                event_data = {"bytes": [_u8(self.fp) for _ in range(data_length)]}
+                event_data = {"data": [_u8(self.fp) for _ in range(data_length)]}
             elif event_type == _midi.EventType.META:
                 meta_type = _midi.MetaType(_u8(self.fp))
                 event_data = {"meta_type": meta_type}
@@ -127,9 +127,9 @@ class MidiFile(MidiSongFile):
                         raise ValueError("MetaType.SET_TEMPO events should have a data length of 3.")
                     speed = (_u8(self.fp) << 16) + (_u8(self.fp) << 8) + _u8(self.fp)
                     event_data.update({"bpm": 60000000 / speed})  # 60 seconds as microseconds
-                elif meta_type == _midi.MetaType.SMTPE_OFFSET:
+                elif meta_type == _midi.MetaType.SMPTE_OFFSET:
                     if data_length != 5:
-                        raise ValueError("MetaType.SMTPE_OFFSET events should have a data length of 5.")
+                        raise ValueError("MetaType.SMPTE_OFFSET events should have a data length of 5.")
                     event_data.update({
                         "hours": _u8(self.fp),
                         "minutes": _u8(self.fp),
@@ -156,7 +156,7 @@ class MidiFile(MidiSongFile):
                     event_data.update({"key": get_key_signature(*_struct.unpack("<bB", self.fp.read(2)))})
                 else:
                     if data_length:
-                        event_data.update({"bytes": [_u8(self.fp) for _ in range(data_length)]})
+                        event_data.update({"data": [_u8(self.fp) for _ in range(data_length)]})
             else:
                 running_status = event_type
                 channel = event_type & 0xf
@@ -190,9 +190,9 @@ class MidiFile(MidiSongFile):
                         "pressure": _u8(self.fp),
                     }
                 elif event_type == _midi.EventType.PITCH_BEND:
-                    value = (_u8(self.fp) + (_u8(self.fp) << 7)) - 0x2000
+                    value = (_u8(self.fp) + (_u8(self.fp) << 7))
                     event_data = {
-                        "value": _utils.clamp(value / float(0x1fff), -1.0, 1.0),
+                        "value": _midi.balance_14bit(value),
                     }
                 else:
                     raise ValueError(f"Unsupported MIDI event code: 0x{event_type:x}")
@@ -200,5 +200,5 @@ class MidiFile(MidiSongFile):
             # Create the event instance.
             event_type = _midi.EventType(event_type)
             self.events.append(_midi.SongEvent(event_index, track_number, event_time / self._division, event_type,
-                                               event_data, channel, channel == _PERCUSSION_CHANNEL))
+                                               event_data, channel))
             event_index += 1

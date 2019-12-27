@@ -2,9 +2,9 @@ import importlib as _importlib
 import logging as _logging
 import os as _os
 import typing as _typing
+import imfcreator.midi as _midi  # import SongEvent as _SongEvent
 from collections import namedtuple as _namedtuple
 from imfcreator.adlib import AdlibInstrument as _AdlibInstrument
-from imfcreator.midi import SongEvent as _SongEvent
 
 _PLUGIN_TYPES = []  # List of plugin type classes.
 FileTypeInfo = _namedtuple("FileTypeInfo", ["description", "default_extension"])
@@ -96,7 +96,7 @@ class MidiSongFile:
     """
 
     def __init__(self, fp, file: str):
-        self.events = []  # type: _typing.List[_SongEvent]
+        self.events = []  # type: _typing.List[_midi.SongEvent]
         self.instruments = {}  # type: _typing.Dict[int, _AdlibInstrument]
         self.title = None  # type: _typing.Optional[str]
         self.composer = None  # type: _typing.Optional[str]
@@ -201,11 +201,10 @@ class AdlibSongFile:
         raise NotImplementedError()
 
     @classmethod
-    def _convert_from(cls, events: _typing.Iterable[_SongEvent], filetype: str,
-                      settings: _typing.Dict) -> "AdlibSongFile":
-        """Converts song events to bytes data for the given file type.
+    def _convert_from(cls, midi_song: MidiSongFile, filetype: str, settings: _typing.Dict) -> "AdlibSongFile":
+        """Converts a MIDI song to bytes data for the given file type.
 
-        :param events: The events to be converted.
+        :param midi_song: The MIDI song to convert from.
         :param filetype: The file type to convert the events to.
         :param settings: Any additional settings for the conversion.
         :exception ValueError: When the given data is not valid.
@@ -242,19 +241,19 @@ class AdlibSongFile:
             self._save_file(fp, filename)
 
     @classmethod
-    def convert_from(cls, events: _typing.Iterable[_SongEvent], filetype: str,
+    def convert_from(cls, midi_song: MidiSongFile, filetype: str,
                      settings: _typing.Dict) -> "AdlibSongFile":
-        """Converts song events to bytes data for the given file type.
+        """Converts a MIDI song to bytes data for the given file type.
 
         Implementing classes muse override `_convert_from`.
 
-        :param events: The events to be converted.
+        :param midi_song: The MIDI song to convert from.
         :param filetype: The file type to convert the events to.
         :param settings: Any additional settings for the conversion.
         :exception ValueError: When the given data is not valid.
         :return: A bytes object containing the converted song data.
         """
-        return cls.get_filetype_class(filetype)._convert_from(events, filetype, settings)
+        return cls.get_filetype_class(filetype)._convert_from(midi_song, filetype, settings)
 
     @classmethod
     def get_filetype_class(cls, filetype: str) -> "AdlibSongFile":
