@@ -135,6 +135,20 @@ class AdlibInstrument(object):
         return True
 
 
+def _create_bit_property(var_name: str, bits: int, shift: int):
+    """Creates a property that is a bit-wise representation of a register.
+
+    The property performs bitshifting and value range checks.
+    """
+    max_value = 2 ** bits - 1
+    return property(
+        fget=lambda self: (getattr(self, var_name) >> shift) & max_value,
+        fset=lambda self, value: setattr(self, var_name,
+                                         (getattr(self, var_name) & ~(max_value << shift))
+                                         | (_check_range(value, max_value) << shift))
+    )
+
+
 class AdlibOperator(object):  # MUST inherit from object for properties to work.
     """Represents an adlib operator's register values."""
 
@@ -146,18 +160,19 @@ class AdlibOperator(object):  # MUST inherit from object for properties to work.
         self.sustain_release = 0  # ssssrrrr = sustain level, release rate
         self.waveform_select = 0  # -----www = waveform select
         self.set_regs(tvskm, ksl_output, attack_decay, sustain_release, waveform_select)
-        # Bit-level properties.
-        AdlibOperator.tremolo = _create_bit_property("tvskm", 1, 7)
-        AdlibOperator.vibrato = _create_bit_property("tvskm", 1, 6)
-        AdlibOperator.sustain = _create_bit_property("tvskm", 1, 5)
-        AdlibOperator.ksr = _create_bit_property("tvskm", 1, 4)
-        AdlibOperator.freq_mult = _create_bit_property("tvskm", 4, 0)
-        AdlibOperator.key_scale_level = _create_bit_property("ksl_output", 2, 6)
-        AdlibOperator.output_level = _create_bit_property("ksl_output", 6, 0)
-        AdlibOperator.attack_rate = _create_bit_property("attack_decay", 4, 4)
-        AdlibOperator.decay_rate = _create_bit_property("attack_decay", 4, 0)
-        AdlibOperator.sustain_level = _create_bit_property("sustain_release", 4, 4)
-        AdlibOperator.release_rate = _create_bit_property("sustain_release", 4, 0)
+
+    # Bit-level properties.
+    tremolo = _create_bit_property("tvskm", 1, 7)
+    vibrato = _create_bit_property("tvskm", 1, 6)
+    sustain = _create_bit_property("tvskm", 1, 5)
+    ksr = _create_bit_property("tvskm", 1, 4)
+    freq_mult = _create_bit_property("tvskm", 4, 0)
+    key_scale_level = _create_bit_property("ksl_output", 2, 6)
+    output_level = _create_bit_property("ksl_output", 6, 0)
+    attack_rate = _create_bit_property("attack_decay", 4, 4)
+    decay_rate = _create_bit_property("attack_decay", 4, 0)
+    sustain_level = _create_bit_property("sustain_release", 4, 4)
+    release_rate = _create_bit_property("sustain_release", 4, 0)
 
     def set_regs(self, tvskm: int, ksl_output: int, attack_decay: int, sustain_release: int,
                  waveform_select: int) -> None:
@@ -176,20 +191,6 @@ class AdlibOperator(object):  # MUST inherit from object for properties to work.
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-
-def _create_bit_property(var_name: str, bits: int, shift: int):
-    """Creates a property that is a bit-wise representation of a register.
-
-    The property performs bitshifting and value range checks.
-    """
-    max_value = 2 ** bits - 1
-    return property(
-        fget=lambda self: (getattr(self, var_name) >> shift) & max_value,
-        fset=lambda self, value: setattr(self, var_name,
-                                         (getattr(self, var_name) & ~(max_value << shift))
-                                         | (_check_range(value, max_value) << shift))
-    )
 
 
 def _check_range(value: int, max_value: int):
