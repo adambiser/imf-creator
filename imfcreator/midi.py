@@ -2,15 +2,15 @@ from enum import IntEnum
 from functools import total_ordering
 
 
-def calculate_msb_lsb(msb: int, lsb: int) -> int:
-    assert msb & ~0x7f == 0
-    assert lsb & ~0x7f == 0
-    return (msb << 7) + lsb
+def scale_14bit(value: int) -> float:
+    """Scales a 14-bit integer value to a float from 0.0 to 1.0."""
+    return value / 0x3fff
 
 
-def split_msb_lsb(value) -> (int, int):
-    assert value & ~0x3fff == 0
-    return value >> 7, value & 0x7f
+def balance_14bit(value: int) -> float:
+    """Scales a 14-bit integer value to a float from -1.0 to 1.0."""
+    value -= 0x2000
+    return value / (0x1fff if value >= 0 else 0x2000)
 
 
 @total_ordering
@@ -22,7 +22,7 @@ class SongEvent:
     """
 
     def __init__(self, index: int, track: int, time: float, event_type: "EventType", data: dict = None,
-                 channel: int = None, is_percussion: bool = False):
+                 channel: int = None):
         """Creates a song event.
 
         :param index: The index of the event in the MIDI track (used when sorting).
@@ -31,7 +31,6 @@ class SongEvent:
         :param event_type: The event type.
         :param data: A data dictionary for the event.  Contents will vary per event_type.
         :param channel: The event channel.  Must be None for sysex and meta event types and an integer for all others.
-        :param is_percussion: For channel events, sets whether the event is on a percussion channel.
         """
         # Validate arguments.
         if event_type in [EventType.F0_SYSEX, EventType.F7_SYSEX, EventType.META]:
@@ -48,14 +47,45 @@ class SongEvent:
         self.type = event_type
         self._data = data
         self.channel = channel
-        self.is_percussion = is_percussion
+
+    @property
+    def note(self) -> int:
+        return self._data["note"]
+
+    @property
+    def velocity(self) -> int:
+        return self._data["velocity"]
+
+    @property
+    def pressure(self) -> int:
+        return self._data["pressure"]
+
+    @property
+    def controller(self) -> "ControllerType":
+        return self._data["controller"]
+
+    @property
+    def value(self) -> int:
+        return self._data["value"]
+
+    @property
+    def program(self) -> int:
+        return self._data["program"]
+
+    @property
+    def bend_amount(self) -> float:
+        return self._data["value"]
+
+    @property
+    def data(self) -> bytes:
+        return self._data["data"]
 
     def __repr__(self):
-        text = f"{self.time:0.3f}: {str(self.type)}"
+        text = f"{self.time:0.3f}: {str(self.type)} - #{self.index}"
         if self.type == EventType.META:
             text += f" - {str(self._data['meta_type'])}"
         elif self.channel is not None:
-            text += f" - {self.channel}"
+            text += f" - ch {self.channel}"
         return f"[{text} - {self._data}]"
 
     def __getitem__(self, key):
@@ -111,8 +141,8 @@ class EventType(IntEnum):
      * PROGRAM_CHANGE: "program"
      * CHANNEL_KEY_PRESSURE: "pressure"
      * PITCH_BEND: "value" from -1.0 to 1.0 where 0 = center.  Bend by current bend amount.
-     * F0_SYSEX: "bytes"
-     * F7_SYSEX: "bytes"
+     * F0_SYSEX: "data"
+     * F7_SYSEX: "data"
      * META: See MetaType
     """
     NOTE_OFF = 0x80
@@ -160,10 +190,10 @@ class MetaType(IntEnum):
      * PORT: "port" 0..127
      * END_OF_TRACK: None
      * SET_TEMPO: "bpm"
-     * SMTPE_OFFSET: "hours", "minutes", "seconds", "frams", "fractional_frames"
+     * SMPTE_OFFSET: "hours", "minutes", "seconds", "frames", "fractional_frames"
      * TIME_SIGNATURE: "numerator", "denominator", "midi_clocks_per_metronome_tick", "number_of_32nd_notes_per_beat"
      * KEY_SIGNATURE: "key"  # should reflect major/minor, A vs Am
-     * SEQUENCER_SPECIFIC: "bytes"
+     * SEQUENCER_SPECIFIC: "data"
     """
     SEQUENCE_NUMBER = 0x00,
     TEXT_EVENT = 0x01,
@@ -179,7 +209,7 @@ class MetaType(IntEnum):
     PORT = 0x21,
     END_OF_TRACK = 0x2f,
     SET_TEMPO = 0x51,
-    SMTPE_OFFSET = 0x54,
+    SMPTE_OFFSET = 0x54,
     TIME_SIGNATURE = 0x58,
     KEY_SIGNATURE = 0x59,
     SEQUENCER_SPECIFIC = 0x7f,
@@ -208,7 +238,7 @@ class ControllerType(IntEnum):
     GENERAL_PURPOSE_4_MSB = 19,
     # 20-31 are undefined
     BANK_SELECT_LSB = 32,
-    MODULATION_LSB = 33,
+    MODULATION_WHEEL_LSB = 33,
     BREATH_CONTROLLER_LSB = 34,
     # 35 is undefined
     FOOT_CONTROLLER_LSB = 36,
