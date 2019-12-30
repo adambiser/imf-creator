@@ -16,7 +16,7 @@ class Signal:
     def _args_string(self):
         if len(self._arg_names) == 0:
             return "(no arguments)"
-        return ", ".join(sorted(self._arg_names))
+        return ", ".join([f"{a}: {self._args[a].__name__}" for a in sorted(self._arg_names)])
 
     def add_handler(self, listener: callable):
         args = inspect.getfullargspec(listener).args
@@ -31,7 +31,7 @@ class Signal:
 
     def trigger(self, *args, **kwargs):
         if args or set(kwargs.keys()) != self._arg_names:
-            raise ValueError(f"This Signal requires these arguments: {self._args_string()}")
+            raise ValueError(f"Signal trigger must have these arguments: {self._args_string()}")
         for listener in self._listeners:
             listener(**kwargs)
 
