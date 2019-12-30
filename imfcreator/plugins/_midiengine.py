@@ -1,14 +1,15 @@
 import logging as _logging
 import typing as _typing
 import imfcreator.midi as _midi
-from collections import namedtuple as _namedtuple
-# from functools import wraps
+from functools import wraps
 from . import MidiSongFile
 from imfcreator.signal import Signal
 
 
-ActiveNote = _namedtuple("ActiveNote", ["given_note", "velocity", "adjusted_note"])
-_CONTROLLER_HANDLERS = {}
+class ActiveNote(_typing.NamedTuple):
+    given_note: int
+    velocity: int
+    adjusted_note: int
 
 
 def calculate_msb_lsb(msb: int, lsb: int) -> int:
@@ -17,9 +18,12 @@ def calculate_msb_lsb(msb: int, lsb: int) -> int:
     return (msb << 7) + lsb
 
 
+_CONTROLLER_HANDLERS = {}
+
+
 def _controller_handler(*controllers):
     def _decorator(f):
-        # @wraps(f)
+        @wraps(f)
         def _wrapper(self, controller):
             return f(self, controller)
 
@@ -47,7 +51,6 @@ class MidiEngine:
      * Expression - `expression` - 0.0 to 1.0
     """
 
-    PERCUSSION_CHANNEL = 9
     GM_DRUM_BANK = calculate_msb_lsb(120, 0)
     XG_DRUM_BANK = calculate_msb_lsb(127, 0)
     _DRUM_BANKS = [GM_DRUM_BANK, XG_DRUM_BANK]
@@ -57,103 +60,78 @@ class MidiEngine:
         self._song = song
         self.channels = [MidiChannelInfo(ch) for ch in range(16)]
         # Channel event handlers.
-        self.on_note_on = Signal(event_time=float, track=int, channel=int, note=int, velocity=int)
-        self.on_note_off = Signal(event_time=float, track=int, channel=int, note=int, velocity=int)
-        self.on_polyphonic_key_pressure = Signal(event_time=float, track=int, channel=int, note=int, pressure=int)
-        self.on_controller_change = Signal(event_time=float, track=int, channel=int, controller=_midi.ControllerType,
-                                           value=int)
-        self.on_program_change = Signal(event_time=float, track=int, channel=int, program=int)
-        self.on_channel_key_pressure = Signal(event_time=float, track=int, channel=int, pressure=int)
-        self.on_pitch_bend = Signal(event_time=float, track=int, channel=int, value=float)
+        self.on_note_on = Signal(song_event=NoteEvent)
+        self.on_note_off = Signal(song_event=NoteEvent)
+        self.on_polyphonic_key_pressure = Signal(song_event=PolyphonicKeyPressureEvent)
+        self.on_controller_change = Signal(song_event=ControllerChangeEvent)
+        self.on_program_change = Signal(song_event=ProgramChangeEvent)
+        self.on_channel_key_pressure = Signal(song_event=ChannelKeyPressureEvent)
+        self.on_pitch_bend = Signal(song_event=PitchBendEvent)
         # Sysex event handlers.
-        self.on_f0_sysex = Signal(event_time=float, track=int, data=bytes)
-        self.on_f7_sysex = Signal(event_time=float, track=int, data=bytes)
+        self.on_sysex = Signal(song_event=SysexEvent)
         # Meta event handlers.
-        self.on_meta_sequence_number = Signal(event_time=float, track=int, number=int)
-        self.on_meta_text = Signal(event_time=float, track=int, meta_type=_midi.MetaType, text=bytes)
-        self.on_meta_channel_prefix = Signal(event_time=float, track=int, channel=int)
-        self.on_meta_port = Signal(event_time=float, track=int, port=int)
-        self.on_end_of_track = Signal(event_time=float, track=int)
-        self.on_tempo_change = Signal(event_time=float, track=int, bpm=float)
-        self.on_smpte_offset = Signal(event_time=float, track=int, hours=int, minutes=int, seconds=int, frames=int,
-                                      fractional_frames=int)
-        self.on_time_signature = Signal(event_time=float, track=int, numerator=int, denominator=int,
-                                        midi_clocks_per_metronome_tick=int, number_of_32nd_notes_per_beat=int)
-        self.on_key_signature = Signal(event_time=float, track=int, key=str)
-        self.on_sequencer_specific = Signal(event_time=float, track=int, data=bytes)
-        self.on_end_of_song = Signal(event_time=float)
+        self.on_meta_sequence_number = Signal(song_event=SequenceNumberMetaEvent)
+        self.on_meta_text = Signal(song_event=TextMetaEvent)
+        self.on_meta_channel_prefix = Signal(song_event=ChannelPrefixMetaEvent)
+        self.on_meta_port = Signal(song_event=PortMetaEvent)
+        self.on_end_of_track = Signal(song_event=EndOfTrackMetaEvent)
+        self.on_tempo_change = Signal(song_event=TempoChangeMetaEvent)
+        self.on_smpte_offset = Signal(song_event=SmpteOffsetMetaEvent)
+        self.on_time_signature = Signal(song_event=TimeSignatureMetaEvent)
+        self.on_key_signature = Signal(song_event=KeySignatureMetaEvent)
+        self.on_sequencer_specific = Signal(song_event=SequencerSpecificMetaEvent)
+        self.on_end_of_song = Signal(song_event=EndOfSongEvent)
 
     def is_percussion_channel(self, channel: int) -> bool:
-        return channel == MidiEngine.PERCUSSION_CHANNEL or self.channels[channel].bank in MidiEngine._DRUM_BANKS
+        return channel == self._song.PERCUSSION_CHANNEL or self.channels[channel].bank in MidiEngine._DRUM_BANKS
 
     def start(self):
         for song_event in self._song.events:
-            if song_event.type == _midi.EventType.NOTE_OFF or (
-                    song_event.type == _midi.EventType.NOTE_ON and song_event["velocity"] == 0):
-                self.on_note_off(event_time=song_event.time,
-                                 track=song_event.track,
-                                 channel=song_event.channel,
-                                 note=song_event["note"],
-                                 velocity=song_event["velocity"])
+            # Build event args.
+            event_args = {
+                "time": song_event.time,
+                "track": song_event.track,
+                "type": song_event.type,
+            }
+            if song_event.channel is not None:
+                event_args["channel"] = song_event.channel
+            event_args.update(song_event.data)
+            # Fire events
+            if song_event.type == _midi.EventType.NOTE_OFF:
+                self.on_note_off(song_event=NoteEvent(**event_args))
             elif song_event.type == _midi.EventType.NOTE_ON:
-                self.on_note_on(event_time=song_event.time,
-                                track=song_event.track,
-                                channel=song_event.channel,
-                                note=song_event["note"],
-                                velocity=song_event["velocity"])
+                if song_event["velocity"] == 0:
+                    self.on_note_off(song_event=NoteEvent(**event_args))
+                else:
+                    self.on_note_on(song_event=NoteEvent(**event_args))
             elif song_event.type == _midi.EventType.POLYPHONIC_KEY_PRESSURE:
-                self.on_polyphonic_key_pressure(event_time=song_event.time,
-                                                track=song_event.track,
-                                                channel=song_event.channel,
-                                                note=song_event["note"],
-                                                pressure=song_event["pressure"])
+                self.on_polyphonic_key_pressure(song_event=PolyphonicKeyPressureEvent(**event_args))
             elif song_event.type == _midi.EventType.CONTROLLER_CHANGE:
                 controller = _midi.ControllerType(song_event["controller"])  # type: _midi.ControllerType
                 value = song_event["value"]
                 self.channels[song_event.channel].set_controller_value(controller, value)
-                self.on_controller_change(event_time=song_event.time,
-                                          track=song_event.track,
-                                          channel=song_event.channel,
-                                          controller=controller,
-                                          value=value)
+                self.on_controller_change(song_event=ControllerChangeEvent(**event_args))
             elif song_event.type == _midi.EventType.PROGRAM_CHANGE:
                 # Only trigger the signal if the value changes.
                 if self.channels[song_event.channel].instrument != song_event["program"]:
                     self.channels[song_event.channel].instrument = song_event["program"]
-                    self.on_program_change(event_time=song_event.time,
-                                           track=song_event.track,
-                                           channel=song_event.channel,
-                                           program=song_event["program"])
+                    self.on_program_change(song_event=ProgramChangeEvent(**event_args))
             elif song_event.type == _midi.EventType.CHANNEL_KEY_PRESSURE:
                 # Only trigger the signal if the value changes.
                 if self.channels[song_event.channel].key_pressure != song_event["pressure"]:
                     self.channels[song_event.channel].key_pressure = song_event["pressure"]
-                    self.on_channel_key_pressure(event_time=song_event.time,
-                                                 track=song_event.track,
-                                                 channel=song_event.channel,
-                                                 pressure=song_event["pressure"])
+                    self.on_channel_key_pressure(song_event=ChannelKeyPressureEvent(**event_args))
             elif song_event.type == _midi.EventType.PITCH_BEND:
                 # Only trigger the signal if the value changes.
-                if self.channels[song_event.channel].pitch_bend != song_event["value"]:
-                    self.channels[song_event.channel].pitch_bend = song_event["value"]
-                    self.on_pitch_bend(event_time=song_event.time,
-                                       track=song_event.track,
-                                       channel=song_event.channel,
-                                       value=song_event["value"])
-            elif song_event.type == _midi.EventType.F0_SYSEX:
-                self.on_f0_sysex(event_time=song_event.time,
-                                 track=song_event.track,
-                                 data=song_event["data"])
-            elif song_event.type == _midi.EventType.F7_SYSEX:
-                self.on_f7_sysex(event_time=song_event.time,
-                                 track=song_event.track,
-                                 data=song_event["data"])
+                if self.channels[song_event.channel].pitch_bend != song_event["amount"]:
+                    self.channels[song_event.channel].pitch_bend = song_event["amount"]
+                    self.on_pitch_bend(song_event=PitchBendEvent(**event_args))
+            elif song_event.type in [_midi.EventType.F0_SYSEX, _midi.EventType.F7_SYSEX]:
+                self.on_sysex(song_event=SysexEvent(**event_args))
             elif song_event.type == _midi.EventType.META:
                 meta_type = song_event["meta_type"]
                 if meta_type == _midi.MetaType.SEQUENCE_NUMBER:
-                    self.on_meta_sequence_number(event_time=song_event.time,
-                                                 track=song_event.track,
-                                                 number=song_event["number"])
+                    self.on_meta_sequence_number(song_event=SequenceNumberMetaEvent(**event_args))
                 elif meta_type in [_midi.MetaType.TEXT_EVENT,
                                    _midi.MetaType.COPYRIGHT,
                                    _midi.MetaType.TRACK_NAME,
@@ -163,54 +141,29 @@ class MidiEngine:
                                    _midi.MetaType.CUE_POINT,
                                    _midi.MetaType.PROGRAM_NAME,
                                    _midi.MetaType.DEVICE_NAME]:
-                    self.on_meta_text(event_time=song_event.time,
-                                      track=song_event.track,
-                                      meta_type=meta_type,
-                                      text=song_event["text"])
+                    self.on_meta_text(song_event=TextMetaEvent(**event_args))
                 elif meta_type == _midi.MetaType.CHANNEL_PREFIX:
-                    self.on_meta_channel_prefix(event_time=song_event.time,
-                                                track=song_event.track,
-                                                channel=song_event["channel"])
+                    self.on_meta_channel_prefix(song_event=ChannelPrefixMetaEvent(**event_args))
                 elif meta_type == _midi.MetaType.PORT:
-                    self.on_meta_port(event_time=song_event.time,
-                                      track=song_event.track,
-                                      port=song_event["port"])
+                    self.on_meta_port(song_event=PortMetaEvent(**event_args))
                 elif meta_type == _midi.MetaType.END_OF_TRACK:
-                    self.on_end_of_track(event_time=song_event.time,
-                                         track=song_event.track)
+                    self.on_end_of_track(song_event=EndOfTrackMetaEvent(**event_args))
                 elif meta_type == _midi.MetaType.SET_TEMPO:
-                    self.on_tempo_change(event_time=song_event.time,
-                                         track=song_event.track,
-                                         bpm=song_event["bpm"])
+                    self.on_tempo_change(song_event=TempoChangeMetaEvent(**event_args))
                 elif meta_type == _midi.MetaType.SMPTE_OFFSET:
-                    self.on_smpte_offset(event_time=song_event.time,
-                                         track=song_event.track,
-                                         hours=song_event["hours"],
-                                         minutes=song_event["minutes"],
-                                         seconds=song_event["seconds"],
-                                         frames=song_event["frames"],
-                                         fractional_frames=song_event["fractional_frames"])
+                    self.on_smpte_offset(song_event=SmpteOffsetMetaEvent(**event_args))
                 elif meta_type == _midi.MetaType.TIME_SIGNATURE:
-                    self.on_time_signature(event_time=song_event.time,
-                                           track=song_event.track,
-                                           numerator=song_event["numerator"],
-                                           denominator=song_event["denominator"],
-                                           midi_clocks_per_metronome_tick=song_event["midi_clocks_per_metronome_tick"],
-                                           number_of_32nd_notes_per_beat=song_event["number_of_32nd_notes_per_beat"])
+                    self.on_time_signature(song_event=TimeSignatureMetaEvent(**event_args))
                 elif meta_type == _midi.MetaType.KEY_SIGNATURE:
-                    self.on_key_signature(event_time=song_event.time,
-                                          track=song_event.track,
-                                          key=song_event["key"])
+                    self.on_key_signature(song_event=KeySignatureMetaEvent(**event_args))
                 elif meta_type == _midi.MetaType.SEQUENCER_SPECIFIC:
-                    self.on_sequencer_specific(event_time=song_event.time,
-                                               track=song_event.track,
-                                               data=song_event["data"])
+                    self.on_sequencer_specific(song_event=SequencerSpecificMetaEvent(**event_args))
                 else:
                     _logging.error(f"Unexpected meta event type: {meta_type}")
             else:
                 _logging.error(f"Unexpected MIDI event type: {song_event.type}")
         last_event_time = max([event.time for event in self._song.events])
-        self.on_end_of_song(event_time=last_event_time)
+        self.on_end_of_song(song_event=EndOfSongEvent(time=last_event_time))
 
 
 class MidiChannelInfo:
@@ -412,11 +365,6 @@ class MidiChannelInfo:
             self.set_rpn_value(rpn,
                                self._controllers[_midi.ControllerType.DATA_ENTRY_MSB],
                                self._controllers[_midi.ControllerType.DATA_ENTRY_LSB])
-            # # byte_index = 0 if controller == _midi.ControllerType.DATA_ENTRY_MSB else 1
-            # if controller == _midi.ControllerType.DATA_ENTRY_MSB:
-            #     self.set_rpn_value(rpn, msb=value)
-            # else:
-            #     self.set_rpn_value(rpn, lsb=value)
 
     # noinspection PyUnusedLocal
     @_controller_handler(_midi.ControllerType.RESET_ALL_CONTROLLERS)
@@ -433,8 +381,7 @@ class MidiChannelInfo:
             assert cents < 100
             self._pitch_bend_sensitivity = semitones + cents / 100.0
         elif rpn in [MidiChannelInfo.FINE_TUNING_RPN, MidiChannelInfo.COARSE_TUNING_RPN]:
-            # semitones, cents = self.rpn[MidiChannelInfo.PITCH_BEND_SENSITIVITY_RPN]
-            fine_tuning = _midi.scale_14bit(calculate_msb_lsb(*self.rpn[MidiChannelInfo.FINE_TUNING_RPN]))
+            fine_tuning = _midi.balance_14bit(calculate_msb_lsb(*self.rpn[MidiChannelInfo.FINE_TUNING_RPN]))
             coarse_tuning = self.rpn[MidiChannelInfo.COARSE_TUNING_RPN][0] - 64
             self._tuning = coarse_tuning + fine_tuning
 
@@ -478,65 +425,150 @@ class MidiChannelInfo:
     #     pass
 
 
-def _event_property(name: str) -> property:
-    # noinspection PyProtectedMember
-    return property(lambda self: self._data.get(name))
+class NoteEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    channel: int
+    note: int
+    velocity: int
 
 
-class _ChildSongEvent(_midi.SongEvent):
-    @classmethod
-    def from_songevent(cls, e: _midi.SongEvent):
-        return cls(e.index, e.track, e.time, e.type, e._data, e.channel)
+class PolyphonicKeyPressureEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    channel: int
+    note: int
+    pressure: int
 
 
-class NoteEvent(_ChildSongEvent):
-    # note = property(lambda self: self._data.get("note"))  # type: int
-    # velocity = property(lambda self: self._data.get("velocity"))  # type: int
-    note = _event_property("note")  # type: int
-    # @property
-    # def note(self) -> int:
-    #     return self["note"]
-
-    @property
-    def velocity(self) -> int:
-        return self["velocity"]
+class ControllerChangeEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    channel: int
+    controller: _midi.ControllerType
+    value: int
 
 
-# class PressureEvent(_ChildSongEvent):
-#     @property
-#     def note(self) -> int:
-#         return self._data.get("note")
-#
-#     @property
-#     def pressure(self) -> int:
-#         return self["pressure"]
-#
-#
-# class ControllerChange(_ChildSongEvent):
-#     @property
-#     def controller(self) -> _midi.ControllerType:
-#         return self._data["controller"]
-#
-#     @property
-#     def value(self) -> int:
-#         return self["value"]
+class ProgramChangeEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    channel: int
+    program: int
 
-# self.on_program_change = Signal(event_time=float, track=int, channel=int, program=int)
-# self.on_channel_key_pressure = Signal(event_time=float, track=int, channel=int, pressure=int)
-# self.on_pitch_bend = Signal(event_time=float, track=int, channel=int, value=float)
-# # Sysex event handlers.
-# self.on_f0_sysex = Signal(event_time=float, track=int, data=bytes)
-# self.on_f7_sysex = Signal(event_time=float, track=int, data=bytes)
-# # Meta event handlers.
-# self.on_meta_sequence_number = Signal(event_time=float, track=int, number=int)
-# self.on_meta_text = Signal(event_time=float, track=int, meta_type=_midi.MetaType, text=bytes)
-# self.on_meta_channel_prefix = Signal(event_time=float, track=int, channel=int)
-# self.on_meta_port = Signal(event_time=float, track=int, port=int)
-# self.on_end_of_track = Signal(event_time=float, track=int)
-# self.on_tempo_change = Signal(event_time=float, track=int, bpm=float)
-# self.on_smpte_offset = Signal(event_time=float, track=int, hours=int, minutes=int, seconds=int, frames=int,
-#                               fractional_frames=int)
-# self.on_time_signature = Signal(event_time=float, track=int, numerator=int, denominator=int,
-#                                 midi_clocks_per_metronome_tick=int, number_of_32nd_notes_per_beat=int)
-# self.on_key_signature = Signal(event_time=float, track=int, key=str)
-# self.on_sequencer_specific = Signal(event_time=float, track=int, data=bytes)
+
+class ChannelKeyPressureEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    channel: int
+    pressure: int
+
+
+class PitchBendEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    channel: int
+    amount: float
+
+
+class SysexEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    data: bytes
+
+
+class SequenceNumberMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    number: int
+
+
+class TextMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    text: str
+
+
+class ChannelPrefixMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    channel: int
+
+
+class PortMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    port: int
+
+
+class EndOfTrackMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+
+
+class TempoChangeMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    bpm: float
+
+
+class SmpteOffsetMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    hours: int
+    minutes: int
+    seconds: int
+    frames: int
+    fractional_frames: int
+
+
+class TimeSignatureMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    numerator: int
+    denominator: int
+    midi_clocks_per_metronome_tick: int
+    number_of_32nd_notes_per_beat: int
+
+
+class KeySignatureMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    sharps_flats: int
+    major_minor: int
+
+
+class SequencerSpecificMetaEvent(_typing.NamedTuple):
+    time: float
+    track: int
+    type: _midi.EventType
+    meta_type: _midi.MetaType
+    data: bytes
+
+
+class EndOfSongEvent(_typing.NamedTuple):
+    time: float
