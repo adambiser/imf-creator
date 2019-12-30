@@ -1,3 +1,4 @@
+import typing as _typing
 from enum import IntEnum
 from functools import total_ordering
 
@@ -13,10 +14,17 @@ def balance_14bit(value: int) -> float:
     return value / (0x1fff if value >= 0 else 0x2000)
 
 
+def get_key_signature_text(sharps_flats: int, major_minor: int):
+    keys = ["Cb", "Gb", "Db", "Ab", "Eb", "Bb", "F",
+            "C", "G", "D", "A", "E", "B", "F#",
+            "C#", "G#", "D#", "A#"]
+    return keys[sharps_flats + 7 + major_minor * 3] + "m" * major_minor
+
+
 @total_ordering
 class SongEvent:
     """Represents a song event.
-    This is pretty much just a MIDI event and song readers should convert their file format's events to match MIDI.
+    This is just a MIDI event and song readers should convert their file format's events to use this.
 
     The data dictionary will vary per event_type.  See EventType.
     """
@@ -45,54 +53,22 @@ class SongEvent:
         self.track = track
         self.time = time
         self.type = event_type
-        self._data = data
-        self.channel = channel
-
-    @property
-    def note(self) -> int:
-        return self._data["note"]
-
-    @property
-    def velocity(self) -> int:
-        return self._data["velocity"]
-
-    @property
-    def pressure(self) -> int:
-        return self._data["pressure"]
-
-    @property
-    def controller(self) -> "ControllerType":
-        return self._data["controller"]
-
-    @property
-    def value(self) -> int:
-        return self._data["value"]
-
-    @property
-    def program(self) -> int:
-        return self._data["program"]
-
-    @property
-    def bend_amount(self) -> float:
-        return self._data["value"]
-
-    @property
-    def data(self) -> bytes:
-        return self._data["data"]
+        self.data = data
+        self.channel = channel  # _typing.Optional[int]
 
     def __repr__(self):
         text = f"{self.time:0.3f}: {str(self.type)} - #{self.index}"
         if self.type == EventType.META:
-            text += f" - {str(self._data['meta_type'])}"
+            text += f" - {str(self.data['meta_type'])}"
         elif self.channel is not None:
             text += f" - ch {self.channel}"
-        return f"[{text} - {self._data}]"
+        return f"[{text} - {self.data}]"
 
     def __getitem__(self, key):
-        return self._data[key]
+        return self.data[key]
 
     def __setitem__(self, key, value):
-        self._data[key] = value
+        self.data[key] = value
 
     def __eq__(self, other: "SongEvent"):
         if self.time != other.time:
@@ -140,7 +116,7 @@ class EventType(IntEnum):
      * CONTROLLER_CHANGE: "controller", "value"
      * PROGRAM_CHANGE: "program"
      * CHANNEL_KEY_PRESSURE: "pressure"
-     * PITCH_BEND: "value" from -1.0 to 1.0 where 0 = center.  Bend by current bend amount.
+     * PITCH_BEND: "amount" from -1.0 to 1.0 where 0 = center.  Scale to the channel's bend sensitivity.
      * F0_SYSEX: "data"
      * F7_SYSEX: "data"
      * META: See MetaType
@@ -192,7 +168,7 @@ class MetaType(IntEnum):
      * SET_TEMPO: "bpm"
      * SMPTE_OFFSET: "hours", "minutes", "seconds", "frames", "fractional_frames"
      * TIME_SIGNATURE: "numerator", "denominator", "midi_clocks_per_metronome_tick", "number_of_32nd_notes_per_beat"
-     * KEY_SIGNATURE: "key"  # should reflect major/minor, A vs Am
+     * KEY_SIGNATURE: "sharps_flats", "major_minor"
      * SEQUENCER_SPECIFIC: "data"
     """
     SEQUENCE_NUMBER = 0x00,

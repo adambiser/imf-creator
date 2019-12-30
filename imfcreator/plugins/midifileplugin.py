@@ -3,7 +3,6 @@ import os as _os
 import struct as _struct
 import imfcreator.midi as _midi
 import imfcreator.plugins._binary as _binary
-import imfcreator.utils as _utils
 from . import MidiSongFile, plugin
 
 _HEADER_CHUNK_NAME = b"MThd"
@@ -57,7 +56,7 @@ class MidiFile(MidiSongFile):
         chunk_length = _binary.u32be(self.fp.read(4))
         return chunk_name, chunk_length
 
-    def _read_events(self, chunk_length, track_number):
+    def _read_events(self, chunk_length: int, track_number: int):
         """Reads all of the events in a track chunk."""
 
         def _read_var_length():
@@ -147,13 +146,13 @@ class MidiFile(MidiSongFile):
                         "number_of_32nd_notes_per_beat": _u8(self.fp),  # almost always 8
                     })
                 elif meta_type == _midi.MetaType.KEY_SIGNATURE:
-                    def get_key_signature(sharps_flats, major_minor):
-                        keys = ["Cb", "Gb", "Db", "Ab", "Eb", "Bb", "F",
-                                "C", "G", "D", "A", "E", "B", "F#",
-                                "C#", "G#", "D#", "A#"]
-                        return keys[sharps_flats + 7 + major_minor * 3] + "m" * major_minor
-
-                    event_data.update({"key": get_key_signature(*_struct.unpack("<bB", self.fp.read(2)))})
+                    if data_length != 2:
+                        raise ValueError("MetaType.KEY_SIGNATURE events should have a data length of 2.")
+                    sharps_flats, major_minor = _struct.unpack("<bB", self.fp.read(2))
+                    event_data.update({
+                        "sharps_flats": sharps_flats,
+                        "major_minor": major_minor
+                    })
                 else:
                     if data_length:
                         event_data.update({"data": [_u8(self.fp) for _ in range(data_length)]})
@@ -192,11 +191,10 @@ class MidiFile(MidiSongFile):
                 elif event_type == _midi.EventType.PITCH_BEND:
                     value = (_u8(self.fp) + (_u8(self.fp) << 7))
                     event_data = {
-                        "value": _midi.balance_14bit(value),
+                        "amount": _midi.balance_14bit(value),
                     }
                 else:
                     raise ValueError(f"Unsupported MIDI event code: 0x{event_type:x}")
-
             # Create the event instance.
             event_type = _midi.EventType(event_type)
             self.events.append(_midi.SongEvent(event_index, track_number, event_time / self._division, event_type,
