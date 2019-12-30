@@ -94,6 +94,7 @@ class MidiSongFile:
 
     Implementing classes should populate `self.events` during `_load_file`.
     """
+    PERCUSSION_CHANNEL = 9
 
     def __init__(self, fp, file: str):
         self.events = []  # type: _typing.List[_midi.SongEvent]
@@ -110,10 +111,6 @@ class MidiSongFile:
         finally:
             del self.fp
 
-    # def __iter__(self):
-    #     for song_event in self.events:
-    #         yield song_event
-
     @classmethod
     def accept(cls, preview: bytes, path: str) -> bool:
         """Checks the preview bytes and/or filename to see whether this class might be able to open the given file.
@@ -129,8 +126,10 @@ class MidiSongFile:
         raise NotImplementedError()
 
     def sort(self):
-        """Sorts the song events into chronological order."""
-        self.events = sorted([_ for _ in self.events])
+        """Sorts the song events into chronological order.  Also reassigns event indices."""
+        self.events = sorted([_ for _ in self.events])  # type: _typing.List[_midi.SongEvent]
+        for index in range(len(self.events)):
+            self.events[index].index = index
 
     @classmethod
     def load_file(cls, file: str) -> "MidiSongFile":
