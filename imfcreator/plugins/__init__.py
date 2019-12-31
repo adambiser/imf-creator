@@ -94,9 +94,11 @@ class MidiSongFile:
 
     Implementing classes should populate `self.events` during `_load_file`.
     """
-    PERCUSSION_CHANNEL = 9
 
-    def __init__(self, fp, file: str):
+    PERCUSSION_CHANNEL = 9
+    DEFAULT_PITCH_BEND_SCALE = 2.0
+
+    def __init__(self, fp: _typing.IO, file: str):
         self.events = []  # type: _typing.List[_midi.SongEvent]
         self.instruments = {}  # type: _typing.Dict[int, _AdlibInstrument]
         self.title = None  # type: _typing.Optional[str]
