@@ -345,7 +345,7 @@ class ImfSong(AdlibSongFile):
                     # inst_num = match["inst_num"]
                     midi_channel.active_notes.remove(match)
                 else:
-                    raise ValueError(f"Tried to remove non-active note: track {song_event.track}, note {adjusted_note}")
+                    _logging.error(f"Tried to remove non-active note: track {song_event.track}, note {adjusted_note}")
             imf_channel = find_imf_channel_for_instrument_note(instrument, adjusted_note)
             if imf_channel:
                 imf_channel.last_note = None
