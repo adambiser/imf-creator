@@ -58,7 +58,7 @@ class MidiEngine:
     def __init__(self, song: MidiSongFile):
         song.sort()
         self._song = song
-        self.channels = [MidiChannelInfo(ch) for ch in range(16)]
+        self.channels = [MidiChannelInfo(ch, song) for ch in range(16)]
         # Channel event handlers.
         self.on_note_on = Signal(song_event=NoteEvent)
         self.on_note_off = Signal(song_event=NoteEvent)
@@ -177,7 +177,7 @@ class MidiChannelInfo:
     TUNING_BANK_SELECT_RPN = (0, 4)
     NULL_RPN = (127, 127)
 
-    def __init__(self, number):
+    def __init__(self, number, song: MidiSongFile):
         self.number = number
         # Set by the MidiEngine.
         self.instrument = None
@@ -187,6 +187,7 @@ class MidiChannelInfo:
         # Controller value cache.
         self._controllers = [0] * 128
         self._in_rpn_data = None
+        self._default_pitch_bend_msb = song.DEFAULT_PITCH_BEND_SCALE
         # http://www.philrees.co.uk/nrpnq.htm
         # Values are [MSB, LSB]
         self.rpn = {
@@ -237,7 +238,7 @@ class MidiChannelInfo:
         self.set_controller_value(_midi.ControllerType.RPN_LSB, 127)
         self.set_controller_value(_midi.ControllerType.NRPN_MSB, 127)
         self.set_controller_value(_midi.ControllerType.NRPN_LSB, 127)
-        self.set_rpn_value(MidiChannelInfo.PITCH_BEND_SENSITIVITY_RPN, 2, 0)  # 2 semitones, 0 cents
+        self.set_rpn_value(MidiChannelInfo.PITCH_BEND_SENSITIVITY_RPN, self._default_pitch_bend_msb, 0)  # semi, cents
         self.set_rpn_value(MidiChannelInfo.FINE_TUNING_RPN, 64, 0)  # Center/A440
         self.set_rpn_value(MidiChannelInfo.COARSE_TUNING_RPN, 64, 0)  # center
 
