@@ -43,11 +43,11 @@ class SongEvent:
         # Validate arguments.
         if event_type in [EventType.F0_SYSEX, EventType.F7_SYSEX, EventType.META]:
             if channel is not None:
-                raise ValueError(f"Channel must be None for {event_type} events.")
+                raise ValueError(f"Channel must be None for {str(event_type)} events.")
         elif channel is None or type(channel) is not int:
-            raise ValueError(f"Channel must be an integer for {event_type} events.")
+            raise ValueError(f"Channel must be an integer for {str(event_type)} events.")
         if event_type == EventType.META and "meta_type" not in data:
-            raise ValueError(f"{event_type} events must have a 'meta_type' data entry.")
+            raise ValueError(f"{str(event_type)} events must have a 'meta_type' data entry.")
         # Set fields.
         self.index = index
         self.track = track
@@ -269,6 +269,11 @@ class ControllerType(IntEnum):
     EFFECTS_3_DEPTH = 93,  # Usually controls chorus amount
     EFFECTS_4_DEPTH = 94,  # Usually controls detune amount
     EFFECTS_5_DEPTH = 95,  # Usually controls phaser amount
+    REVERB_DEPTH = EFFECTS_1_DEPTH
+    TREMELO_DEPTH = EFFECTS_2_DEPTH
+    CHORUS_DEPTH = EFFECTS_3_DEPTH
+    DETUNE_DEPTH = EFFECTS_4_DEPTH
+    PHASER_DEPTH = EFFECTS_5_DEPTH
     DATA_INCREMENT = 96,  # Usually used to increment data for RPN and NRPN messages.
     DATA_DECREMENT = 97,  # Usually used to decrement data for RPN and NRPN messages.
     NRPN_LSB = 98,  # For controllers 6, 38, 96, and 97 it selects the NRPN parameter.
