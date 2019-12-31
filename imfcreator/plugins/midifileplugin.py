@@ -4,6 +4,7 @@ import struct as _struct
 import imfcreator.midi as _midi
 import imfcreator.plugins._binary as _binary
 from . import MidiSongFile, plugin
+from ._songbuilder import SongBuilder as _SongBuilder
 
 _HEADER_CHUNK_NAME = b"MThd"
 _HEADER_CHUNK_LENGTH = 6
@@ -58,24 +59,12 @@ class MidiFile(MidiSongFile):
 
     def _read_events(self, chunk_length: int, track_number: int):
         """Reads all of the events in a track chunk."""
-
-        def _read_var_length():
-            """Reads a length using MIDI's variable length format."""
-            length = 0
-            b = _u8(self.fp)
-            while b & 0x80:
-                length = length * 0x80 + (b & 0x7f)
-                b = _u8(self.fp)
-            return length * 0x80 + b
-
-        chunk_end = self.fp.tell() + chunk_length
+        builder = _SongBuilder(self._division, track_number)
         running_status = None
-        event_time = 0
-        event_index = 0
+        chunk_end = self.fp.tell() + chunk_length
         while self.fp.tell() < chunk_end:
             # Read a MIDI event at the current file position.
-            delta_time = _read_var_length()
-            event_time += delta_time
+            builder.add_time(_binary.read_midi_var_length(self.fp))
             # Read the event type.
             event_type = _u8(self.fp)
             # Check for running status.
@@ -91,18 +80,16 @@ class MidiFile(MidiSongFile):
             channel = None
             # Read event type data
             if event_type in [_midi.EventType.F0_SYSEX, _midi.EventType.F7_SYSEX]:
-                data_length = _read_var_length()
-                event_data = {"data": [_u8(self.fp) for _ in range(data_length)]}
+                data_length = _binary.read_midi_var_length(self.fp)
+                builder.add_sysex_data(event_type, self.fp.read(data_length))
             elif event_type == _midi.EventType.META:
                 meta_type = _midi.MetaType(_u8(self.fp))
-                event_data = {"meta_type": meta_type}
-                data_length = _read_var_length()
+                # event_data = {"meta_type": meta_type}
+                data_length = _binary.read_midi_var_length(self.fp)
                 if meta_type == _midi.MetaType.SEQUENCE_NUMBER:
                     if data_length != 2:
                         raise ValueError("MetaType.SEQUENCE_NUMBER events should have a data length of 2.")
-                    event_data.update({
-                        "number": _binary.u16be(self.fp.read(2))
-                    })
+                    builder.add_meta_sequence_number(_binary.u16be(self.fp.read(2)))
                 elif meta_type in [_midi.MetaType.TEXT_EVENT,
                                    _midi.MetaType.COPYRIGHT,
                                    _midi.MetaType.TRACK_NAME,
@@ -112,91 +99,63 @@ class MidiFile(MidiSongFile):
                                    _midi.MetaType.CUE_POINT,
                                    _midi.MetaType.PROGRAM_NAME,
                                    _midi.MetaType.DEVICE_NAME]:
-                    event_data.update({"text": self.fp.read(data_length)})
+                    builder.add_meta_text_event(meta_type, self.fp.read(data_length))
                 elif meta_type == _midi.MetaType.CHANNEL_PREFIX:
                     if data_length != 1:
                         raise ValueError("MetaType.CHANNEL_PREFIX events should have a data length of 1.")
-                    event_data.update({"channel": _u8(self.fp)})
+                    builder.add_meta_channel_prefix(_u8(self.fp))
                 elif meta_type == _midi.MetaType.PORT:
                     if data_length != 1:
                         raise ValueError("MetaType.PORT events should have a data length of 1.")
-                    event_data.update({"port": _u8(self.fp)})
+                    builder.add_meta_port(_u8(self.fp))
                 elif meta_type == _midi.MetaType.SET_TEMPO:
                     if data_length != 3:
                         raise ValueError("MetaType.SET_TEMPO events should have a data length of 3.")
                     speed = (_u8(self.fp) << 16) + (_u8(self.fp) << 8) + _u8(self.fp)
-                    event_data.update({"bpm": 60000000 / speed})  # 60 seconds as microseconds
+                    builder.set_tempo(60000000 / speed)  # 60 seconds as microseconds
                 elif meta_type == _midi.MetaType.SMPTE_OFFSET:
                     if data_length != 5:
                         raise ValueError("MetaType.SMPTE_OFFSET events should have a data length of 5.")
-                    event_data.update({
-                        "hours": _u8(self.fp),
-                        "minutes": _u8(self.fp),
-                        "seconds": _u8(self.fp),
-                        "frames": _u8(self.fp),
-                        "fractional_frames": _u8(self.fp),
-                    })
+                    builder.add_meta_smpte_offset(hours=_u8(self.fp),
+                                                  minutes=_u8(self.fp),
+                                                  seconds=_u8(self.fp),
+                                                  frames=_u8(self.fp),
+                                                  fractional_frames=_u8(self.fp))
                 elif meta_type == _midi.MetaType.TIME_SIGNATURE:
                     if data_length != 4:
                         raise ValueError("MetaType.TIME_SIGNATURE events should have a data length of 4.")
-                    event_data.update({
-                        "numerator": _u8(self.fp),
-                        "denominator": 2 ** _u8(self.fp),  # given in powers of 2.
-                        "midi_clocks_per_metronome_tick": _u8(self.fp),
-                        "number_of_32nd_notes_per_beat": _u8(self.fp),  # almost always 8
-                    })
+                    builder.set_time_signature(numerator=_u8(self.fp),
+                                               denominator=2 ** _u8(self.fp),  # given in powers of 2.
+                                               midi_clocks_per_metronome_tick=_u8(self.fp),
+                                               number_of_32nd_notes_per_beat=_u8(self.fp))  # almost always 8
                 elif meta_type == _midi.MetaType.KEY_SIGNATURE:
                     if data_length != 2:
                         raise ValueError("MetaType.KEY_SIGNATURE events should have a data length of 2.")
                     sharps_flats, major_minor = _struct.unpack("<bB", self.fp.read(2))
-                    event_data.update({
-                        "sharps_flats": sharps_flats,
-                        "major_minor": major_minor
-                    })
+                    builder.set_key_signqture(sharps_flats, major_minor)
                 else:
-                    if data_length:
-                        event_data.update({"data": [_u8(self.fp) for _ in range(data_length)]})
+                    builder.add_meta_event(meta_type, {"data": self.fp.read(data_length)} if data_length else None)
             else:
                 running_status = event_type
                 channel = event_type & 0xf
                 event_type &= 0xf0
                 if event_type == _midi.EventType.NOTE_OFF:
-                    event_data = {
-                        "note": _u8(self.fp),
-                        "velocity": _u8(self.fp),
-                    }
+                    builder.note_off(channel, note=_u8(self.fp), velocity=_u8(self.fp))
                 elif event_type == _midi.EventType.NOTE_ON:
-                    event_data = {
-                        "note": _u8(self.fp),
-                        "velocity": _u8(self.fp),
-                    }
+                    builder.note_on(channel, note=_u8(self.fp), velocity=_u8(self.fp))
                 elif event_type == _midi.EventType.POLYPHONIC_KEY_PRESSURE:
-                    event_data = {
-                        "note": _u8(self.fp),
-                        "pressure": _u8(self.fp),
-                    }
+                    builder.change_polyphonic_key_pressure(channel, note=_u8(self.fp), pressure=_u8(self.fp))
                 elif event_type == _midi.EventType.CONTROLLER_CHANGE:
-                    event_data = {
-                        "controller": _midi.ControllerType(_u8(self.fp)),
-                        "value": _u8(self.fp),
-                    }
+                    builder.change_controller(channel,
+                                              controller=_midi.ControllerType(_u8(self.fp)),
+                                              value=_u8(self.fp))
                 elif event_type == _midi.EventType.PROGRAM_CHANGE:
-                    event_data = {
-                        "program": _u8(self.fp),
-                    }
+                    builder.set_instrument(channel, program=_u8(self.fp))
                 elif event_type == _midi.EventType.CHANNEL_KEY_PRESSURE:
-                    event_data = {
-                        "pressure": _u8(self.fp),
-                    }
+                    builder.set_channel_key_pressure(channel, pressure=_u8(self.fp))
                 elif event_type == _midi.EventType.PITCH_BEND:
                     value = (_u8(self.fp) + (_u8(self.fp) << 7))
-                    event_data = {
-                        "amount": _midi.balance_14bit(value),
-                    }
+                    builder.pitch_bend(channel, amount=_midi.balance_14bit(value))
                 else:
                     raise ValueError(f"Unsupported MIDI event code: 0x{event_type:x}")
-            # Create the event instance.
-            event_type = _midi.EventType(event_type)
-            self.events.append(_midi.SongEvent(event_index, track_number, event_time / self._division, event_type,
-                                               event_data, channel))
-            event_index += 1
+        self.events.extend(builder.events)
