@@ -1,5 +1,6 @@
 """Utility methods for unpacking byte data."""
 import struct as _struct
+import typing as _typing
 
 
 def u8(c):
@@ -57,3 +58,12 @@ def s32be(c):
     """Read a signed big-endian 32-bit integer."""
     return _struct.unpack(">i", c)[0]
 
+
+def read_midi_var_length(fp: _typing.IO):
+    """Reads a length using MIDI's variable length format."""
+    length = 0
+    b = u8(fp.read(1))
+    while b & 0x80:
+        length = length * 0x80 + (b & 0x7f)
+        b = u8(fp.read(1))
+    return length * 0x80 + b
