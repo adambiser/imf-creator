@@ -1,11 +1,8 @@
-import logging as _logging
-import os as _os
-import struct as _struct
-import typing as _typing
 import imfcreator.midi as _midi
 import imfcreator.plugins._binary as _binary
 from enum import IntEnum as _IntEnum
 from . import MidiSongFile, plugin
+from ._songbuilder import SongBuilder as _SongBuilder
 
 _SIGNATURE = b"MUS\x1a"
 
@@ -83,164 +80,76 @@ class MusFile(MidiSongFile):
     def _read_song_data(self, song_offset: int, song_length: int):
         """Reads all of the events in a track chunk."""
 
-        def _read_var_length():
-            """Reads a length using MIDI's variable length format."""
-            length = 0
-            b = _u8(self.fp)
-            while b & 0x80:
-                length = length * 0x80 + (b & 0x7f)
-                b = _u8(self.fp)
-            return length * 0x80 + b
-
         channel_volume = [127] * 16  # Start full volume.
         playback_rate = 140.0  # TODO 70.0 for Raptor.
 
-        self.events.append(_midi.SongEvent(len(self.events), 0, 0, _midi.EventType.META, data={
-            "meta_type": _midi.MetaType.SET_TEMPO,
-            "bpm": 60.0,
-        }))
+        builder = _SongBuilder(playback_rate)
+        builder.set_tempo(60.0)
 
         self.fp.seek(song_offset)
         song_end = song_offset + song_length
-        event_time = 0
         while self.fp.tell() < song_end:
-            event_data = {}  # type: dict
             data_byte = _u8(self.fp)
             has_delay = (data_byte & 0x80)
             event_type = (data_byte & 0x70) >> 4
             channel = data_byte & 0x0f
-            midi_event_type = 0
-            # print(has_delay, event_type, channel)
+            # Process the event.
             if event_type == EventType.RELEASE_NOTE:
                 note_number = _u8(self.fp)
-                # Convert to MIDI
-                midi_event_type = _midi.EventType.NOTE_OFF
-                event_data = {
-                    "note": note_number,
-                    "velocity": 127,
-                }
+                builder.note_off(channel, note_number, 127)
             elif event_type == EventType.PLAY_NOTE:
                 data_byte = _u8(self.fp)
                 note_number = data_byte & 0x7f
                 if data_byte & 0x80:
                     channel_volume[channel] = _u8(self.fp)
-                # Convert to MIDI
-                midi_event_type = _midi.EventType.NOTE_ON
-                event_data = {
-                    "note": note_number,
-                    "velocity": channel_volume[channel],
-                }
+                builder.note_on(channel, note_number, channel_volume[channel])
             elif event_type == EventType.PITCH_BEND:
                 amount = _binary.u8(self.fp.read(1)) - 0x80
                 amount = amount / (128.0 if amount < 0 else 127.0)
-                midi_event_type = _midi.EventType.PITCH_BEND
-                event_data = {"amount" : amount}
+                builder.pitch_bend(channel, amount)
             elif event_type == EventType.SYSTEM:
                 system_controller = _u8(self.fp)
                 if system_controller == SystemEventType.ALL_SOUNDS_OFF:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.ALL_SOUND_OFF,
-                        "value": 0
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.ALL_SOUND_OFF, 0)
                 elif system_controller == SystemEventType.ALL_NOTES_OFF:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.ALL_NOTES_OFF,
-                        "value": 0
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.ALL_NOTES_OFF, 0)
                 elif system_controller == SystemEventType.MONO:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.MONOPHONIC_MODE,
-                        "value": 0
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.MONOPHONIC_MODE, 0)
                 elif system_controller == SystemEventType.POLY:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.POLYPHONIC_MODE,
-                        "value": 0
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.POLYPHONIC_MODE, 0)
                 elif system_controller == SystemEventType.RESET:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.RESET_ALL_CONTROLLERS,
-                        "value": 0
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.RESET_ALL_CONTROLLERS, 0)
             elif event_type == EventType.CONTROLLER:
                 controller = _u8(self.fp)
-                value = _u8(self.fp) & 0x7f
+                value = _u8(self.fp)
                 if controller == ControllerType.CHANGE_INSTRUMENT:
-                    if channel != MusFile.PERCUSSION_CHANNEL:
-                        midi_event_type = _midi.EventType.PROGRAM_CHANGE
-                        event_data = {"program": value}
+                    builder.set_instrument(channel, value)
                 elif controller == ControllerType.BANK_SELECT:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.BANK_SELECT_MSB,
-                        "value": value
-                    }
+                    builder.select_bank(channel, value)
                 elif controller == ControllerType.MODULATION:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.MODULATION_WHEEL_MSB,
-                        "value": value
-                    }
+                    builder.set_modulation_wheel(channel, value)
                 elif controller == ControllerType.VOLUME:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.VOLUME_MSB,
-                        "value": value
-                    }
+                    builder.set_volume(channel, value)
                 elif controller == ControllerType.PAN:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.PAN_MSB,
-                        "value": value
-                    }
+                    builder.set_pan(channel, value)
                 elif controller == ControllerType.EXPRESSION:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.EXPRESSION_MSB,
-                        "value": value
-                    }
+                    builder.set_expression(channel, value)
                 elif controller == ControllerType.REVERB_DEPTH:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.REVERB_DEPTH,
-                        "value": value
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.REVERB_DEPTH, value)
                 elif controller == ControllerType.CHORUS_DEPTH:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.CHORUS_DEPTH,
-                        "value": value
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.CHORUS_DEPTH, value)
                 elif controller == ControllerType.SUSTAIN_PEDAL:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.SUSTAIN_PEDAL_SWITCH,
-                        "value": value
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.SUSTAIN_PEDAL_SWITCH, value)
                 elif controller == ControllerType.SOFT_PEDAL:
-                    midi_event_type = _midi.EventType.CONTROLLER_CHANGE
-                    event_data = {
-                        "controller": _midi.ControllerType.SOFT_PEDAL_SWITCH,
-                        "value": value
-                    }
+                    builder.change_controller(channel, _midi.ControllerType.SOFT_PEDAL_SWITCH, value)
             elif event_type == EventType.END_OF_MEASURE:
+                builder.add_marker("End of measure")
                 pass
             elif event_type == EventType.FINISH:
-                midi_event_type = _midi.EventType.META
-                event_data = {"meta_type": _midi.MetaType.END_OF_TRACK}
-                channel = None
+                builder.add_end_of_track()
+                break
             elif event_type == EventType.UNUSED:
                 self.fp.read(1)
-            if midi_event_type:
-                midi_event_type = _midi.EventType(midi_event_type)
-                self.events.append(_midi.SongEvent(len(self.events), 0, event_time / float(playback_rate),
-                                                   midi_event_type, event_data, channel))
-            if event_type == EventType.FINISH:
-                break
             if has_delay:
-                event_time += _read_var_length()
+                builder.add_time(_binary.read_midi_var_length(self.fp))
+        self.events = builder.events
