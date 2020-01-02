@@ -50,7 +50,7 @@ class ImfSong(AdlibSongFile):
         return len(self._commands)
 
     @classmethod
-    def _get_filetypes(cls) -> _typing.Dict[str, str]:
+    def _get_filetypes(cls) -> _typing.Dict[str, FileTypeInfo]:
         return {
             "imf0": FileTypeInfo("IMF Type 0", "imf"),
             "imf1": FileTypeInfo("IMF Type 1", "wlf"),
