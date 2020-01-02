@@ -222,7 +222,13 @@ class AdlibSongFile:
         :exception ValueError: When the given data is not valid.
         :return: A bytes object containing the converted song data.
         """
-        return cls.get_filetype_class(filetype)._convert_from(midi_song, filetype, settings)
+        filetype_class = cls.get_filetype_class(filetype)
+        valid_settings = filetype_class._get_settings().keys()
+        for setting in settings:
+            if setting not in valid_settings:
+                raise ValueError(f"Unexpected setting: {setting}.  Valid settings are: {', '.join(valid_settings)}")
+        # Validate settings.
+        return filetype_class._convert_from(midi_song, filetype, settings)
 
     @classmethod
     def get_filetype_class(cls, filetype: str) -> "AdlibSongFile":
