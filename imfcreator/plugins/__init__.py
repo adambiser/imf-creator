@@ -6,9 +6,10 @@ import imfcreator.midi as _midi  # import SongEvent as _SongEvent
 from collections import namedtuple as _namedtuple
 from imfcreator.adlib import AdlibInstrument as _AdlibInstrument
 
-_PLUGIN_TYPES = []  # List of plugin type classes.
 FileTypeInfo = _namedtuple("FileTypeInfo", ["description", "default_extension"])
 InstrumentId = _namedtuple("InstrumentId", ["instrument_type", "bank", "program"])
+_PLUGIN_TYPES = []  # List of plugin type classes.
+_OUTPUT_FILE_TYPES = {}  # type: _typing.Dict[str, FileTypeInfo]  #
 
 
 def _plugin_type(cls):
@@ -160,10 +161,9 @@ class AdlibSongFile:
 
     Interacts with the song player.
     """
-    _FILE_TYPES = {}  # type: _typing.Dict[str, str]
 
     @classmethod
-    def _get_filetypes(cls) -> _typing.Dict[str, str]:
+    def _get_filetypes(cls) -> _typing.Dict[str, FileTypeInfo]:
         """A dictionary keyed by file type with the descriptions as the value.
         File types should be unique among ALL writer plugins.
         """
@@ -184,15 +184,6 @@ class AdlibSongFile:
         """
         raise NotImplementedError()
 
-    # @classmethod
-    # def _open_file(cls, fp, filename) -> "AdlibSongFile":
-    #     """Loads a song from the given file object.
-    #
-    #     :param fp: A file object opened with "rb" mode.
-    #     :param filename: The filename.
-    #     """
-    #     raise NotImplementedError()
-
     def _save_file(self, fp, filename):
         """Saves the song data to the given file object.
 
@@ -212,29 +203,6 @@ class AdlibSongFile:
         :return: A bytes object containing the converted song data.
         """
         raise NotImplementedError()
-
-    # @classmethod
-    # def open_file(cls, filename) -> "AdlibSongFile":
-    #     """Loads a song from the given file object.
-    #
-    #     Implementing classes must override `_open_file`.
-    #     """
-    #     with open(filename, "rb") as fp:
-    #         preview = fp.read(32)
-    #         for subclass in cls._PLUGINS:  # type: _typing.Type[AdlibSongFile]
-    #             _logging.debug(f'Testing accept for "{filename}" using {subclass.__name__}.')
-    #             if subclass.accept(preview, filename):
-    #                 try:
-    #                     _logging.debug(f'Attempting to load "{filename}" using {subclass.__name__}.')
-    #                     # Reset the file position for each attempt.
-    #                     fp.seek(0)
-    #                     song = subclass._open_file(fp, filename)
-    #                     # The instance now owns the fp.
-    #                     _logging.info(f'Loaded "{filename}" using {subclass.__name__}.')
-    #                     return song
-    #                 except (ValueError, IOError, OSError) as ex:
-    #                     _logging.error(f'Error while loading "{filename}" using {subclass.__name__}: {ex}')
-    #     raise ValueError(f'Could not determine file type for "{filename}".')
 
     def save_file(self, filename):
         """Saves the file data to the given file object."""
@@ -275,16 +243,16 @@ class AdlibSongFile:
                 raise ValueError(f"Text must be alphanumeric only.  Invalid characters: {invalid_chars}")
 
         # Process _filetypes
-        for filetype, desc in cls._get_filetypes().items():
+        for filetype, info in cls._get_filetypes().items():
             # filetypes can only be alphanumeric.
             validate_name(filetype)
             # filetypes must be unique across all plugins
-            if filetype in cls._FILE_TYPES:
+            if filetype in _OUTPUT_FILE_TYPES:
                 raise ValueError(f"A plugin for filetype {filetype} already exists.  "
-                                 f"Existing: {cls._FILE_TYPES[filetype].__name__}, "
+                                 f"Existing: {_OUTPUT_FILE_TYPES[filetype].__name__}, "
                                  f"Current: {cls.__name__}")
             _logging.debug(f"Registering filetype: {filetype} -> {cls.__name__}")
-            cls._FILE_TYPES[filetype] = desc
+            _OUTPUT_FILE_TYPES[filetype] = info
         # Validate setting names.
         for name in cls._get_settings().keys():
             validate_name(name)
