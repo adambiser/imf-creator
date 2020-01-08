@@ -378,9 +378,9 @@ class MidiChannelInfo:
         if lsb is not None:
             self.rpn[rpn][1] = lsb
         if rpn == MidiChannelInfo.PITCH_BEND_SENSITIVITY_RPN:
+            # NOTE: The MIDI specs calls the LSB "cents", but 127 = 100 cents
             semitones, cents = self.rpn[MidiChannelInfo.PITCH_BEND_SENSITIVITY_RPN]
-            assert cents < 100
-            self._pitch_bend_sensitivity = semitones + cents / 100.0
+            self._pitch_bend_sensitivity = semitones + cents / 127.0
         elif rpn in [MidiChannelInfo.FINE_TUNING_RPN, MidiChannelInfo.COARSE_TUNING_RPN]:
             fine_tuning = _midi.balance_14bit(calculate_msb_lsb(*self.rpn[MidiChannelInfo.FINE_TUNING_RPN]))
             coarse_tuning = self.rpn[MidiChannelInfo.COARSE_TUNING_RPN][0] - 64
