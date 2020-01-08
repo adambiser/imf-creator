@@ -1,7 +1,6 @@
 import imfcreator.instruments as instruments
 from imfcreator.mainapplication import MainApplication
 from imfcreator.plugins import MidiSongFile, AdlibSongFile
-from imfcreator.plugins._midiengine import MidiEngine
 
 
 def open_ui(song):
@@ -33,7 +32,7 @@ def main():
     # if not os.path.isfile("GENMIDI.OP2"):
     #     shutil.copy("genmidi/GENMIDI.OP2", "GENMIDI.OP2")
 
-    # instruments.add_file("GENMIDI.OP2")
+    # instruments.add_file("exclude/GENMIDI.OP2")
     instruments.add_file("test/apogee_xenophage.wopl")
     # filename = "test/test-pitchbend.mid"
     # filename = "exclude/OUT1FM.mid"
@@ -41,19 +40,17 @@ def main():
     # filename = "test/testfmt1.mid"
     # filename = "test/test-velocity.mid"
     filename = "test/Ecu_10_Bass_xg-hr.mid"
+    # filename = "test/test-pitchbend-higher.mid"
+    # filename = "test/CC74-Bass-solo.mid"
+    # filename = "test/D_RUNNIN.mus"
+    # filename = "test/D_OPENIN.mus"
+    # filename = "test/D_DM2TTL.mus"
     midi_song = MidiSongFile.load_file(filename)
-    engine = MidiEngine(midi_song)
-
-    # def note_on(time: float, channel: int, note: int, velocity: int, is_percussion: bool):
-    #     pass
-    # def note_on(track: int, event_time: float, channel: int, note: int, velocity: int):
-    #     print(f"note_on at {event_time}")
-    #
-    # engine.on_note_on.add_handler(note_on)
-    engine.start()
     # Add any instruments located within the midi song file.
     instruments.update(midi_song.instruments)
-    settings = {"title": "Hello"}
+    settings = {
+        "title": "Hello",
+    }
     song = AdlibSongFile.convert_from(midi_song, "imf1", settings)
     song.save_file("output.wlf")
     # if data:
