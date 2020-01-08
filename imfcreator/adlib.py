@@ -134,6 +134,17 @@ class AdlibInstrument(object):
                 return False
         return True
 
+    def compare_registers(self, other: "AdlibInstrument"):
+        # TODO if self.num_voices != other.num_voices:
+        #     return False
+        count = 0
+        for v in range(min(self.num_voices, other.num_voices)):
+            count += self.modulator[v].compare_registers(other.modulator[v])
+            count += self.carrier[v].compare_registers(other.carrier[v])
+            if self.feedback[v] != other.feedback[v]:
+                count += 1
+        return count
+
 
 def _create_bit_property(var_name: str, bits: int, shift: int):
     """Creates a property that is a bit-wise representation of a register.
@@ -182,6 +193,20 @@ class AdlibOperator(object):  # MUST inherit from object for properties to work.
         self.attack_decay = attack_decay
         self.sustain_release = sustain_release
         self.waveform_select = waveform_select
+
+    def compare_registers(self, other: "AdlibOperator"):
+        count = 0
+        if self.tvskm != other.tvskm:
+            count += 1
+        # if self.ksl_output != other.ksl_output:
+        #     count += 1
+        if self.attack_decay != other.attack_decay:
+            count += 1
+        if self.sustain_release != other.sustain_release:
+            count += 1
+        if self.waveform_select != other.waveform_select:
+            count += 1
+        return count
 
     def __repr__(self):
         return str(self.__dict__)
