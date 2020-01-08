@@ -3,13 +3,10 @@ import logging as _logging
 import os as _os
 import typing as _typing
 import imfcreator.midi as _midi  # import SongEvent as _SongEvent
-from collections import namedtuple as _namedtuple
 from imfcreator.adlib import AdlibInstrument as _AdlibInstrument
 
-FileTypeInfo = _namedtuple("FileTypeInfo", ["description", "default_extension"])
-InstrumentId = _namedtuple("InstrumentId", ["instrument_type", "bank", "program"])
+
 _PLUGIN_TYPES = []  # List of plugin type classes.
-_OUTPUT_FILE_TYPES = {}  # type: _typing.Dict[str, FileTypeInfo]  #
 
 
 def _plugin_type(cls):
@@ -35,6 +32,39 @@ def plugin(cls):
             register_plugin()
         return cls
     raise ValueError(f"Unrecognized plugin type.  Valid types: {_PLUGIN_TYPES}")
+
+
+class InstrumentId(_typing.NamedTuple):
+    """Represents an instrument ID.
+
+    **arguments**: instrument_type, bank, program
+    """
+    instrument_type: int
+    bank: int
+    program: int
+
+
+class FileTypeInfo(_typing.NamedTuple):
+    """Represents a file type that music can be converted to.
+    Each file type's `name` must be unique.
+
+    **arguments**: name, description, default_extension
+    """
+    name: str
+    description: str
+    default_extension: str
+
+
+class FileTypeSetting(_typing.NamedTuple):
+    """Represents a user-modifiable setting for a file type.
+
+    **arguments**: name, description, [kwargs]
+
+    `kwargs` are the keyword arguments passed into `argparser`.
+    """
+    name: str
+    description: str
+    kwargs: _typing.Dict[str, _typing.Any] = {}
 
 
 @_plugin_type
@@ -69,24 +99,37 @@ class InstrumentFile:
         raise NotImplementedError()
 
     @classmethod
-    def load_file(cls, file: str) -> "InstrumentFile":
+    def load_file(cls, f) -> "InstrumentFile":
         """Checks plugin classes for one that can load the given file.  If one is found, the file is loaded."""
-        with open(file, "rb") as fp:
+
+        if type(f) is str:
+            filename = f
+            fp = open(filename, "rb")
+            exclusive_fp = True
+        else:
+            fp = f  # type: _typing.IO
+            filename = fp.name
+            exclusive_fp = False
+        try:
             # Scan plugin classes for one that can open the file.
+            _logging.info(f'Loading "{filename}".')
             preview = fp.read(32)
             for subclass in cls._PLUGINS:  # type: _typing.Type[InstrumentFile]
-                _logging.debug(f'Testing accept for "{file}" using {subclass.__name__}.')
-                if subclass.accept(preview, file):
+                # _logging.debug(f'Testing accept for "{filename}" using {subclass.__name__}.')
+                if subclass.accept(preview, filename):
                     try:
-                        _logging.debug(f'Attempting to load "{file}" using {subclass.__name__}.')
+                        # _logging.debug(f'Attempting to load "{filename}" using {subclass.__name__}.')
                         # Reset the file position for each attempt.
                         fp.seek(0)
-                        instance = subclass(fp, file)
-                        _logging.info(f'Loaded "{file}" using {subclass.__name__}.')
+                        instance = subclass(fp, filename)
+                        _logging.info(f'Loaded "{filename}" using {subclass.__name__}.')
                         return instance
                     except (ValueError, IOError, OSError) as ex:
-                        _logging.error(f'Error while loading "{file}" using {subclass.__name__}: {ex}')
-        raise ValueError(f'Failed to load "{file}" as {cls.__name__}.')
+                        _logging.error(f'Error while loading "{filename}" using {subclass.__name__}: {ex}')
+        finally:
+            if exclusive_fp:
+                fp.close()
+        raise ValueError(f'Failed to load "{filename}" as {cls.__name__}.')
 
 
 @_plugin_type
@@ -101,7 +144,7 @@ class MidiSongFile:
 
     def __init__(self, fp: _typing.IO, file: str):
         self.events = []  # type: _typing.List[_midi.SongEvent]
-        self.instruments = {}  # type: _typing.Dict[int, _AdlibInstrument]
+        self.instruments = {}  # type: _typing.Dict[InstrumentId, _AdlibInstrument]
         self.title = None  # type: _typing.Optional[str]
         self.composer = None  # type: _typing.Optional[str]
         self.remarks = None  # type: _typing.Optional[str]
@@ -135,24 +178,30 @@ class MidiSongFile:
             self.events[index].index = index
 
     @classmethod
-    def load_file(cls, file: str) -> "MidiSongFile":
+    def load_file(cls, filename: str) -> "MidiSongFile":
         """Checks plugin classes for one that can load the given file.  If one is found, the file is loaded."""
-        with open(file, "rb") as fp:
+        with open(filename, "rb") as fp:
             # Scan plugin classes for one that can open the file.
             preview = fp.read(32)
+            _logging.info(f'Loading "{filename}".')
             for subclass in cls._PLUGINS:  # type: _typing.Type[MidiSongFile]
-                _logging.debug(f'Testing accept for "{file}" using {subclass.__name__}.')
-                if subclass.accept(preview, file):
+                # _logging.debug(f'Testing accept for "{filename}" using {subclass.__name__}.')
+                if subclass.accept(preview, filename):
                     try:
-                        _logging.debug(f'Attempting to load "{file}" using {subclass.__name__}.')
+                        # _logging.debug(f'Attempting to load "{filename}" using {subclass.__name__}.')
                         # Reset the file position for each attempt.
                         fp.seek(0)
-                        instance = subclass(fp, file)
-                        _logging.info(f'Loaded "{file}" using {subclass.__name__}.')
+                        instance = subclass(fp, filename)
+                        _logging.info(f'Loaded "{filename}" using {subclass.__name__}.')
                         return instance
                     except (ValueError, IOError, OSError) as ex:
-                        _logging.error(f'Error while loading "{file}" using {subclass.__name__}: {ex}')
-        raise ValueError(f'Failed to load "{file}" as {cls.__name__}.')
+                        _logging.error(f'Error while loading "{filename}" using {subclass.__name__}: {ex}')
+        raise ValueError(f'Failed to load "{filename}" as {cls.__name__}.')
+
+
+class _FileTypeEntry(_typing.NamedTuple):
+    cls: _typing.Type["AdlibSongFile"]
+    info: FileTypeInfo
 
 
 @_plugin_type
@@ -162,27 +211,33 @@ class AdlibSongFile:
     Interacts with the song player.
     """
 
+    __FILETYPES =[]  # type: _typing.List[_FileTypeEntry]
+
+    def __init__(self, midi_song: MidiSongFile, filetype: str):
+        self._default_outfile = _os.path.splitext(midi_song.file)[0]
+        self._filetype = filetype
+
     @classmethod
-    def _get_filetypes(cls) -> _typing.Dict[str, FileTypeInfo]:
-        """A dictionary keyed by file type with the descriptions as the value.
-        File types should be unique among ALL writer plugins.
+    def _get_filetypes(cls) -> _typing.List["FileTypeInfo"]:
+        """A list of FileTypeInfo instances representing valid filetypes for the class.
+        File type names must be unique among ALL AdlibSongFile plugins.
         """
         raise NotImplementedError()
 
     @classmethod
-    def _get_settings(cls) -> _typing.Dict[str, str]:
-        """A dictionary keyed by setting name with the description as the value."""
+    def _get_filetype_settings(cls, filetype) -> _typing.Optional[_typing.List["FileTypeSetting"]]:
+        """A list of FileTypeSettings for the given filetype name."""
         raise NotImplementedError()
 
-    @classmethod
-    def accept(cls, preview: bytes, filename: str) -> bool:
-        """Checks the preview bytes to see whether this class might be able to open the given file.
-
-        :param preview: 32 preview bytes
-        :param filename: The filename to be opened.
-        :return: True if the class might be able to open the file; otherwise, False.
-        """
-        raise NotImplementedError()
+    # @classmethod
+    # def accept(cls, preview: bytes, filename: str) -> bool:
+    #     """Checks the preview bytes to see whether this class might be able to open the given file.
+    #
+    #     :param preview: 32 preview bytes
+    #     :param filename: The filename to be opened.
+    #     :return: True if the class might be able to open the file; otherwise, False.
+    #     """
+    #     raise NotImplementedError()
 
     def _save_file(self, fp, filename):
         """Saves the song data to the given file object.
@@ -204,10 +259,17 @@ class AdlibSongFile:
         """
         raise NotImplementedError()
 
-    def save_file(self, filename):
+    def save_file(self, filename: str = None):
         """Saves the file data to the given file object."""
+        if not filename:
+            filename = self._default_outfile
+        filename, ext = _os.path.splitext(filename)
+        if not ext:
+            ext = AdlibSongFile.get_default_extension(self._filetype)
+        filename = f"{filename}{ext}"
         with open(filename, "wb") as fp:
             self._save_file(fp, filename)
+            _logging.info(f'Converted music saved as "{filename}".')
 
     @classmethod
     def convert_from(cls, midi_song: MidiSongFile, filetype: str,
@@ -223,7 +285,7 @@ class AdlibSongFile:
         :return: A bytes object containing the converted song data.
         """
         filetype_class = cls.get_filetype_class(filetype)
-        valid_settings = filetype_class._get_settings().keys()
+        valid_settings = [s.name for s in filetype_class._get_filetype_settings(filetype) or []]
         for setting in settings:
             if setting not in valid_settings:
                 raise ValueError(f"Unexpected setting: {setting}.  Valid settings are: {', '.join(valid_settings)}")
@@ -231,14 +293,31 @@ class AdlibSongFile:
         return filetype_class._convert_from(midi_song, filetype, settings)
 
     @classmethod
-    def get_filetype_class(cls, filetype: str) -> "AdlibSongFile":
-        _logging.debug(f"Finding AdlibSong class for {filetype}.")
-        # noinspection PyProtectedMember
-        song_class = next((p for p in cls._PLUGINS if filetype in p._get_filetypes()), None)
-        if not song_class:
-            raise ValueError("Could not find a song converter for the given file type.")
-        _logging.debug(f"Found AdlibSong class for {filetype}: {song_class.__name__}")
-        return song_class
+    def get_filetypes(cls) -> _typing.List["FileTypeInfo"]:
+        return [c.info for c in cls.__FILETYPES]
+
+    @classmethod
+    def _get_filetype_entry(cls, filetype) -> _typing.Optional[_typing.Type[_FileTypeEntry]]:
+        return next((entry for entry in cls.__FILETYPES if entry.info.name == filetype), None)
+
+    @classmethod
+    def get_filetype_class(cls, filetype: str) -> _typing.Type["AdlibSongFile"]:
+        # _logging.debug(f"Finding AdlibSong class for {filetype}.")
+        entry = cls._get_filetype_entry(filetype)
+        if not entry:
+            raise ValueError(f"Could not find a song converter for the given file type: {filetype}")
+        # _logging.debug(f"Found AdlibSong class for {filetype}: {entry.cls.__name__}")
+        return entry.cls
+
+    @classmethod
+    def get_filetype_settings(cls, filetype) -> _typing.List["FileTypeSetting"]:
+        return cls._get_filetype_entry(filetype).cls._get_filetype_settings(filetype) or []
+
+    @classmethod
+    def get_default_extension(cls, filetype: str) -> _typing.Optional[str]:
+        entry = cls._get_filetype_entry(filetype)
+        ext = entry.info.default_extension
+        return ext if ext.startswith(".") else f".{ext}"
 
     @classmethod
     def _register_plugin(cls):
@@ -249,19 +328,22 @@ class AdlibSongFile:
                 raise ValueError(f"Text must be alphanumeric only.  Invalid characters: {invalid_chars}")
 
         # Process _filetypes
-        for filetype, info in cls._get_filetypes().items():
+        for filetype in cls._get_filetypes():
             # filetypes can only be alphanumeric.
-            validate_name(filetype)
+            validate_name(filetype.name)
             # filetypes must be unique across all plugins
-            if filetype in _OUTPUT_FILE_TYPES:
-                raise ValueError(f"A plugin for filetype {filetype} already exists.  "
-                                 f"Existing: {_OUTPUT_FILE_TYPES[filetype].__name__}, "
+            current_filetype_class = next((c.cls for c in cls.__FILETYPES if c.info.name == filetype), None)
+            if current_filetype_class:
+                raise ValueError(f"A plugin for filetype {filetype.name} already exists.  "
+                                 f"Existing: {current_filetype_class.__name__}, "
                                  f"Current: {cls.__name__}")
-            _logging.debug(f"Registering filetype: {filetype} -> {cls.__name__}")
-            _OUTPUT_FILE_TYPES[filetype] = info
-        # Validate setting names.
-        for name in cls._get_settings().keys():
-            validate_name(name)
+            _logging.debug(f"Registering filetype: {filetype.name} -> {cls.__name__}")
+            cls.__FILETYPES.append(_FileTypeEntry(cls, filetype))
+            settings = cls._get_filetype_settings(filetype.name)
+            if settings:
+                # Validate setting names.
+                for setting in settings:
+                    validate_name(setting.name)
 
 
 def _load_plugins():

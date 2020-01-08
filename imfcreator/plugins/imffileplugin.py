@@ -1,3 +1,4 @@
+import argparse as _argparse
 import logging as _logging
 import math as _math
 import struct as _struct
@@ -6,40 +7,53 @@ import imfcreator.instruments as instruments
 import imfcreator.midi as _midi
 import imfcreator.utils as _utils
 import imfcreator.plugins._midiengine as _midiengine
-from . import AdlibSongFile, FileTypeInfo, MidiSongFile, plugin
+from . import AdlibSongFile, FileTypeInfo, FileTypeSetting, MidiSongFile, plugin
 from imfcreator.adlib import *
 
 
 @plugin
 class ImfSong(AdlibSongFile):
+    """Writes an IMF file.
+
+    There are two IMF formats:
+
+    * Type 0 format is older and does not start with a data length nor can it contain metadata.
+      It is used in Bio Menace, Commander Keen, Cosmo's Cosmic Adventures, Monster Bash, Major Stryker, and
+      Duke Nukem II.
+      Typically these are played at 560 Hz except for Duke Nukem II, which plays them at 280 Hz.
+    * Type 1 format starts with a 16-bit unsigned data length and can contain meta data after the song data.
+      It is used in Wolfenstein 3-D, Blake Stone, Operation Body Count, Corridor 7, etc, and plays at 700 Hz.
+
+    Type 1 files can have some unofficial tags, which can be added via settings.
+    """
     _MAXIMUM_COMMAND_COUNT = 65535 // 4
     _TAG_BYTE = b"\x1a"
+    _DEFAULT_TICKS = {
+        "imf0": 560,
+        "imf0dn2": 280,
+        "imf1": 700
+    }
 
-    def __init__(self, filetype: str = "imf1", ticks: int = None, title: str = None, composer: str = None,
-                 remarks: str = None, program: str = None):
-        self._filetype = filetype
+    def __init__(self, midi_song: MidiSongFile, filetype: str = "imf1", ticks: int = None, title: str = None,
+                 composer: str = None, remarks: str = None, program: str = None):
+        super().__init__(midi_song, filetype)
         self._ticks = None
-        self.ticks = ticks if ticks else 560 if filetype == "imf0" else 700
+        self.ticks = ticks if ticks else ImfSong._DEFAULT_TICKS[filetype]
         self.title = title
         self.composer = composer
         self.remarks = remarks
         self.program = program if program else "PyImf" if (self.title or self.composer or self.remarks) else None
         if (self.title or self.composer or self.remarks or self.program) and filetype == "imf0":
             _logging.warning(f"The title, composer, remarks, and program settings are not used by type '{filetype}'.")
-        # self._filetype = None
-        # self.ticks = None
-        # self.title = None
-        # self.composer = None
-        # self.remarks = None
-        # self.program = None
         self._commands = []  # type: _typing.List[_typing.Tuple[int, int, int]]  # reg, value, delay
 
     @property
-    def ticks(self):
+    def ticks(self) -> int:
+        """The song speed.  Must be 280, 560, or 700 depending on the game."""
         return self._ticks
 
     @ticks.setter
-    def ticks(self, value):
+    def ticks(self, value: int):
         if value not in [280, 560, 700]:
             raise ValueError("Invalid ticks value.  Must be 280, 560, or 700.")
         self._ticks = value
@@ -50,30 +64,37 @@ class ImfSong(AdlibSongFile):
         return len(self._commands)
 
     @classmethod
-    def _get_filetypes(cls) -> _typing.Dict[str, FileTypeInfo]:
-        return {
-            "imf0": FileTypeInfo("IMF Type 0", "imf"),
-            "imf1": FileTypeInfo("IMF Type 1", "wlf"),
-        }
+    def _get_filetypes(cls) -> _typing.List[FileTypeInfo]:
+        return [
+            FileTypeInfo("imf0", "IMF Type 0 at 560 Hz (Bio Menace, Commander Keen, Cosmo's Cosmic Adventures, "
+                                 "Monster Bash, Major Stryker)", "imf"),
+            FileTypeInfo("imf0dn2", "IMF Type 0 at 280 Hz (Duke Nukem II)", "imf"),
+            FileTypeInfo("imf1", "IMF Type 1 at 700 Hz (Wolfenstein 3-D, Blake Stone, Operation Body Count, "
+                                 "Corridor 7)", "wlf"),
+        ]
 
     @classmethod
-    def _get_settings(cls) -> _typing.Dict[str, str]:
-        return {
-            "ticks": "The song speed.  Must be 280, 560, or 700 depending on the game.",
-            "title": "The song title.  Only stored in type 1 files.  Limited to 255 characters.",
-            "composer": "The song composer.  Only stored in type 1 files.  Limited to 255 characters.",
-            "remarks": "The song remarks.  Only stored in type 1 files.  Limited to 255 characters.",
-            "program": "The program used to make the song.  Only stored in type 1 files.  Limited to 8 characters.  "
-                       "Defaults to 'PyImf' if title, composer, or remarks are set.",
-        }
+    def _get_filetype_settings(cls, filetype) -> _typing.Optional[_typing.List[FileTypeSetting]]:
+        # Song speed is set by filetype, so ticks isn't really needed.
+        # setting = FileTypeSetting("ticks", "The song speed.  Must be 280, 560, or 700 depending on the game.",
+        #                           {"type": int, "choices": [280, 560, 700]})
+        if filetype == "imf1":
+            return [
+                FileTypeSetting("title", "The song title.  Limited to 255 characters."),
+                FileTypeSetting("composer", "The song composer.  Limited to 255 characters."),
+                FileTypeSetting("remarks", "The song remarks.  Limited to 255 characters."),
+                FileTypeSetting("program", "The program used to make the song.  Limited to 8 characters.  "
+                                           "Defaults to 'PyImf' if title, composer, or remarks are set."),
+            ]
+        return None
 
-    @classmethod
-    def accept(cls, preview: bytes, filename: str) -> bool:
-        return _utils.get_file_extension(filename).lower() in ["imf", "wlf"]
+    # @classmethod
+    # def accept(cls, preview: bytes, filename: str) -> bool:
+    #     return _utils.get_file_extension(filename).lower() in ["imf", "wlf"]
 
-    @classmethod
-    def _open_file(cls, fp, filename) -> "ImfSong":
-        pass
+    # @classmethod
+    # def _open_file(cls, fp, filename) -> "ImfSong":
+    #     pass
 
     def _save_file(self, fp, filename):
         command_count = self.command_count
@@ -85,7 +106,7 @@ class ImfSong(AdlibSongFile):
                                  f"Written commands: {ImfSong._MAXIMUM_COMMAND_COUNT})")
                 command_count = ImfSong._MAXIMUM_COMMAND_COUNT
             fp.write(_struct.pack("<H", command_count * 4))
-        command_count = ImfSong._MAXIMUM_COMMAND_COUNT
+        # command_count = ImfSong._MAXIMUM_COMMAND_COUNT
         for command in self._commands[0:command_count]:
             fp.write(_struct.pack("<BBH", *command))
         # Add unofficial tag for type 1 files.
@@ -107,10 +128,9 @@ class ImfSong(AdlibSongFile):
     @classmethod
     def _convert_from(cls, midi_song: MidiSongFile, filetype: str, settings: _typing.Dict) -> "ImfSong":
         # Load settings.
-        song = cls(filetype, **settings)
+        song = cls(midi_song, filetype, **settings)
         # Set up variables.
         engine = _midiengine.MidiEngine(midi_song)
-        # midi_channels = [_MidiChannelInfo(ch) for ch in range(16)]
         imf_channels = [_ImfChannelInfo(ch) for ch in range(1, 9)]
         regs = [None] * 256
 
@@ -140,6 +160,8 @@ class ImfSong(AdlibSongFile):
 
         def add_command(reg: int, value: int, delay: int = 0):
             """Adds a command to the song."""
+            # if reg & VOLUME_MSG or reg & FREQ_MSG:
+            #     value = value & 0xfe
             nonlocal regs
             if regs[reg] == value:
                 return
@@ -162,42 +184,50 @@ class ImfSong(AdlibSongFile):
                 add_delay(event_time, old_commands_length - 1)
 
         # noinspection PyUnusedLocal
-        def find_imf_channel(instrument, note):
+        def find_imf_channel(instrument: AdlibInstrument, note: int):
             # Find a channel that is set to the given instrument and is not currently playing a note.
             channel = next(filter(lambda ch: ch.instrument == instrument and ch.last_note is None, imf_channels), None)
             if channel:
                 return channel
+            # Find a channel that isn't playing a note that requires the least register changes.
+            # open_channels = [ch for ch in imf_channels if ch.last_note is None]
+            # if open_channels:
+            #     channel = min(open_channels,
+            #                   key=lambda ch: 0 if ch.instrument is None else
+            #                   instrument.compare_registers(ch.instrument))
             # Find a channel that isn't playing a note.
             channel = next(filter(lambda ch: ch.last_note is None, imf_channels), None)
             if channel:
+                # print("OPEN", channel.instrument.compare_registers(instrument) if channel.instrument else "NONE")
                 return channel
             # TODO Aggressive channel find.
             return None
 
-        def get_block_and_freq(note, scaled_pitch_bend):
+        def find_imf_channel_for_instrument_note(instrument: AdlibInstrument, note: int):
+            return next(filter(lambda ch: ch.instrument == instrument and ch.last_note == note, imf_channels), None)
+
+        def get_block_and_freq(note: int, scaled_pitch_bend: float):
             assert note < 128
             while note >= len(BLOCK_FREQ_NOTE_MAP):
                 note -= 12
             block, freq = BLOCK_FREQ_NOTE_MAP[note]
-            # Adjust for pitch bend.
-            # The octave adjustment relies heavily on how the BLOCK_FREQ_NOTE_MAP has been calculated.
-            # F# is close to the top of the 1023 limit while G is in the middle at 517. Because of this,
-            # bends that cross over the line between F# and G are better handled in the range below G and the
-            # lower block/freq is adjusted upward so that it is in the same block as the other note.
-            # For each increment of 1 to the block, the f-num needs to be halved.  This can lead to a loss of
-            # precision, but hopefully it won't be too drastic.
-            if scaled_pitch_bend < 0:
-                semitones = int(_math.floor(scaled_pitch_bend))
-                bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
+            if scaled_pitch_bend != 0:
+                # Adjust for pitch bend.
+                # The octave adjustment relies heavily on how the BLOCK_FREQ_NOTE_MAP has been calculated.
+                # F# is close to the top of the 1023 limit while G is in the middle at 517. Because of this,
+                # bends that cross over the line between F# and G are better handled in the range below G and the
+                # lower block/freq is adjusted upward so that it is in the same block as the other note.
+                # For each increment of 1 to the block, the f-num needs to be halved.  This can lead to a loss of
+                # precision, but hopefully it won't be too drastic.
+                rounding_function = _math.floor if scaled_pitch_bend < 0 else _math.ceil
+                semitones = int(rounding_function(scaled_pitch_bend))
+                bend_to_note = _utils.clamp(note + semitones, 0, len(BLOCK_FREQ_NOTE_MAP) - 1)
+                bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[bend_to_note]
                 # If the bend-to note is on a lower block/octave, multiply the *bend-to* f-num by 0.5 per block
                 # to bring it up to the same block as the original note.
                 # assert not (bend_block == 1 and block == 0 and note == 18 and semitones == -1)
                 if bend_block < block:
                     bend_freq /= (2.0 ** (block - bend_block))
-                freq = int(freq + (bend_freq - freq) * scaled_pitch_bend / semitones)
-            elif scaled_pitch_bend > 0:
-                semitones = int(_math.ceil(scaled_pitch_bend))
-                bend_block, bend_freq = BLOCK_FREQ_NOTE_MAP[note + semitones]
                 # If the bend-to note is on a higher block/octave, multiply the *original* f-num by 0.5 per block
                 # to bring it up to the same block as the bend-to note.
                 if bend_block > block:
@@ -207,9 +237,6 @@ class ImfSong(AdlibSongFile):
             assert 0 <= block <= 7
             assert 0 <= freq <= 0x3ff
             return block, freq
-
-        def find_imf_channel_for_instrument_note(instrument, note):
-            return next(filter(lambda ch: ch.instrument == instrument and ch.last_note == note, imf_channels), None)
 
         def get_event_instrument(channel: int, note: int = 0) -> AdlibInstrument:
             midi_channel = engine.channels[channel]
@@ -258,8 +285,6 @@ class ImfSong(AdlibSongFile):
                 124, 124, 125, 125, 126, 126, 127, 127
             ]
             midi_volume = int(midi_channel.volume * midi_channel.expression * note_velocity)
-            # if midi_volume > 127:
-            #     midi_volume = 127
             midi_brightness = midi_channel.get_controller_value(_midi.ControllerType.XG_BRIGHTNESS)
             midi_brightness = 127 if midi_brightness >= 64 else midi_brightness * 2
 
@@ -319,7 +344,6 @@ class ImfSong(AdlibSongFile):
                     imf_channel.instrument = instrument
                 imf_channel.last_note = adjusted_note
                 block, freq = get_block_and_freq(adjusted_note, midi_channel.scaled_pitch_bend)
-                # volume = calculate_volume(midi_channel, song_event["velocity"])
                 commands += get_volume_commands(imf_channel, instrument, midi_channel, song_event.velocity)
                 commands += [
                     (FREQ_MSG | imf_channel.number, freq & 0xff),
@@ -342,14 +366,12 @@ class ImfSong(AdlibSongFile):
                                     midi_channel.active_notes), None)  # type: _midiengine.ActiveNote
                 if match:
                     adjusted_note = match.adjusted_note
-                    # inst_num = match["inst_num"]
                     midi_channel.active_notes.remove(match)
                 else:
                     _logging.error(f"Tried to remove non-active note: track {song_event.track}, note {adjusted_note}")
             imf_channel = find_imf_channel_for_instrument_note(instrument, adjusted_note)
             if imf_channel:
                 imf_channel.last_note = None
-                # block, freq = get_block_and_freq(event)
                 add_commands(song_event.time, [
                     (BLOCK_MSG | imf_channel.number, regs[BLOCK_MSG | imf_channel.number] & ~KEY_ON_MASK),
                 ])
@@ -419,18 +441,18 @@ class ImfSong(AdlibSongFile):
                 _logging.warning(f"imf channel {ch.number} had open note: {ch.last_note}")
 
         # Remove commands that do nothing, ie: register value changes with no delay.
-        # temp_commands = []
-        # removed_commands = 0
-        # for index in range(len(song._commands)):
-        #     command = song._commands[index]
-        #     if command[2] == 0:
-        #         regs = [None] * 256
-        #     if regs[command[0]] is None:
-        #         regs[command[0]] = regs[command[1]]
-        #         temp_commands.append(command)
-        #     else:
-        #         removed_commands += 1
-        # _logging.debug(f"Removed {removed_commands} commands.")
+        temp_commands = []
+        removed_commands = 0
+        for index in range(len(song._commands)):
+            command = song._commands[index]
+            if command[2] == 0:
+                regs = [None] * 256
+            if regs[command[0]] is None:
+                regs[command[0]] = regs[command[1]]
+                temp_commands.append(command)
+            else:
+                removed_commands += 1
+        _logging.debug(f"Removed {removed_commands} unnecessary commands.")
 
         return song
 
