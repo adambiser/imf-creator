@@ -13,7 +13,6 @@ import logging as _logging
 import typing as _typing
 from imfcreator.adlib import AdlibInstrument as _AdlibInstrument
 from imfcreator.plugins import InstrumentId, InstrumentFile as _InstrumentFile, MidiSongFile as _MidiSongFile
-# TODO Add GM2 drum instrument mapping flag and dictionary.
 
 # Instrument types.
 MELODIC = 0
@@ -23,6 +22,7 @@ _TYPE_NAMES = {MELODIC: "MELODIC", PERCUSSION: "PERCUSSION"}
 # The key is (inst_type, bank, program), value is the Adlib instrument.
 _INSTRUMENTS = {}  # type: _typing.Dict[InstrumentId, _AdlibInstrument]
 
+enable_gm2_drum_note_mapping = False
 # List of searches that gave no results.
 _WARNINGS = []
 
@@ -83,6 +83,7 @@ def get(inst_type: int, bank: int, program: int) -> _AdlibInstrument:
     :return: An Adlib instrument if a match is found; otherwise None.
     """
     _validate_args(inst_type, bank, program)
+    original_bank = bank
     key = (inst_type, bank, program)
     if bank > 0:
         if key not in _INSTRUMENTS:
@@ -94,6 +95,13 @@ def get(inst_type: int, bank: int, program: int) -> _AdlibInstrument:
             key = (inst_type, 0, program)
     instrument = _INSTRUMENTS.get(key)
     if instrument is None:
+        # Try GM2 drum mapping.
+        if inst_type == PERCUSSION and ENABLE_GM2_DRUM_NOTE_MAPPING and program in _GM2_DRUM_NOTE_MAPPING:
+            if key not in _WARNINGS:
+                _WARNINGS.append(key)
+                _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank:#06x}, "
+                                 f"program {program}.  Using GM2 drum note map.")
+            return get(inst_type, original_bank, _GM2_DRUM_NOTE_MAPPING[program])
         if key not in _WARNINGS:
             _WARNINGS.append(key)
             _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank:#06x}, program {program}")
@@ -327,4 +335,21 @@ _PERCUSSION_NAMES = {
     85: "Castanets",  # GM2
     86: "Mute Surdo",  # GM2
     87: "Open Surdo",  # GM2
+}
+
+_GM2_DRUM_NOTE_MAPPING = {
+     27: 37,  # "High Q" => "Side stick"
+     28: 39,  # "Slap" => "Hand Clap"
+     29: 78,  # "Scratch Push" => "Mute Cuica"
+     30: 79,  # "Scratch Pull" => "Open Cuica"
+     31: 37,  # "Sticks" => "Side stick"
+     32: 37,  # "Square Click" => "Side stick"
+     33: 37,  # "Metronome Click" => "Side stick"
+     34: 53,  # "Metronome Bell" => "Ride Bell"
+     82: 69,  # "Shaker" => "Cabasa"
+     83: 54,  # "Jingle Bell" => "Tambourine"
+     84: 74,  # "Belltree" => "Long Guiro"
+     85: 37,  # "Castanets" => "Side stick"
+     86: 62,  # "Mute Surdo" => "Mute Hi Conga"
+     87: 64,  # "Open Surdo" => Low Conga
 }
