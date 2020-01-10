@@ -175,6 +175,7 @@ class ToolBar(ttk.Frame):
         self.open_music_button = create_button("Open Music File", "song.gif", parent.open_music_file)
         self.play_button = create_button("Play", "play.gif", parent.toggle_play)
         self.save_button = create_button("Save", "save.gif", parent.save_imf)
+        self.save_button["state"] = tk.DISABLED
 
         self.play_image = resources.get_image('play.gif')
         self.stop_image = resources.get_image('stop.gif')
@@ -191,7 +192,7 @@ class ToolBar(ttk.Frame):
 
 class Settings:
     def __init__(self, parent):
-        self._db = shelve.open('settings.dat', writeback=True)
+        self._db = shelve.open('settings', writeback=True)
 
         def monitor_variable(var: tk.Variable, settings_key: str, default):
             def write_setting(*_):
@@ -201,7 +202,7 @@ class Settings:
             var.trace_add("write", write_setting)
 
         monitor_variable(parent.bank_file, "bank_file", "genmidi/GENMIDI.OP2")
-        monitor_variable(parent.song_file, "song_file", "test/testtag.wlf")
+        monitor_variable(parent.song_file, "song_file", "")
         monitor_variable(parent.filetype, "filetype", "")
 
     def close(self):
@@ -322,8 +323,11 @@ class MainApplication(ttk.Frame):
         self._convert_song()
 
     def reload_song(self):
-        self._midi_song = MidiSongFile.load_file(self.song_file.get())
-        self._convert_song()
+        self.toolbar.save_button['state'] = tk.DISABLED
+        self._midi_song = None
+        if self.song_file.get():
+            self._midi_song = MidiSongFile.load_file(self.song_file.get())
+            self._convert_song()
 
     def _convert_song(self):
         self.player.stop()
