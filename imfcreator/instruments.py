@@ -69,6 +69,11 @@ def add_file(f, bank_offset: int = 0):
     update(instrument_file.instruments, bank_offset)
 
 
+def clear():
+    """Clears the instruments from the instrument manager."""
+    _INSTRUMENTS.clear()
+
+
 def count() -> int:
     """Returns the instrument count."""
     return len(_INSTRUMENTS)
