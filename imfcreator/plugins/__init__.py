@@ -80,10 +80,6 @@ class InstrumentFile:
         finally:
             del self.fp
 
-    # def __iter__(self):
-    #     for instrument in self.instruments:
-    #         yield instrument
-
     @classmethod
     def accept(cls, preview: bytes, path: str) -> bool:
         """Checks the preview bytes and/or filename to see whether this class might be able to open the given file.
@@ -273,7 +269,7 @@ class AdlibSongFile:
 
     @classmethod
     def convert_from(cls, midi_song: MidiSongFile, filetype: str,
-                     settings: _typing.Dict) -> "AdlibSongFile":
+                     settings: _typing.Dict = None) -> "AdlibSongFile":
         """Converts a MIDI song to bytes data for the given file type.
 
         Implementing classes muse override `_convert_from`.
@@ -284,6 +280,7 @@ class AdlibSongFile:
         :exception ValueError: When the given data is not valid.
         :return: A bytes object containing the converted song data.
         """
+        settings = settings or {}
         filetype_class = cls.get_filetype_class(filetype)
         valid_settings = [s.name for s in filetype_class._get_filetype_settings(filetype) or []]
         for setting in settings:
