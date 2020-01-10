@@ -3,3 +3,4 @@ exclude/
 output.wlf
 instrument samples/
 *.pyc
+settings.*
