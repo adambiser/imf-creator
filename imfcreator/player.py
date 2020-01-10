@@ -4,6 +4,7 @@ import pyopl
 import sys
 import imfcreator.utils as utils
 from enum import IntEnum, auto
+from os import SEEK_SET, SEEK_CUR, SEEK_END
 from imfcreator.adlib import *
 from imfcreator.signal import Signal
 
@@ -70,11 +71,11 @@ class AdlibPlayer:
 
     def seek(self, offset: int, whence: int = 0):
         """Moves the play position to the command at the given offset."""
-        if whence == 0:
+        if whence == SEEK_SET:
             new_position = offset
-        elif whence == 1:
+        elif whence == SEEK_CUR:
             new_position = self._position + offset
-        elif whence == 2:
+        elif whence == SEEK_END:
             new_position = self._song.command_count + offset
         else:
             raise ValueError("Invalid argument")
@@ -188,18 +189,20 @@ class AdlibPlayer:
 
     def pause(self):
         """Stops the PyAudio stream, but does not rewind the playback position."""
-        self._stream.stop_stream()
-        self.onstatechanged(state=PlayerState.PAUSED)
+        if self._stream:
+            self._stream.stop_stream()
+            self.onstatechanged(state=PlayerState.PAUSED)
 
     def stop(self):
         """Stops the PyAudio stream and resets the playback position."""
-        self._stream.stop_stream()
-        self.rewind()
-        self.onstatechanged(state=PlayerState.STOPPED)
+        if self._stream:
+            self._stream.stop_stream()
+            self.rewind()
+            self.onstatechanged(state=PlayerState.STOPPED)
 
     def close(self):
         """Closes the PyAudio stream and terminates it."""
-        if self._stream is not None:
+        if self._stream:
             self._stream.stop_stream()
             self._stream.close()
             self._stream = None
