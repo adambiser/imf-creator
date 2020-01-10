@@ -31,7 +31,8 @@ class ImfSong(AdlibSongFile):
     _DEFAULT_TICKS = {
         "imf0": 560,
         "imf0dn2": 280,
-        "imf1": 700
+        "imf0wlf": 700,
+        "imf1": 700,
     }
 
     def __init__(self, midi_song: MidiSongFile, filetype: str = "imf1", ticks: int = None, title: str = None,
@@ -43,7 +44,7 @@ class ImfSong(AdlibSongFile):
         self.composer = composer
         self.remarks = remarks
         self.program = program if program else "PyImf" if (self.title or self.composer or self.remarks) else None
-        if (self.title or self.composer or self.remarks or self.program) and filetype == "imf0":
+        if (self.title or self.composer or self.remarks or self.program) and filetype not in ["imf1"]:
             _logging.warning(f"The title, composer, remarks, and program settings are not used by type '{filetype}'.")
         self._commands = []  # type: _typing.List[_typing.Tuple[int, int, int]]  # reg, value, delay
 
@@ -69,6 +70,7 @@ class ImfSong(AdlibSongFile):
             FileTypeInfo("imf0", "IMF Type 0 at 560 Hz (Bio Menace, Commander Keen, Cosmo's Cosmic Adventures, "
                                  "Monster Bash, Major Stryker)", "imf"),
             FileTypeInfo("imf0dn2", "IMF Type 0 at 280 Hz (Duke Nukem II)", "imf"),
+            FileTypeInfo("imf0wlf", "IMF Type 0 at 700 Hz (Wolfenstein 3-D for DOS/4GW)", "wlf"),
             FileTypeInfo("imf1", "IMF Type 1 at 700 Hz (Wolfenstein 3-D, Blake Stone, Operation Body Count, "
                                  "Corridor 7)", "wlf"),
         ]
@@ -98,15 +100,17 @@ class ImfSong(AdlibSongFile):
 
     def _save_file(self, fp, filename):
         command_count = self.command_count
-        _logging.info(f"Writing {command_count} commands.")
+        if command_count > ImfSong._MAXIMUM_COMMAND_COUNT:
+            _logging.warning(f"IMF file overflow.  Total commands: {command_count}.  "
+                             f"Maximum supported: {ImfSong._MAXIMUM_COMMAND_COUNT})")
         if self._filetype == "imf1":
             # IMF Type 1 is limited to a 2-byte unsigned data length.
             if command_count > ImfSong._MAXIMUM_COMMAND_COUNT:
-                _logging.warning(f"IMF file overflow.  Total commands: {command_count}; "
-                                 f"Written commands: {ImfSong._MAXIMUM_COMMAND_COUNT})")
+                _logging.warning(f"Truncating commands list for '{self._filetype}'.")
                 command_count = ImfSong._MAXIMUM_COMMAND_COUNT
             fp.write(_struct.pack("<H", command_count * 4))
         # command_count = ImfSong._MAXIMUM_COMMAND_COUNT
+        _logging.info(f"Writing {command_count} commands.")
         for command in self._commands[0:command_count]:
             fp.write(_struct.pack("<BBH", *command))
         # Add unofficial tag for type 1 files.
@@ -441,18 +445,18 @@ class ImfSong(AdlibSongFile):
                 _logging.warning(f"imf channel {ch.number} had open note: {ch.last_note}")
 
         # Remove commands that do nothing, ie: register value changes with no delay.
-        temp_commands = []
-        removed_commands = 0
-        for index in range(len(song._commands)):
-            command = song._commands[index]
-            if command[2] == 0:
-                regs = [None] * 256
-            if regs[command[0]] is None:
-                regs[command[0]] = regs[command[1]]
-                temp_commands.append(command)
-            else:
-                removed_commands += 1
-        _logging.debug(f"Removed {removed_commands} unnecessary commands.")
+        # temp_commands = []
+        # removed_commands = 0
+        # for index in range(len(song._commands)):
+        #     command = song._commands[index]
+        #     if command[2] == 0:
+        #         regs = [None] * 256
+        #     if regs[command[0]] is None:
+        #         regs[command[0]] = regs[command[1]]
+        #         temp_commands.append(command)
+        #     else:
+        #         removed_commands += 1
+        # _logging.debug(f"Removed {removed_commands} unnecessary commands.")
 
         return song
 
