@@ -8,14 +8,14 @@ A program to create IMF music used by several classic ID and Apogee games such a
 
 ### Prerequisites
 
-You need Python 2.7 to run this.
+You need Python 3.7 to run this.
 
 ### Installing
 
 Clone or download this repository.
 
 #### Windows
-There are no additional requirements.
+pip install watchdog
 
 #### Dependencies on Linux
 On Linux you will need to install some of dependencies to be able run this
