@@ -1,14 +1,15 @@
 import logging
 import os
-import shelve
-import subprocess
-import typing
-# import pyinotify
-import platform
 import threading
+import typing
+import shelve
+import shutil
+import subprocess
+import platform
+from watchdog.events import PatternMatchingEventHandler
+from watchdog.observers import Observer
 import imfcreator.instruments as instruments
 import imfcreator.resources as resources
-# from distutils import spawn
 from imfcreator.plugins import AdlibSongFile, MidiSongFile
 from imfcreator.player import AdlibPlayer, PlayerState
 
@@ -28,31 +29,14 @@ except ImportError:
 
 __version__ = 0.1
 _ADLIB_FILETYPES = AdlibSongFile.get_filetypes()
-PADDING = {"padx": 5, "pady": 5}
 
 
-# def get_filetype_info(filetype):
-#     """
-#     Gets the filetype info for the given filetype index or name.
-#
-#     :param filetype: can be an index in the _FILETYPES list or a filetype name
-#     :return: The FileType info.
-#     """
-#     try:
-#         # filetype is an index.
-#         return _FILETYPES[filetype]
-#     except TypeError:
-#         # filetype is a name.
-#         return next((info for info in _FILETYPES if info.name == filetype), None)
-
-
-def run_and_exit(on_exit, proc_args):
-    def run_in_thread(_on_exit, _proc_args):
+def run_and_exit(proc_args, on_exit: callable) -> threading.Thread:
+    def run_in_thread(_proc_args, _on_exit):
         proc = subprocess.Popen(proc_args)
         proc.wait()
         _on_exit()
-        return
-    thread = threading.Thread(target=run_in_thread, args=(on_exit, proc_args))
+    thread = threading.Thread(target=run_in_thread, args=(proc_args, on_exit))
     thread.start()
     # returns immediately after the thread starts
     return thread
@@ -105,9 +89,10 @@ class Menu(tk.Menu):
 class InfoFrame(tk.Frame):
     def __init__(self, parent: "MainApplication", *_, **kwargs):
         super().__init__(parent, **kwargs)
+        padding = {"padx": 5, "pady": 5}
         # File type row.
         row = 0
-        ttk.Label(self, text="Output File Type:").grid(row=row, column=0, sticky=tk.W, **PADDING)
+        ttk.Label(self, text="Output File Type:").grid(row=row, column=0, sticky=tk.W, **padding)
         self.filetype_combo = ttk.Combobox(self,
                                            justify='left',
                                            state="readonly",
@@ -117,24 +102,23 @@ class InfoFrame(tk.Frame):
         self.filetype_combo.bind("<<ComboboxSelected>>",
                                  lambda event:
                                  parent.set_filetype(_ADLIB_FILETYPES[self.filetype_combo.current()].name))
-        self.filetype_combo.grid(row=row, column=1, sticky=tk.W, **PADDING)
+        self.filetype_combo.grid(row=row, column=1, sticky=tk.W, **padding)
         # Current song file row.
         row += 1
-        ttk.Label(self, text="Current Song:").grid(row=row, column=0, sticky=tk.W, **PADDING)
+        ttk.Label(self, text="Current Song:").grid(row=row, column=0, sticky=tk.W, **padding)
         self.song_label = ttk.Label(self,
                                     justify=tk.LEFT,
                                     width=70,
                                     relief=tk.SUNKEN)
-        self.song_label.grid(row=row, column=1, sticky=tk.W, **PADDING)
+        self.song_label.grid(row=row, column=1, sticky=tk.W, **padding)
         # Current bank file row.
         row += 1
-        ttk.Label(self, text="Current Bank:").grid(row=row, column=0, sticky=tk.W, **PADDING)
+        ttk.Label(self, text="Current Bank:").grid(row=row, column=0, sticky=tk.W, **padding)
         self.bank_label = ttk.Label(self,
-                                    text="BANK FILE",  # os.path.basename(self.bank_file),
                                     justify=tk.LEFT,
                                     width=70,
-                                    relief=tk.SUNKEN)  # flat, groove, raised, ridge, solid, or sunken
-        self.bank_label.grid(row=row, column=1, sticky=tk.W, **PADDING)
+                                    relief=tk.SUNKEN)
+        self.bank_label.grid(row=row, column=1, sticky=tk.W, **padding)
 
         # Set up variable monitoring.
         def monitor_filetype_variable(combo, var):
@@ -211,6 +195,15 @@ class Settings:
         del self._db
 
 
+class BankFileEventHandler(PatternMatchingEventHandler):
+    def __init__(self, parent: "MainApplication", filename: str):
+        super().__init__(patterns=[filename], ignore_directories=True)
+        self.parent = parent
+
+    def on_modified(self, event):
+        self.parent.reload_bank()
+
+
 class MainApplication(ttk.Frame):
     def __init__(self, parent, *_, **kwargs):
         super().__init__(parent, **kwargs)
@@ -225,10 +218,9 @@ class MainApplication(ttk.Frame):
         self.filetype.trace_add("write", lambda *_: self._convert_song())
         self.song_file.trace_add("write", lambda *_: self.reload_song())
         self.bank_file.trace_add("write", lambda *_: self.reload_bank())
-        # self.be_notifier = None
-        # self.be_wm = None
-        # self.be_wdd = None
-        # self.be_thread = None
+        # Bank file monitoring.
+        self.bank_file_observer = None  # type: typing.Optional[Observer]
+        self.bank_editor_thread = None  # type: typing.Optional[threading.Thread]
         # Create the UI
         self.player = AdlibPlayer()
         self.menubar = Menu(self)
@@ -241,47 +233,32 @@ class MainApplication(ttk.Frame):
         self.update()
 
     def _bank_editor_exit(self):
-        self.be_notifier.stop()
-        del self.be_wdd
-        del self.be_notifier
-        del self.be_wm
-        del self.be_thread
-        self.be_notifier = None
-        self.be_wm = None
-        self.be_wdd = None
-        self.be_thread = None
-
-    # class FileModifyHandler(pyinotify.ProcessEvent):
-    #     def __init__(self, p_root):
-    #         pyinotify.ProcessEvent.__init__(self)
-    #         self.root = p_root
-    #
-    #     # Reload bank and the song once bank was saved on the side of OPL3 Bank Editor
-    #     def process_IN_CLOSE_WRITE(self, evt):
-    #         self.root.reload_bank()
-    #         self.root.reload_song()
+        if self.bank_file_observer:
+            self.bank_file_observer.stop()
+            self.bank_file_observer = None
+        self.bank_editor_thread = None
 
     def edit_instruments(self):
-        pass
-        # be_exec = spawn.find_executable('opl3_bank_editor')
-        # # TODO: Add an option to manually specify a path to Bank Editor executable when it can't be find automatically
-        # if be_exec is None:
-        #     messagebox.showwarning("OPL3 Bank Editor is not found",
-        #                            "Can't run opl3_bank_editor because it's probably not installed. "
-        #                            "You can find it here: \n"
-        #                            "https://github.com/Wohlstand/OPL3BankEditor", parent=self.frame)
-        # elif self.be_wm is None and self.be_thread is None:
-        #     # Setup file modify watcher (after saving of bank file by Bank Editor
-        #     # a reload of bank and music files should happen automatically)
-        #     # handler = MainApplication.FileModifyHandler(self)
-        #     # self.be_wm = pyinotify.WatchManager()
-        #     # self.be_notifier = pyinotify.ThreadedNotifier(self.be_wm, handler)
-        #     # self.be_notifier.start()
-        #     # self.be_wdd = self.be_wm.add_watch(self.bank_file.get(), pyinotify.IN_CLOSE_WRITE, rec=True)
-        #     # # Start Bank Editor
-        #     # self.be_thread = run_and_exit(self._bank_editor_exit, [be_exec, self.bank_file])
-        # else:
-        #     messagebox.showwarning("Already open", "Instruments Editor is already running.", parent=self.frame)
+        bank_editor = shutil.which('opl3_bank_editor', path='./opl3-bank-editor')
+        # TODO: Add an option to manually specify a path to Bank Editor executable when it can't be find automatically
+        if bank_editor is None:
+            messagebox.showwarning("OPL3 Bank Editor Not Found",
+                                   "Could not run opl3_bank_editor.  Please install it and try again.\n"
+                                   "It can be downloaded from:\n"
+                                   "https://github.com/Wohlstand/OPL3BankEditor", parent=self)
+        elif self.bank_file_observer is None:
+            # Setup file modify watcher (after saving of bank file by Bank Editor
+            # a reload of bank and music files should happen automatically)
+            bank_file = self.bank_file.get()
+            handler = BankFileEventHandler(self, bank_file)
+            self.bank_file_observer = Observer()
+            self.bank_file_observer.schedule(handler, path=os.path.split(bank_file)[0])
+            self.bank_file_observer.start()
+            # Start Bank Editor
+            self.bank_editor_thread = run_and_exit([bank_editor, self.bank_file.get()], self._bank_editor_exit)
+        else:
+            messagebox.showwarning("OPL3 Bank EditorAlready Open",
+                                   "The instruments editor is already running.", parent=self)
 
     def set_filetype(self, filetype):
         self.filetype.set(filetype)
@@ -364,6 +341,9 @@ class MainApplication(ttk.Frame):
             self._adlib_song.save_file(dst_song)  # , filetype=self.filetype)
 
     def close_window(self):
+        if self.bank_editor_thread:
+            messagebox.showwarning("OPL3 Bank Editor Open", "Please close opl3_bank_editor first.", parent=self)
+            return
         self._settings.close()
         self.player.close()
         self.destroy()
