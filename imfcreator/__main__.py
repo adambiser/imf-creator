@@ -174,6 +174,66 @@ class ToolBar(ttk.Frame):
         self.play_button["image"] = self.play_button.image
 
 
+class BankEditor:
+    def __init__(self, parent: "MainApplication"):
+        self.parent = parent
+        self._observer = None  # type: typing.Optional[Observer]
+        self._thread = None  # type: typing.Optional[threading.Thread]
+        # self._reload_timer = None  # type: typing.Optional[threading.Timer]
+        self._reload_timer = threading.Timer(0.2, self.parent.reload_bank)
+
+    def is_alive(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()
+
+    @property
+    def executable(self) -> str:
+        # TODO: Add an option to manually specify a path to Bank Editor executable when it can't be find automatically
+        return shutil.which('opl3_bank_editor', path='./opl3-bank-editor')
+
+    def _close(self):
+        if self._observer:
+            self._observer.stop()
+            self._observer = None
+        self._thread = None
+
+    def open(self):
+        editor = self.executable
+        if editor is None:
+            messagebox.showwarning("OPL3 Bank Editor Not Found",
+                                   "Could not run opl3_bank_editor.  Please install it and try again.\n"
+                                   "It can be downloaded from:\n"
+                                   "https://github.com/Wohlstand/OPL3BankEditor", parent=self.parent)
+        elif self._observer is None:
+            # Setup file modify watcher (after saving of bank file by Bank Editor
+            # a reload of bank and music files should happen automatically)
+            bank_file = self.parent.bank_file.get()
+            # handler = BankEditor.FileEventHandler(self.parent, bank_file)
+            handler = PatternMatchingEventHandler(patterns=[bank_file], ignore_directories=True)
+
+            def start_reload_timer(event):
+                if not self._reload_timer.is_alive():
+                    self._reload_timer.start()
+
+            # Multiple events can fire quickly, so use a timer to reload only once.
+            handler.on_modified = start_reload_timer  # lambda event: self.parent.reload_bank()
+            self._observer = Observer()
+            self._observer.schedule(handler, path=os.path.split(bank_file)[0])
+            self._observer.start()
+            # Start Bank Editor
+            self._thread = run_and_exit([editor, bank_file], self._close)
+        else:
+            messagebox.showwarning("OPL3 Bank EditorAlready Open",
+                                   "The instruments editor is already running.", parent=self.parent)
+
+    # class FileEventHandler(PatternMatchingEventHandler):
+    #     def __init__(self, parent: "MainApplication", filename: str):
+    #         super().__init__(patterns=[filename], ignore_directories=True)
+    #         self.parent = parent
+    #
+    #     def on_modified(self, event):
+    #         self.parent.reload_bank()
+
+
 class Settings:
     def __init__(self, parent):
         self._db = shelve.open('settings', writeback=True)
@@ -195,15 +255,6 @@ class Settings:
         del self._db
 
 
-class BankFileEventHandler(PatternMatchingEventHandler):
-    def __init__(self, parent: "MainApplication", filename: str):
-        super().__init__(patterns=[filename], ignore_directories=True)
-        self.parent = parent
-
-    def on_modified(self, event):
-        self.parent.reload_bank()
-
-
 class MainApplication(ttk.Frame):
     def __init__(self, parent, *_, **kwargs):
         super().__init__(parent, **kwargs)
@@ -218,9 +269,6 @@ class MainApplication(ttk.Frame):
         self.filetype.trace_add("write", lambda *_: self._convert_song())
         self.song_file.trace_add("write", lambda *_: self.reload_song())
         self.bank_file.trace_add("write", lambda *_: self.reload_bank())
-        # Bank file monitoring.
-        self.bank_file_observer = None  # type: typing.Optional[Observer]
-        self.bank_editor_thread = None  # type: typing.Optional[threading.Thread]
         # Create the UI
         self.player = AdlibPlayer()
         self.menubar = Menu(self)
@@ -230,35 +278,11 @@ class MainApplication(ttk.Frame):
         self.toolbar.pack(side=tk.TOP, anchor=tk.W)
         self.infoframe.pack(side=tk.TOP, anchor=tk.W)
         self._settings = Settings(self)
+        self._bank_editor = BankEditor(self)
         self.update()
 
-    def _bank_editor_exit(self):
-        if self.bank_file_observer:
-            self.bank_file_observer.stop()
-            self.bank_file_observer = None
-        self.bank_editor_thread = None
-
     def edit_instruments(self):
-        bank_editor = shutil.which('opl3_bank_editor', path='./opl3-bank-editor')
-        # TODO: Add an option to manually specify a path to Bank Editor executable when it can't be find automatically
-        if bank_editor is None:
-            messagebox.showwarning("OPL3 Bank Editor Not Found",
-                                   "Could not run opl3_bank_editor.  Please install it and try again.\n"
-                                   "It can be downloaded from:\n"
-                                   "https://github.com/Wohlstand/OPL3BankEditor", parent=self)
-        elif self.bank_file_observer is None:
-            # Setup file modify watcher (after saving of bank file by Bank Editor
-            # a reload of bank and music files should happen automatically)
-            bank_file = self.bank_file.get()
-            handler = BankFileEventHandler(self, bank_file)
-            self.bank_file_observer = Observer()
-            self.bank_file_observer.schedule(handler, path=os.path.split(bank_file)[0])
-            self.bank_file_observer.start()
-            # Start Bank Editor
-            self.bank_editor_thread = run_and_exit([bank_editor, self.bank_file.get()], self._bank_editor_exit)
-        else:
-            messagebox.showwarning("OPL3 Bank EditorAlready Open",
-                                   "The instruments editor is already running.", parent=self)
+        self._bank_editor.open()
 
     def set_filetype(self, filetype):
         self.filetype.set(filetype)
@@ -266,6 +290,7 @@ class MainApplication(ttk.Frame):
     def open_bank_file(self):
         dir_path = os.path.dirname(self.bank_file.get()) if self.bank_file.get() else None
         bank = filedialog.askopenfilename(title="Open an instruments bank file",
+                                          # TODO build filetypes list from plugins
                                           filetypes=(
                                               ("Bank files", "*.op2 *.wopl *.OP2 *.WOPL"),
                                               ("all files", "*.*")
@@ -274,12 +299,13 @@ class MainApplication(ttk.Frame):
                                           initialdir=dir_path)
         if bank:
             self.bank_file.set(bank)
-            self.load_bank(self.bank_file.get())
-            self.reload_song()
+            # self.load_bank(self.bank_file.get())
+            # self.reload_song()
 
     def open_music_file(self):
         dir_path = os.path.dirname(self.song_file.get()) if self.song_file.get() else None
         song = filedialog.askopenfilename(title="Open a music file (MIDI or IMF)",
+                                          # TODO build filetypes list from plugins
                                           filetypes=(
                                               ("MIDI files", "*.mid *.MID"),
                                               ("IMF files", "*.imf *.wlf *.IMF *.WLF"),
@@ -293,7 +319,6 @@ class MainApplication(ttk.Frame):
     def reload_bank(self):
         self.load_bank(self.bank_file.get())
 
-    # noinspection PyMethodMayBeStatic
     def load_bank(self, path):
         instruments.clear()
         instruments.add_file(path)
@@ -333,6 +358,7 @@ class MainApplication(ttk.Frame):
             'initialdir': dir_path,
             'initialfile': file_basename + ".imf",
             'parent': self,
+            # TODO build filetypes list from plugins
             'filetypes': [("IMF file", ".imf")],
             'title': "Save an IMF file"
         }
@@ -341,7 +367,7 @@ class MainApplication(ttk.Frame):
             self._adlib_song.save_file(dst_song)  # , filetype=self.filetype)
 
     def close_window(self):
-        if self.bank_editor_thread:
+        if self._bank_editor.is_alive():
             messagebox.showwarning("OPL3 Bank Editor Open", "Please close opl3_bank_editor first.", parent=self)
             return
         self._settings.close()
