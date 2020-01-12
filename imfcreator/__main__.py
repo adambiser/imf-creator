@@ -94,7 +94,7 @@ class InfoFrame(tk.Frame):
         row = 0
         ttk.Label(self, text="Output File Type:").grid(row=row, column=0, sticky=tk.W, **padding)
         self.filetype_combo = ttk.Combobox(self,
-                                           justify='left',
+                                           justify="left",
                                            state="readonly",
                                            values=[filetype.description for filetype in _ADLIB_FILETYPES],
                                            height=8,
@@ -158,11 +158,12 @@ class ToolBar(ttk.Frame):
         self.open_bank_button = create_button("Open Bank File", "bank.gif", parent.open_bank_file)
         self.open_music_button = create_button("Open Music File", "song.gif", parent.open_music_file)
         self.play_button = create_button("Play", "play.gif", parent.toggle_play)
+        self.play_button["state"] = tk.DISABLED
         self.save_button = create_button("Save", "save.gif", parent.save_imf)
         self.save_button["state"] = tk.DISABLED
 
-        self.play_image = resources.get_image('play.gif')
-        self.stop_image = resources.get_image('stop.gif')
+        self.play_image = resources.get_image("play.gif")
+        self.stop_image = resources.get_image("stop.gif")
         parent.player.onstatechanged.add_handler(self._on_player_state_changed)
 
     def _on_player_state_changed(self, state):
@@ -188,7 +189,7 @@ class BankEditor:
     @property
     def executable(self) -> str:
         # TODO: Add an option to manually specify a path to Bank Editor executable when it can't be find automatically
-        return shutil.which('opl3_bank_editor', path='./opl3-bank-editor')
+        return shutil.which("opl3_bank_editor", path="./opl3-bank-editor")
 
     def _close(self):
         if self._observer:
@@ -236,7 +237,7 @@ class BankEditor:
 
 class Settings:
     def __init__(self, parent):
-        self._db = shelve.open('settings', writeback=True)
+        self._db = shelve.open("settings", writeback=True)
 
         def monitor_variable(var: tk.Variable, settings_key: str, default):
             def write_setting(*_):
@@ -259,7 +260,7 @@ class MainApplication(ttk.Frame):
     def __init__(self, parent, *_, **kwargs):
         super().__init__(parent, **kwargs)
         self.parent = parent
-        # self.tk.call('wm', 'iconbitmap', self._w, '-default', os.path.join(Resources.PATH, 'icon.ico'))
+        # self.tk.call("wm", "iconbitmap", self._w, "-default", os.path.join(Resources.PATH, "icon.ico"))
         # Define variables
         self._adlib_song = None  # type: typing.Optional[AdlibSongFile]
         self._midi_song = None  # type: typing.Optional[MidiSongFile]
@@ -325,7 +326,8 @@ class MainApplication(ttk.Frame):
         self._convert_song()
 
     def reload_song(self):
-        self.toolbar.save_button['state'] = tk.DISABLED
+        self.toolbar.play_button["state"] = tk.DISABLED
+        self.toolbar.save_button["state"] = tk.DISABLED
         self._midi_song = None
         if self.song_file.get():
             self._midi_song = MidiSongFile.load_file(self.song_file.get())
@@ -333,12 +335,14 @@ class MainApplication(ttk.Frame):
 
     def _convert_song(self):
         self.player.stop()
-        self.toolbar.save_button['state'] = tk.DISABLED
+        self.toolbar.play_button["state"] = tk.DISABLED
+        self.toolbar.save_button["state"] = tk.DISABLED
         self._adlib_song = None
         try:
             if self._midi_song and self.filetype.get():
                 self._adlib_song = AdlibSongFile.convert_from(self._midi_song, self.filetype.get())
-                self.toolbar.save_button['state'] = tk.NORMAL
+                self.toolbar.play_button["state"] = tk.NORMAL
+                self.toolbar.save_button["state"] = tk.NORMAL
             self.player.set_song(self._adlib_song)
         except ValueError as ex:
             logging.error(ex)
@@ -354,13 +358,13 @@ class MainApplication(ttk.Frame):
         dir_path = os.path.dirname(self.song_file.get()) if self.song_file.get() else None
         file_basename = os.path.splitext(os.path.basename(self.song_file.get()))[0] if self.song_file else None
         options = {
-            'defaultextension': '.imf',
-            'initialdir': dir_path,
-            'initialfile': file_basename + ".imf",
-            'parent': self,
+            "defaultextension": ".imf",
+            "initialdir": dir_path,
+            "initialfile": file_basename + ".imf",
+            "parent": self,
             # TODO build filetypes list from plugins
-            'filetypes': [("IMF file", ".imf")],
-            'title': "Save an IMF file"
+            "filetypes": [("IMF file", ".imf")],
+            "title": "Save an IMF file"
         }
         dst_song = filedialog.asksaveasfilename(**options)
         if dst_song:
@@ -385,7 +389,7 @@ def main():
         # toplevel.update()
     root = tk.Tk()
     root.resizable(False, False)
-    root.title(f'PyImfCreator {__version__}')
+    root.title(f"PyImfCreator {__version__}")
     root.style = ttk.Style()
     root.style.theme_use("vista" if platform.system() == "Windows" else "clam")
     app = MainApplication(root)
