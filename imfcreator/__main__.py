@@ -197,8 +197,6 @@ class BankEditor:
         self.parent = parent
         self._observer = None  # type: typing.Optional[Observer]
         self._thread = None  # type: typing.Optional[threading.Thread]
-        # self._reload_timer = None  # type: typing.Optional[threading.Timer]
-        self._reload_timer = threading.Timer(0.2, self.parent.reload_bank)
 
     def is_alive(self) -> bool:
         return self._thread is not None and self._thread.is_alive()
@@ -250,15 +248,7 @@ class BankEditor:
             # Setup file modify watcher (after saving of bank file by Bank Editor
             # a reload of bank and music files should happen automatically)
             bank_file = self.parent.bank_file.get()
-            # handler = BankEditor.FileEventHandler(self.parent, bank_file)
-            handler = PatternMatchingEventHandler(patterns=[bank_file], ignore_directories=True)
-
-            def start_reload_timer(_):
-                if not self._reload_timer.is_alive():
-                    self._reload_timer.start()
-
-            # Multiple events can fire quickly, so use a timer to reload only once.
-            handler.on_modified = start_reload_timer  # lambda event: self.parent.reload_bank()
+            handler = BankEditor.FileEventHandler(self.parent, bank_file)
             self._observer = Observer()
             self._observer.schedule(handler, path=os.path.split(bank_file)[0])
             self._observer.start()
@@ -268,13 +258,18 @@ class BankEditor:
             messagebox.showwarning("OPL3 Bank EditorAlready Open",
                                    "The instruments editor is already running.", parent=self.parent)
 
-    # class FileEventHandler(PatternMatchingEventHandler):
-    #     def __init__(self, parent: "MainApplication", filename: str):
-    #         super().__init__(patterns=[filename], ignore_directories=True)
-    #         self.parent = parent
-    #
-    #     def on_modified(self, event):
-    #         self.parent.reload_bank()
+    class FileEventHandler(PatternMatchingEventHandler):
+        def __init__(self, parent: "MainApplication", filename: str):
+            super().__init__(patterns=[filename], ignore_directories=True)
+            self.parent = parent
+            self._reload_timer = None  # type: typing.Optional[threading.Timer]
+
+        def on_modified(self, event):
+            if self._reload_timer and not self._reload_timer.is_alive():
+                self._reload_timer = None
+            if not self._reload_timer:
+                self._reload_timer = threading.Timer(0.2, self.parent.reload_bank)
+                self._reload_timer.start()
 
 
 class Settings:
