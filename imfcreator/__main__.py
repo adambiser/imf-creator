@@ -31,15 +31,19 @@ __version__ = 0.1
 _ADLIB_FILETYPES = AdlibSongFile.get_filetypes()
 
 
-def run_and_exit(proc_args, on_exit: callable) -> threading.Thread:
-    def run_in_thread(_proc_args, _on_exit):
-        proc = subprocess.Popen(proc_args)
+def run_and_exit(args, on_exit_method: callable) -> threading.Thread:
+    def run_in_thread(_args, _on_exit_method):
+        proc = subprocess.Popen(args)
         proc.wait()
-        _on_exit()
-    thread = threading.Thread(target=run_in_thread, args=(proc_args, on_exit))
+        _on_exit_method()
+    thread = threading.Thread(target=run_in_thread, args=(args, on_exit_method))
     thread.start()
     # returns immediately after the thread starts
     return thread
+
+
+def is_windows() -> bool:
+    return platform.system() == "Windows"
 
 
 class Menu(tk.Menu):
@@ -52,14 +56,27 @@ class Menu(tk.Menu):
             return menu
 
         self.file_menu = create_menu("File")
-        self.file_menu.add_command(label="Open", command=parent.open_music_file)
+        self.file_menu.add_command(label="Open Song File", command=parent.open_music_file)
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Select Bank File", command=parent.open_bank_file)
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=parent.close_window)
 
-        self.edit_menu = create_menu("Edit")
-        self.edit_menu.add_command(label="Instruments", command=parent.edit_instruments)
+        self.tools_menu = create_menu("Tools")
+        instrument_editor_label = "Open Instrument Editor"
+        self.tools_menu.add_command(label=instrument_editor_label, command=parent.bank_editor.open, state=tk.DISABLED)
+        self.tools_menu.add_separator()
+        self.tools_menu.add_command(label="Select Instrument Editor", command=parent.bank_editor.select_path)
 
-        self.options_menu = create_menu("Options")
+        def monitor_bank_editor_path(menu, index, var):
+            def update_menu_state(*_):
+                menu.entryconfig(index, state=tk.NORMAL if os.path.isfile(var.get()) else tk.DISABLED)
+            update_menu_state()
+            var.trace_add("write", update_menu_state)
+
+        monitor_bank_editor_path(self.tools_menu, instrument_editor_label, parent.bank_editor_path)
+
+        # self.options_menu = create_menu("Options")
         # options_menu_filetypes = tk.Menu(menubar, tearoff=0)
         # for info in AdlibSongFile.get_filetypes():
         #     options_menu_filetypes.add_command(label=info.description,
@@ -75,7 +92,7 @@ class Menu(tk.Menu):
         # options_menu.add_command(label="Aggressive Channel Selection", command=do_nothing, state=tk.DISABLED)
         # options_menu.add_command(label="Do Pitchbends", command=do_nothing, state=tk.DISABLED)
         # self.options_menu.add_separator()
-        self.options_menu.add_command(label="Select bank file", command=parent.open_bank_file)
+        # self.options_menu.add_command(label="Select bank file", command=parent.open_bank_file)
         # options_menu.add_command(label="Pitchbend Scale", command=self.open_bank_file, state=tk.DISABLED)
         # options_menu.add_command(label="Pitchbend Threshold", command=self.open_bank_file, state=tk.DISABLED)
         # options_menu.add_separator()
@@ -159,7 +176,7 @@ class ToolBar(ttk.Frame):
         self.open_music_button = create_button("Open Music File", "song.gif", parent.open_music_file)
         self.play_button = create_button("Play", "play.gif", parent.toggle_play)
         self.play_button["state"] = tk.DISABLED
-        self.save_button = create_button("Save", "save.gif", parent.save_imf)
+        self.save_button = create_button("Save", "save.gif", parent.save_adlib_song)
         self.save_button["state"] = tk.DISABLED
 
         self.play_image = resources.get_image("play.gif")
@@ -187,9 +204,31 @@ class BankEditor:
         return self._thread is not None and self._thread.is_alive()
 
     @property
-    def executable(self) -> str:
-        # TODO: Add an option to manually specify a path to Bank Editor executable when it can't be find automatically
-        return shutil.which("opl3_bank_editor", path="./opl3-bank-editor")
+    def path(self) -> str:
+        path = self.parent.bank_editor_path.get()
+        if os.path.isfile(path):
+            return path
+        path = shutil.which("opl3_bank_editor")
+        # Store to notify any watchers of the change..
+        self.parent.bank_editor_path.set(path)
+        return path
+
+    def select_path(self):
+        dir_path = os.path.dirname(self.parent.bank_editor_path.get()) if self.parent.bank_editor_path.get() else None
+        path = filedialog.askdirectory(title="Choose the Location of the OPL3 Bank Editor",
+                                       parent=self.parent,
+                                       initialdir=dir_path)
+        if path:
+            path = shutil.which("opl3_bank_editor", path=path)
+            if not path:
+                messagebox.showwarning("OPL3 Bank Editor Not Found",
+                                       "Could not find opl3_bank_editor.  Please install it and try again.\n"
+                                       "It can be downloaded from:\n"
+                                       "https://github.com/Wohlstand/OPL3BankEditor", parent=self.parent)
+        else:
+            path = None
+        self.parent.bank_editor_path.set(path)
+        return path
 
     def _close(self):
         if self._observer:
@@ -198,12 +237,15 @@ class BankEditor:
         self._thread = None
 
     def open(self):
-        editor = self.executable
-        if editor is None:
-            messagebox.showwarning("OPL3 Bank Editor Not Found",
-                                   "Could not run opl3_bank_editor.  Please install it and try again.\n"
-                                   "It can be downloaded from:\n"
-                                   "https://github.com/Wohlstand/OPL3BankEditor", parent=self.parent)
+        editor_path = self.path
+        if not editor_path:
+            editor_path = self.select_path()
+        if not editor_path:
+            # messagebox.showwarning("OPL3 Bank Editor Not Found",
+            #                        "Could not run opl3_bank_editor.  Please install it and try again.\n"
+            #                        "It can be downloaded from:\n"
+            #                        "https://github.com/Wohlstand/OPL3BankEditor", parent=self.parent)
+            return
         elif self._observer is None:
             # Setup file modify watcher (after saving of bank file by Bank Editor
             # a reload of bank and music files should happen automatically)
@@ -211,7 +253,7 @@ class BankEditor:
             # handler = BankEditor.FileEventHandler(self.parent, bank_file)
             handler = PatternMatchingEventHandler(patterns=[bank_file], ignore_directories=True)
 
-            def start_reload_timer(event):
+            def start_reload_timer(_):
                 if not self._reload_timer.is_alive():
                     self._reload_timer.start()
 
@@ -221,7 +263,7 @@ class BankEditor:
             self._observer.schedule(handler, path=os.path.split(bank_file)[0])
             self._observer.start()
             # Start Bank Editor
-            self._thread = run_and_exit([editor, bank_file], self._close)
+            self._thread = run_and_exit([editor_path, bank_file], self._close)
         else:
             messagebox.showwarning("OPL3 Bank EditorAlready Open",
                                    "The instruments editor is already running.", parent=self.parent)
@@ -236,6 +278,7 @@ class BankEditor:
 
 
 class Settings:
+    # TODO move variables here and add a load() method.
     def __init__(self, parent):
         self._db = shelve.open("settings", writeback=True)
 
@@ -249,6 +292,7 @@ class Settings:
         monitor_variable(parent.bank_file, "bank_file", "genmidi/GENMIDI.OP2")
         monitor_variable(parent.song_file, "song_file", "")
         monitor_variable(parent.filetype, "filetype", "")
+        monitor_variable(parent.bank_editor_path, "bank_editor_path", "")
 
     def close(self):
         self._db.sync()
@@ -267,11 +311,13 @@ class MainApplication(ttk.Frame):
         self.filetype = tk.StringVar()
         self.song_file = tk.StringVar()
         self.bank_file = tk.StringVar()
+        self.bank_editor_path = tk.StringVar()
         self.filetype.trace_add("write", lambda *_: self._convert_song())
-        self.song_file.trace_add("write", lambda *_: self.reload_song())
+        self.song_file.trace_add("write", lambda *_: self.reload_midi_song())
         self.bank_file.trace_add("write", lambda *_: self.reload_bank())
         # Create the UI
         self.player = AdlibPlayer()
+        self.bank_editor = BankEditor(self)
         self.menubar = Menu(self)
         self.toolbar = ToolBar(self)
         self.infoframe = InfoFrame(self)
@@ -279,11 +325,7 @@ class MainApplication(ttk.Frame):
         self.toolbar.pack(side=tk.TOP, anchor=tk.W)
         self.infoframe.pack(side=tk.TOP, anchor=tk.W)
         self._settings = Settings(self)
-        self._bank_editor = BankEditor(self)
         self.update()
-
-    def edit_instruments(self):
-        self._bank_editor.open()
 
     def set_filetype(self, filetype):
         self.filetype.set(filetype)
@@ -300,8 +342,6 @@ class MainApplication(ttk.Frame):
                                           initialdir=dir_path)
         if bank:
             self.bank_file.set(bank)
-            # self.load_bank(self.bank_file.get())
-            # self.reload_song()
 
     def open_music_file(self):
         dir_path = os.path.dirname(self.song_file.get()) if self.song_file.get() else None
@@ -325,7 +365,7 @@ class MainApplication(ttk.Frame):
         instruments.add_file(path)
         self._convert_song()
 
-    def reload_song(self):
+    def reload_midi_song(self):
         self.toolbar.play_button["state"] = tk.DISABLED
         self.toolbar.save_button["state"] = tk.DISABLED
         self._midi_song = None
@@ -348,13 +388,7 @@ class MainApplication(ttk.Frame):
             logging.error(ex)
             self._adlib_song = None
 
-    def toggle_play(self):
-        if self.player.state == PlayerState.PLAYING:
-            self.player.stop()
-        else:
-            self.player.play()
-
-    def save_imf(self):
+    def save_adlib_song(self):
         dir_path = os.path.dirname(self.song_file.get()) if self.song_file.get() else None
         file_basename = os.path.splitext(os.path.basename(self.song_file.get()))[0] if self.song_file else None
         options = {
@@ -370,8 +404,14 @@ class MainApplication(ttk.Frame):
         if dst_song:
             self._adlib_song.save_file(dst_song)  # , filetype=self.filetype)
 
+    def toggle_play(self):
+        if self.player.state == PlayerState.PLAYING:
+            self.player.stop()
+        else:
+            self.player.play()
+
     def close_window(self):
-        if self._bank_editor.is_alive():
+        if self.bank_editor.is_alive():
             messagebox.showwarning("OPL3 Bank Editor Open", "Please close opl3_bank_editor first.", parent=self)
             return
         self._settings.close()
@@ -391,7 +431,7 @@ def main():
     root.resizable(False, False)
     root.title(f"PyImfCreator {__version__}")
     root.style = ttk.Style()
-    root.style.theme_use("vista" if platform.system() == "Windows" else "clam")
+    root.style.theme_use("vista" if is_windows() else "clam")
     app = MainApplication(root)
     app.pack(fill=tk.BOTH, expand=True)
     root.protocol("WM_DELETE_WINDOW", app.close_window)
