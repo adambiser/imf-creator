@@ -10,8 +10,10 @@ from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 import imfcreator.instruments as instruments
 import imfcreator.resources as resources
-from imfcreator.plugins import AdlibSongFile, MidiSongFile, InstrumentFile
+from imfcreator.plugins import AdlibSongFile, MidiSongFile, InstrumentFile, plugins_init
 from imfcreator.player import AdlibPlayer, PlayerState
+
+plugins_init()
 
 try:
     # noinspection PyPep8Naming
