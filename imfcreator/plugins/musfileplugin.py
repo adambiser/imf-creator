@@ -1,7 +1,8 @@
+import typing as _typing
 import imfcreator.midi as _midi
 import imfcreator.plugins._binary as _binary
 from enum import IntEnum as _IntEnum
-from . import MidiSongFile, plugin
+from . import FileTypeInfo, MidiSongFile, plugin
 from ._songbuilder import SongBuilder as _SongBuilder
 
 _SIGNATURE = b"MUS\x1a"
@@ -55,6 +56,12 @@ class MusFile(MidiSongFile):
     def __init__(self, fp=None, filename=None):
         self._division = 0.0
         super().__init__(fp, filename)
+
+    @classmethod
+    def _get_filetypes(cls) -> _typing.List[FileTypeInfo]:
+        return [
+            FileTypeInfo("mus", "DMX Music File", "mus")
+        ]
 
     @classmethod
     def accept(cls, preview: bytes, file: str) -> bool:

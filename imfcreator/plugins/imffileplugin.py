@@ -1,4 +1,3 @@
-import argparse as _argparse
 import logging as _logging
 import math as _math
 import struct as _struct
