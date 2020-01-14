@@ -27,9 +27,35 @@ def plugin(cls):
     if plugin_type:
         # noinspection PyProtectedMember
         plugin_type._PLUGINS.append(cls)
-        register_plugin = getattr(cls, "_register_plugin", None)
-        if callable(register_plugin):
-            register_plugin()
+        # register_plugin = getattr(cls, "_register_plugin", None)
+        # if callable(register_plugin):
+        #     register_plugin()
+
+        def validate_name(n):
+            invalid_chars = [c for c in n if not c.isalnum()]
+            if invalid_chars:
+                raise ValueError(f"Text must be alphanumeric only.  Invalid characters: {invalid_chars}")
+
+        # Process _filetypes
+        for filetype in cls._get_filetypes():
+            # filetypes can only be alphanumeric.
+            validate_name(filetype.name)
+            # filetypes must be unique across all plugins
+            # noinspection PyProtectedMember
+            current_filetype_class = next((c.cls for c in plugin_type._FILETYPES if c.info.name == filetype), None)
+            if current_filetype_class:
+                raise ValueError(f"A plugin for filetype {filetype.name} already exists.  "
+                                 f"Existing: {current_filetype_class.__name__}, "
+                                 f"Current: {cls.__name__}")
+            _logging.debug(f"Registering filetype: {filetype.name} -> {cls.__name__}")
+            # noinspection PyProtectedMember
+            plugin_type._FILETYPES.append(_FileTypeEntry(cls, filetype))
+            if getattr(cls, "_get_filetype_settings", None):
+                settings = cls._get_filetype_settings(filetype.name)
+                if settings:
+                    # Validate setting names.
+                    for setting in settings:
+                        validate_name(setting.name)
         return cls
     raise ValueError(f"Unrecognized plugin type.  Valid types: {_PLUGIN_TYPES}")
 
@@ -52,6 +78,7 @@ class FileTypeInfo(_typing.NamedTuple):
     """
     name: str
     description: str
+    # TODO Multiple extensions, ie : *.mid, *.smf, ^.midi
     default_extension: str
 
 
@@ -71,6 +98,8 @@ class FileTypeSetting(_typing.NamedTuple):
 class InstrumentFile:
     """The base class for instrument file types."""
 
+    _FILETYPES = []  # type: _typing.List[_FileTypeEntry]
+
     def __init__(self, fp, file: str):
         self.instruments = {}  # type: _typing.Dict[InstrumentId, _AdlibInstrument]
         self.file = file
@@ -79,6 +108,11 @@ class InstrumentFile:
             self._load_file()
         finally:
             del self.fp
+
+    @classmethod
+    def _get_filetypes(cls) -> _typing.List[FileTypeInfo]:
+        """Returns a list of file types the class can read."""
+        raise NotImplementedError()
 
     @classmethod
     def accept(cls, preview: bytes, path: str) -> bool:
@@ -127,6 +161,10 @@ class InstrumentFile:
                 fp.close()
         raise ValueError(f'Failed to load "{filename}" as {cls.__name__}.')
 
+    @classmethod
+    def get_filetypes(cls) -> _typing.List["FileTypeInfo"]:
+        return [c.info for c in cls._FILETYPES]
+
 
 @_plugin_type
 class MidiSongFile:
@@ -135,6 +173,7 @@ class MidiSongFile:
     Implementing classes should populate `self.events` during `_load_file`.
     """
 
+    _FILETYPES = []  # type: _typing.List[_FileTypeEntry]
     PERCUSSION_CHANNEL = 9
     DEFAULT_PITCH_BEND_SCALE = 2.0
 
@@ -152,6 +191,11 @@ class MidiSongFile:
             self.sort()
         finally:
             del self.fp
+
+    @classmethod
+    def _get_filetypes(cls) -> _typing.List[FileTypeInfo]:
+        """Returns a list of file types the class can read."""
+        raise NotImplementedError()
 
     @classmethod
     def accept(cls, preview: bytes, path: str) -> bool:
@@ -194,6 +238,10 @@ class MidiSongFile:
                         _logging.error(f'Error while loading "{filename}" using {subclass.__name__}: {ex}')
         raise ValueError(f'Failed to load "{filename}" as {cls.__name__}.')
 
+    @classmethod
+    def get_filetypes(cls) -> _typing.List["FileTypeInfo"]:
+        return [c.info for c in cls._FILETYPES]
+
 
 class _FileTypeEntry(_typing.NamedTuple):
     cls: _typing.Type["AdlibSongFile"]
@@ -207,7 +255,7 @@ class AdlibSongFile:
     Interacts with the song player.
     """
 
-    __FILETYPES =[]  # type: _typing.List[_FileTypeEntry]
+    _FILETYPES = []  # type: _typing.List[_FileTypeEntry]
 
     def __init__(self, midi_song: MidiSongFile, filetype: str):
         self._default_outfile = _os.path.splitext(midi_song.file)[0]
@@ -291,11 +339,11 @@ class AdlibSongFile:
 
     @classmethod
     def get_filetypes(cls) -> _typing.List["FileTypeInfo"]:
-        return [c.info for c in cls.__FILETYPES]
+        return [c.info for c in cls._FILETYPES]
 
     @classmethod
     def _get_filetype_entry(cls, filetype) -> _typing.Optional[_typing.Type[_FileTypeEntry]]:
-        return next((entry for entry in cls.__FILETYPES if entry.info.name == filetype), None)
+        return next((entry for entry in cls._FILETYPES if entry.info.name == filetype), None)
 
     @classmethod
     def get_filetype_class(cls, filetype: str) -> _typing.Type["AdlibSongFile"]:
@@ -316,31 +364,31 @@ class AdlibSongFile:
         ext = entry.info.default_extension
         return ext if ext.startswith(".") else f".{ext}"
 
-    @classmethod
-    def _register_plugin(cls):
-        """Extra plugin registration code.  Registers the class's filetypes"""
-        def validate_name(n):
-            invalid_chars = [c for c in n if not c.isalnum()]
-            if invalid_chars:
-                raise ValueError(f"Text must be alphanumeric only.  Invalid characters: {invalid_chars}")
-
-        # Process _filetypes
-        for filetype in cls._get_filetypes():
-            # filetypes can only be alphanumeric.
-            validate_name(filetype.name)
-            # filetypes must be unique across all plugins
-            current_filetype_class = next((c.cls for c in cls.__FILETYPES if c.info.name == filetype), None)
-            if current_filetype_class:
-                raise ValueError(f"A plugin for filetype {filetype.name} already exists.  "
-                                 f"Existing: {current_filetype_class.__name__}, "
-                                 f"Current: {cls.__name__}")
-            _logging.debug(f"Registering filetype: {filetype.name} -> {cls.__name__}")
-            cls.__FILETYPES.append(_FileTypeEntry(cls, filetype))
-            settings = cls._get_filetype_settings(filetype.name)
-            if settings:
-                # Validate setting names.
-                for setting in settings:
-                    validate_name(setting.name)
+    # @classmethod
+    # def _register_plugin(cls):
+    #     """Extra plugin registration code.  Registers the class's filetypes"""
+    #     def validate_name(n):
+    #         invalid_chars = [c for c in n if not c.isalnum()]
+    #         if invalid_chars:
+    #             raise ValueError(f"Text must be alphanumeric only.  Invalid characters: {invalid_chars}")
+    #
+    #     # Process _filetypes
+    #     for filetype in cls._get_filetypes():
+    #         # filetypes can only be alphanumeric.
+    #         validate_name(filetype.name)
+    #         # filetypes must be unique across all plugins
+    #         current_filetype_class = next((c.cls for c in cls._FILETYPES if c.info.name == filetype), None)
+    #         if current_filetype_class:
+    #             raise ValueError(f"A plugin for filetype {filetype.name} already exists.  "
+    #                              f"Existing: {current_filetype_class.__name__}, "
+    #                              f"Current: {cls.__name__}")
+    #         _logging.debug(f"Registering filetype: {filetype.name} -> {cls.__name__}")
+    #         cls._FILETYPES.append(_FileTypeEntry(cls, filetype))
+    #         settings = cls._get_filetype_settings(filetype.name)
+    #         if settings:
+    #             # Validate setting names.
+    #             for setting in settings:
+    #                 validate_name(setting.name)
 
 
 def _load_plugins():

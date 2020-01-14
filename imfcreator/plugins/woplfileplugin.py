@@ -2,7 +2,7 @@ import typing as _typing
 import imfcreator.adlib as _adlib
 import imfcreator.instruments as _instruments
 from collections import namedtuple
-from . import plugin, InstrumentFile, InstrumentId
+from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId
 from ._binary import u8, s8, u16le, u16be, s16be
 
 
@@ -11,7 +11,6 @@ _BANK_ENTRY = namedtuple("_BANK_ENTRY", ["name", "lsb", "msb"])
 
 @plugin
 class WoplFilePlugin(InstrumentFile):
-    DESCRIPTION = "Wohlstand's OPL3 bank file"
     _FILE_SIGNATURE = b"WOPL3-BANK\0"
     # Flags
     _FLAG_2OP_MODE = 0x00
@@ -27,6 +26,12 @@ class WoplFilePlugin(InstrumentFile):
         self._bank_meta_entry_start = None
         self._bank_meta_entry_size = None
         super().__init__(fp, file)
+
+    @classmethod
+    def _get_filetypes(cls) -> _typing.List[FileTypeInfo]:
+        return [
+            FileTypeInfo("wopl", "Wohlstand's OPL3 Bank File", "wopl")
+        ]
 
     @classmethod
     def accept(cls, preview: bytes, file: str):

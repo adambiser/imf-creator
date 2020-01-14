@@ -1,7 +1,8 @@
+import typing as _typing
 import imfcreator.adlib as _adlib
 import imfcreator.instruments as _instruments
 import imfcreator.utils as _utils
-from . import plugin, InstrumentFile, InstrumentId
+from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId
 from ._binary import u8, u16le, s16le
 
 
@@ -21,6 +22,12 @@ class Op2FilePlugin(InstrumentFile):
     _FLAG_USE_GIVEN_NOTE = 1
     _FLAG_UNKNOWN = 2
     _FLAG_USE_SECONDARY_VOICE = 4
+
+    @classmethod
+    def _get_filetypes(cls) -> _typing.List[FileTypeInfo]:
+        return [
+            FileTypeInfo("op2", "DMX Sound Library", "op2")
+        ]
 
     @classmethod
     def accept(cls, preview: bytes, file: str):

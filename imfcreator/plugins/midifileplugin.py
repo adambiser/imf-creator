@@ -1,9 +1,10 @@
 import logging as _logging
 import os as _os
 import struct as _struct
+import typing as _typing
 import imfcreator.midi as _midi
 import imfcreator.plugins._binary as _binary
-from . import MidiSongFile, plugin
+from . import FileTypeInfo, MidiSongFile, plugin
 from ._songbuilder import SongBuilder as _SongBuilder
 
 _HEADER_CHUNK_NAME = b"MThd"
@@ -24,6 +25,12 @@ class MidiFile(MidiSongFile):
     def __init__(self, fp=None, filename=None):
         self._division = 0.0
         super().__init__(fp, filename)
+
+    @classmethod
+    def _get_filetypes(cls) -> _typing.List[FileTypeInfo]:
+        return [
+            FileTypeInfo("midi", "MIDI File", "mid")
+        ]
 
     @classmethod
     def accept(cls, preview: bytes, file: str) -> bool:
@@ -77,7 +84,6 @@ class MidiFile(MidiSongFile):
                 # New status event. Clear the running status now.
                 # It will get reassigned later if necessary.
                 running_status = None
-            channel = None
             # Read event type data
             if event_type in [_midi.EventType.F0_SYSEX, _midi.EventType.F7_SYSEX]:
                 data_length = _binary.read_midi_var_length(self.fp)
