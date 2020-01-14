@@ -1,9 +1,12 @@
-#!/usr/bin/python3.7
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 import argparse
 import typing
 import imfcreator
+from imfcreator.plugins import plugins_init
+
+plugins_init()
 
 _DEFAULT_BANKS = ["genmidi/GENMIDI.OP2"]
 

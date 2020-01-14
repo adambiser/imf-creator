@@ -1,7 +1,10 @@
+#!/usr/bin/python3
+
 import imfcreator.instruments as instruments
 from imfcreator.mainapplication import MainApplication
-from imfcreator.plugins import MidiSongFile, AdlibSongFile
+from imfcreator.plugins import MidiSongFile, AdlibSongFile, plugins_init
 
+plugins_init()
 
 def open_ui(song):
     # player = ImfPlayer()

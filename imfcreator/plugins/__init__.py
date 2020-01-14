@@ -391,7 +391,7 @@ class AdlibSongFile:
     #                 validate_name(setting.name)
 
 
-def _load_plugins():
+def plugins_init():
     """Initializes plugins."""
     for p in _PLUGIN_TYPES:
         p._PLUGINS = []
@@ -402,5 +402,3 @@ def _load_plugins():
     for p in plugins:
         _importlib.import_module(f"{__name__}.{p}")
 
-
-_load_plugins()
