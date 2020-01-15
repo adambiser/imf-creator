@@ -8,16 +8,33 @@ A program to create IMF music used by several classic ID and Apogee games such a
 
 ### Prerequisites
 
-You need Python 3.5 or higher to run this.
+You need Python 3.6 or higher to run this.
 
 ### Installing
 
 Clone or download this repository.
 
 #### Windows
-pip install watchdog
+While running the command prompt as system administrator:
 
-#### Dependencies on Linux
+    pip install watchdog
+
+##### PyAudio
+	
+PyAudio also needs to be installed and if you have Python 3.6, you can use
+
+    pip install PyAudio
+
+However for Python 3.7 or later use the wheel for your version from here:
+https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
+
+Example:
+
+    pip install PyAudio-0.2.11-cp37-cp37m-win32.whl.whl
+
+For convenience, compiled versions can also be found in the base folder of this project.
+
+#### Linux
 On Linux you will need to install some of dependencies to be able run this
 
 ##### Ubuntu / Debian
