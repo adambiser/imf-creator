@@ -6,6 +6,7 @@ from imfcreator.plugins import MidiSongFile, AdlibSongFile, load_plugins
 
 load_plugins()
 
+
 def open_ui(song):
     # player = ImfPlayer()
     # file_info = player.load("test.wlf")

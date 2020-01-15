@@ -281,7 +281,7 @@ class Settings:
         "bank_file": "genmidi/GENMIDI.OP2"
     }
 
-    def __init__(self, parent):
+    def __init__(self):
         self._db = shelve.open("settings", writeback=True)
         self.bank_file = tk.StringVar()
         self.song_file = tk.StringVar()
@@ -311,18 +311,15 @@ class Settings:
 
 
 class MainApplication(ttk.Frame):
-    def __init__(self, parent, *_, **kwargs):
+    def __init__(self, parent: tk.Tk, *_, **kwargs):
         super().__init__(parent, **kwargs)
         self.parent = parent
-        # self.tk.call("wm", "iconbitmap", self._w, "-default", os.path.join(Resources.PATH, "icon.ico"))
+        self.parent.wm_iconbitmap("imfcreator/resources/imfcreator.ico")
+        # self.tk.call("wm", "iconbitmap", self._w, "-default", os.path.join(resources.PATH, "icon.ico"))
         # Define variables
         self._adlib_song = None  # type: typing.Optional[AdlibSongFile]
         self._midi_song = None  # type: typing.Optional[MidiSongFile]
-        # self.filetype = tk.StringVar()
-        # self.song_file = tk.StringVar()
-        # self.bank_file = tk.StringVar()
-        # self.bank_editor_path = tk.StringVar()
-        self.settings = Settings(self)
+        self.settings = Settings()
         self.settings.filetype.trace_add("write", lambda *_: self._convert_song())
         self.settings.song_file.trace_add("write", lambda *_: self.reload_midi_song())
         self.settings.bank_file.trace_add("write", lambda *_: self.reload_bank())

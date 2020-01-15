@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import typing
 import imfcreator
 from imfcreator.plugins import load_plugins
 
