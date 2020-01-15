@@ -8,7 +8,7 @@ A program to create IMF music used by several classic ID and Apogee games such a
 
 ### Prerequisites
 
-You need Python 3.7 to run this.
+You need Python 3.5 or higher to run this.
 
 ### Installing
 
@@ -22,9 +22,7 @@ On Linux you will need to install some of dependencies to be able run this
 
 ##### Ubuntu / Debian
 ```bash
-sudo apt install tix-dev python-tk
-sudo apt-get install libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
-pip install pysound
+sudo apt install tix-dev python3-tk python3-pyaudio python3-watchdog
 ```
 
 ## License
