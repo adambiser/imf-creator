@@ -3,6 +3,7 @@ import logging as _logging
 import os as _os
 import typing as _typing
 import imfcreator.midi as _midi  # import SongEvent as _SongEvent
+from enum import IntEnum, auto
 from imfcreator.adlib import AdlibInstrument as _AdlibInstrument
 
 
@@ -60,12 +61,17 @@ def plugin(cls):
     raise ValueError(f"Unrecognized plugin type.  Valid types: {_PLUGIN_TYPES}")
 
 
+class InstrumentType(IntEnum):
+    MELODIC = auto()
+    PERCUSSION = auto()
+
+
 class InstrumentId(_typing.NamedTuple):
     """Represents an instrument ID.
 
     **arguments**: instrument_type, bank, program
     """
-    instrument_type: int
+    instrument_type: InstrumentType
     bank: int
     program: int
 
@@ -391,7 +397,7 @@ class AdlibSongFile:
     #                 validate_name(setting.name)
 
 
-def plugins_init():
+def load_plugins():
     """Initializes plugins."""
     for p in _PLUGIN_TYPES:
         p._PLUGINS = []

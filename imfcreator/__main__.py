@@ -10,10 +10,8 @@ from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 import imfcreator.instruments as instruments
 import imfcreator.resources as resources
-from imfcreator.plugins import AdlibSongFile, MidiSongFile, InstrumentFile, plugins_init
+from imfcreator.plugins import AdlibSongFile, MidiSongFile, InstrumentFile, load_plugins
 from imfcreator.player import AdlibPlayer, PlayerState
-
-plugins_init()
 
 try:
     # noinspection PyPep8Naming
@@ -33,6 +31,7 @@ __version__ = 0.1
 _ADLIB_FILETYPES = AdlibSongFile.get_filetypes()
 _MIDI_FILETYPES = MidiSongFile.get_filetypes()
 _INSTRUMENT_FILETYPES = InstrumentFile.get_filetypes()
+load_plugins()
 
 
 def run_and_exit(args, on_exit_method: callable) -> threading.Thread:
@@ -337,7 +336,7 @@ class MainApplication(ttk.Frame):
         self.toolbar.pack(side=tk.TOP, anchor=tk.W)
         self.infoframe.pack(side=tk.TOP, anchor=tk.W)
         self.settings.load()
-        self.update()
+        # self.update()
 
     def set_filetype(self, filetype):
         self.settings.filetype.set(filetype)
@@ -437,11 +436,8 @@ class MainApplication(ttk.Frame):
 
 def main():
     def center_window(toplevel):
-        toplevel.update_idletasks()
-        x = (toplevel.winfo_screenwidth() - toplevel.winfo_width()) // 2
-        y = (toplevel.winfo_screenheight() - toplevel.winfo_height()) // 2
-        toplevel.geometry(f"+{x}+{y}")
-        # toplevel.update()
+        # toplevel.update_idletasks()
+        toplevel.eval(f"tk::PlaceWindow {toplevel.winfo_toplevel()} center")
     root = tk.Tk()
     root.resizable(False, False)
     root.title(f"PyImfCreator {__version__}")
