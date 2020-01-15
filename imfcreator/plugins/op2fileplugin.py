@@ -1,8 +1,7 @@
 import typing as _typing
 import imfcreator.adlib as _adlib
-import imfcreator.instruments as _instruments
 import imfcreator.utils as _utils
-from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId
+from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId, InstrumentType
 from ._binary import u8, u16le, s16le
 
 
@@ -57,10 +56,10 @@ class Op2FilePlugin(InstrumentFile):
         Op2FilePlugin._read_voice(instrument, 0, entry[4:20])
         Op2FilePlugin._read_voice(instrument, 1, entry[20:36])
         if index < Op2FilePlugin._FIRST_PERCUSSION_ENTRY:
-            inst_type = _instruments.MELODIC
+            inst_type = InstrumentType.MELODIC
             program = index
         else:
-            inst_type = _instruments.PERCUSSION
+            inst_type = InstrumentType.PERCUSSION
             program = index - Op2FilePlugin._FIRST_PERCUSSION_ENTRY + Op2FilePlugin._FIRST_PERCUSSION_PROGRAM
         return InstrumentId(inst_type, 0, program), instrument
 

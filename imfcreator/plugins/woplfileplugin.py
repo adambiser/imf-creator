@@ -61,7 +61,8 @@ class WoplFilePlugin(InstrumentFile):
             self._instrument_entry_start = self._bank_meta_entry_start + \
                                           ((self._melodic_bank_count + self._percussive_bank_count) *
                                            self._bank_meta_entry_size)
-        self._percussive_inst_offset = self._instrument_entry_start + (self._melodic_bank_count * self._entry_size * 128)
+        self._percussive_inst_offset = self._instrument_entry_start + (self._melodic_bank_count *
+                                                                       self._entry_size * 128)
         self._entry_count = (self._melodic_bank_count + self._percussive_bank_count) * 128
         # Load the instruments
         for index in range(self._entry_count):

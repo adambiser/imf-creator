@@ -1,4 +1,3 @@
-import typing as _typing
 from enum import IntEnum
 from functools import total_ordering
 

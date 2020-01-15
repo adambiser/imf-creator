@@ -86,7 +86,7 @@ def get(inst_type: InstrumentType, bank: int, program: int) -> _AdlibInstrument:
     """
     _validate_args(inst_type, bank, program)
     original_bank = bank
-    key = (inst_type, bank, program)
+    key = InstrumentId(inst_type, bank, program)
     if bank > 0:
         if key not in _INSTRUMENTS:
             if key not in _WARNINGS:
@@ -94,7 +94,7 @@ def get(inst_type: InstrumentType, bank: int, program: int) -> _AdlibInstrument:
                 _logging.warning(f"Could not find {inst_type.name} instrument: bank {bank:#06x}, "
                                  f"program {program}.  Trying bank 0.")
             bank = 0
-            key = (inst_type, 0, program)
+            key = InstrumentId(inst_type, 0, program)
     instrument = _INSTRUMENTS.get(key)
     if instrument is None:
         # Try GM2 drum mapping.
