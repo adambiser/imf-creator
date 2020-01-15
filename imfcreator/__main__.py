@@ -29,10 +29,10 @@ except ImportError:
     import tkinter.messagebox as messagebox
 
 __version__ = 0.1
+load_plugins()
 _ADLIB_FILETYPES = AdlibSongFile.get_filetypes()
 _MIDI_FILETYPES = MidiSongFile.get_filetypes()
 _INSTRUMENT_FILETYPES = InstrumentFile.get_filetypes()
-load_plugins()
 
 
 def run_and_exit(args, on_exit_method: callable) -> threading.Thread:
