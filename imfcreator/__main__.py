@@ -6,6 +6,7 @@ import shelve
 import shutil
 import subprocess
 import platform
+from tkinter import PhotoImage
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 import imfcreator.instruments as instruments
@@ -314,7 +315,10 @@ class MainApplication(ttk.Frame):
     def __init__(self, parent: tk.Tk, *_, **kwargs):
         super().__init__(parent, **kwargs)
         self.parent = parent
-        self.parent.wm_iconbitmap("imfcreator/resources/imfcreator.ico")
+        if is_windows():
+            self.parent.wm_iconbitmap("imfcreator/resources/imfcreator.ico")
+        else:
+            self.parent.iconphoto(True, PhotoImage(file=os.path.dirname(__file__) + "/resources/imfcreator.png"))
         # self.tk.call("wm", "iconbitmap", self._w, "-default", os.path.join(resources.PATH, "icon.ico"))
         # Define variables
         self._adlib_song = None  # type: typing.Optional[AdlibSongFile]
