@@ -4,8 +4,6 @@ import imfcreator.instruments as instruments
 from imfcreator.mainapplication import MainApplication
 from imfcreator.plugins import MidiSongFile, AdlibSongFile, load_plugins
 
-load_plugins()
-
 
 def open_ui(song):
     # player = ImfPlayer()
@@ -33,11 +31,12 @@ def open_ui(song):
 
 
 def main():
+    load_plugins()
     # if not os.path.isfile("GENMIDI.OP2"):
     #     shutil.copy("genmidi/GENMIDI.OP2", "GENMIDI.OP2")
 
     # instruments.add_file("exclude/GENMIDI.OP2")
-    instruments.add_file("test/apogee_xenophage.wopl")
+    # instruments.add_file("test/apogee_xenophage.wopl")
     # filename = "test/test-pitchbend.mid"
     # filename = "exclude/OUT1FM.mid"
     # filename = "test/testfmt0.mid"
