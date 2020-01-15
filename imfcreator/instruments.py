@@ -12,12 +12,9 @@ Use `get_name` to get the instrument name
 import logging as _logging
 import typing as _typing
 from imfcreator.adlib import AdlibInstrument as _AdlibInstrument
-from imfcreator.plugins import InstrumentId, InstrumentFile as _InstrumentFile, MidiSongFile as _MidiSongFile
+from imfcreator.plugins import InstrumentId, InstrumentType, InstrumentFile as _InstrumentFile, \
+    MidiSongFile as _MidiSongFile
 
-# Instrument types.
-MELODIC = 0
-PERCUSSION = 1
-_TYPE_NAMES = {MELODIC: "MELODIC", PERCUSSION: "PERCUSSION"}
 
 # The key is (inst_type, bank, program), value is the Adlib instrument.
 _INSTRUMENTS = {}  # type: _typing.Dict[InstrumentId, _AdlibInstrument]
@@ -27,7 +24,7 @@ enable_gm2_drum_note_mapping = False
 _WARNINGS = []
 
 
-def add(inst_type: int, bank: int, program: int, adlib_instrument: _AdlibInstrument):
+def add(inst_type: InstrumentType, bank: int, program: int, adlib_instrument: _AdlibInstrument):
     """Add an instrument to the instrument manager.
 
     :param inst_type: The instrument type.  MELODIC or PERCUSSION.
@@ -79,7 +76,7 @@ def count() -> int:
     return len(_INSTRUMENTS)
 
 
-def get(inst_type: int, bank: int, program: int) -> _AdlibInstrument:
+def get(inst_type: InstrumentType, bank: int, program: int) -> _AdlibInstrument:
     """Returns the Adlib instrument based on the given type, program, and bank.
 
     :param inst_type: The instrument type.  MELODIC or PERCUSSION.
@@ -94,26 +91,27 @@ def get(inst_type: int, bank: int, program: int) -> _AdlibInstrument:
         if key not in _INSTRUMENTS:
             if key not in _WARNINGS:
                 _WARNINGS.append(key)
-                _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank:#06x}, "
+                _logging.warning(f"Could not find {inst_type.name} instrument: bank {bank:#06x}, "
                                  f"program {program}.  Trying bank 0.")
             bank = 0
             key = (inst_type, 0, program)
     instrument = _INSTRUMENTS.get(key)
     if instrument is None:
         # Try GM2 drum mapping.
-        if inst_type == PERCUSSION and ENABLE_GM2_DRUM_NOTE_MAPPING and program in _GM2_DRUM_NOTE_MAPPING:
+        if inst_type == InstrumentType.PERCUSSION and \
+                enable_gm2_drum_note_mapping and program in _GM2_DRUM_NOTE_MAPPING:
             if key not in _WARNINGS:
                 _WARNINGS.append(key)
-                _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank:#06x}, "
+                _logging.warning(f"Could not find {inst_type.name} instrument: bank {bank:#06x}, "
                                  f"program {program}.  Using GM2 drum note map.")
             return get(inst_type, original_bank, _GM2_DRUM_NOTE_MAPPING[program])
         if key not in _WARNINGS:
             _WARNINGS.append(key)
-            _logging.warning(f"Could not find {_TYPE_NAMES[inst_type]} instrument: bank {bank:#06x}, program {program}")
+            _logging.warning(f"Could not find {inst_type.name} instrument: bank {bank:#06x}, program {program}")
     return instrument
 
 
-def has(inst_type: int, bank: int, program: int) -> bool:
+def has(inst_type: InstrumentType, bank: int, program: int) -> bool:
     """Tests whether an Adlib instrument has been assigned based on the given type, program, and bank.
 
     :param inst_type: The instrument type.  MELODIC or PERCUSSION.
@@ -126,9 +124,9 @@ def has(inst_type: int, bank: int, program: int) -> bool:
     return key in _INSTRUMENTS
 
 
-def _validate_args(inst_type: int, bank: int, program: int):
+def _validate_args(inst_type: InstrumentType, bank: int, program: int):
     """Validates the entry argument values."""
-    if inst_type not in [MELODIC, PERCUSSION]:
+    if inst_type not in [InstrumentType.MELODIC, InstrumentType.PERCUSSION]:
         raise ValueError("inst_type must be 0 (MELODIC) or 1 (PERCUSSION).")
     if bank < 0 or bank > 16383:
         raise ValueError("bank must be between 0 and 16383 (inclusive).")
@@ -136,12 +134,12 @@ def _validate_args(inst_type: int, bank: int, program: int):
         raise ValueError("program must be between 0 and 127 (inclusive).")
 
 
-def get_name(inst_type: int, program: int) -> str:
+def get_name(inst_type: InstrumentType, program: int) -> str:
     """Returns the instrument name as defined by the MIDI standard."""
     _validate_args(inst_type, 0, program)
-    if inst_type == MELODIC:
+    if inst_type == InstrumentType.MELODIC:
         return _MELODIC_NAMES[program]
-    elif inst_type == PERCUSSION:
+    elif inst_type == InstrumentType.PERCUSSION:
         if program in _PERCUSSION_NAMES:
             return _PERCUSSION_NAMES[program]
         return f"Unknown percussion {program}"

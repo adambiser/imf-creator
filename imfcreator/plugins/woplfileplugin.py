@@ -1,9 +1,8 @@
 import typing as _typing
 import imfcreator.adlib as _adlib
-import imfcreator.instruments as _instruments
 from collections import namedtuple
-from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId
-from ._binary import u8, s8, u16le, u16be, s16be
+from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId, InstrumentType
+from ._binary import u8, u16le, u16be, s16be
 
 
 _BANK_ENTRY = namedtuple("_BANK_ENTRY", ["name", "lsb", "msb"])
@@ -76,10 +75,8 @@ class WoplFilePlugin(InstrumentFile):
         self.fp.seek(entry_offset)
         entry = self.fp.read(self._entry_size)
         # Set up the instrument.
-        if entry_offset < self._percussive_inst_offset:
-            inst_type = _instruments.MELODIC
-        else:
-            inst_type = _instruments.PERCUSSION
+        inst_type = InstrumentType.MELODIC if entry_offset < self._percussive_inst_offset \
+            else InstrumentType.PERCUSSION
         instrument = _adlib.AdlibInstrument(name=entry[0:32].decode('utf-8'), num_voices=2)
         instrument.note_offset[0] = s16be(entry[32:34]) - 12
         instrument.note_offset[1] = s16be(entry[34:36]) - 12
@@ -91,7 +88,7 @@ class WoplFilePlugin(InstrumentFile):
         if flags & WoplFilePlugin._FLAG_4OP_MODE and not flags & self._FLAG_PSEUDO_4OP:
             return None  # True 4-operator instruments aren't supported.
         instrument.use_secondary_voice = flags & WoplFilePlugin._FLAG_4OP_MODE and flags & self._FLAG_PSEUDO_4OP
-        instrument.use_given_note = inst_type == _instruments.PERCUSSION
+        instrument.use_given_note = inst_type == InstrumentType.PERCUSSION
         instrument.fine_tuning = u8(entry[37])
         instrument.given_note = u8(entry[38])
         WoplFilePlugin._read_voice(instrument, 0, u8(entry[40]), entry[42:52])

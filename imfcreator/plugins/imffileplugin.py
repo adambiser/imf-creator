@@ -6,7 +6,7 @@ import imfcreator.instruments as instruments
 import imfcreator.midi as _midi
 import imfcreator.utils as _utils
 import imfcreator.plugins._midiengine as _midiengine
-from . import AdlibSongFile, FileTypeInfo, FileTypeSetting, MidiSongFile, plugin
+from . import AdlibSongFile, FileTypeInfo, FileTypeSetting, InstrumentType, MidiSongFile, plugin
 from imfcreator.adlib import *
 
 
@@ -246,7 +246,7 @@ class ImfSong(AdlibSongFile):
             bank = midi_channel.bank
             if engine.is_percussion_channel(channel):
                 # _logging.debug(f"Searching for PERCUSSION instrument {event['note']}")
-                return instruments.get(instruments.PERCUSSION, bank, note)
+                return instruments.get(InstrumentType.PERCUSSION, bank, note)
             else:
                 inst_num = midi_channel.instrument
                 if inst_num is None:
@@ -254,7 +254,7 @@ class ImfSong(AdlibSongFile):
                     midi_channel.instrument = 0
                     inst_num = 0
                 # _logging.debug(f"Searching for MELODIC instrument {inst_num}")
-                return instruments.get(instruments.MELODIC, bank, inst_num)
+                return instruments.get(InstrumentType.MELODIC, bank, inst_num)
 
         def get_instrument_note(instrument: AdlibInstrument, note: int, voice: int = 0):
             if instrument.use_given_note:

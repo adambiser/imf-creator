@@ -4,9 +4,9 @@
 import argparse
 import typing
 import imfcreator
-from imfcreator.plugins import plugins_init
+from imfcreator.plugins import load_plugins
 
-plugins_init()
+load_plugins()
 
 _DEFAULT_BANKS = ["genmidi/GENMIDI.OP2"]
 
