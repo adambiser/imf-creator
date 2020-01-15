@@ -345,14 +345,12 @@ class MidiChannelInfo:
     # noinspection PyUnusedLocal
     @_controller_handler(_midi.ControllerType.RPN_MSB, _midi.ControllerType.RPN_LSB)
     def _set_rpn(self, controller):
-        assert self._in_rpn_data is None or self._in_rpn_data
         self._in_rpn_data = None if self.get_msb_lsb_values(_midi.ControllerType.RPN_MSB) == MidiChannelInfo.NULL_RPN \
             else True
 
     # noinspection PyUnusedLocal
     @_controller_handler(_midi.ControllerType.NRPN_MSB, _midi.ControllerType.NRPN_LSB)
     def _set_nrpn(self, controller):
-        assert not self._in_rpn_data  # None or False
         self._in_rpn_data = None if self.get_msb_lsb_values(_midi.ControllerType.NRPN_MSB) == MidiChannelInfo.NULL_RPN \
             else False
 
