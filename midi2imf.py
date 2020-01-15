@@ -3,9 +3,6 @@
 
 import argparse
 import imfcreator
-from imfcreator.plugins import load_plugins
-
-load_plugins()
 
 _DEFAULT_BANKS = ["genmidi/GENMIDI.OP2"]
 
@@ -64,7 +61,8 @@ def main():
     imfcreator.logging.getLogger().setLevel(args.verbose * 10)
     # These can be imported now that the logger level has been set.
     import imfcreator.instruments as instruments
-    from imfcreator.plugins import AdlibSongFile, MidiSongFile
+    from imfcreator.plugins import AdlibSongFile, MidiSongFile, load_plugins
+    load_plugins()
     parser = argparse.ArgumentParser(description="A tool to convert MIDI music files to IMF files.",
                                      formatter_class=HelpFormatter, parents=[logging_parser])
     parser.add_argument("infile", type=str, help="The input file path.")
