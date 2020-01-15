@@ -141,12 +141,14 @@ class ImfSong(AdlibSongFile):
         ticks_per_beat = 0
         last_command_ticks = 0  # The ticks at which the last IMF command occurred.
         tempo_start_time = 0.0  # The time, in beats, at which the last tempo change occurred.
+        tempo_start_ticks = 0  # The number of tics at which the last tempo change occurred.
 
         # Define helper functions.
         def set_tempo(event_time: float, bpm: float):
-            nonlocal ticks_per_beat, tempo_start_time
+            nonlocal ticks_per_beat, tempo_start_time, tempo_start_ticks
             ticks_per_beat = song.ticks * (60.0 / bpm)
             tempo_start_time = event_time
+            tempo_start_ticks = last_command_ticks
 
         def on_tempo_change(song_event: _midiengine.TempoChangeMetaEvent):
             set_tempo(song_event.time, song_event.bpm)
@@ -155,10 +157,12 @@ class ImfSong(AdlibSongFile):
             nonlocal last_command_ticks, song
             # To reduce rounding errors, calculate the ticks from the last tempo change and subtract the ticks at which
             # the last command took place.
-            ticks = int(ticks_per_beat * (time - tempo_start_time))
+            ticks = int(ticks_per_beat * (time - tempo_start_time)) + tempo_start_ticks
             # PyCharm has an incorrect warning here.
             # noinspection PyTypeChecker
             song._commands[command_index] = song._commands[command_index][:2] + (ticks - last_command_ticks,)
+            assert 0 <= song._commands[command_index][2] <= 0xffff, \
+                f"{time}, {tempo_start_time}, {ticks_per_beat}, {ticks}, {last_command_ticks}"
             last_command_ticks = ticks
 
         def add_command(reg: int, value: int, delay: int = 0):
