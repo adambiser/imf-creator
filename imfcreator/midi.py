@@ -195,43 +195,67 @@ class ControllerType(IntEnum):
     BANK_SELECT_MSB = 0,  # Allows user to switch bank for patch selection. Program change used with Bank Select.
     MODULATION_WHEEL_MSB = 1,  # Generally controls a vibrato effect (pitch, loudness, brighness), depends on patch.
     BREATH_CONTROLLER_MSB = 2,  # Often used with aftertouch messages. Can be used for modulation as well.
-    # 3 is undefined
+    UNDEFINED_3 = 3,  # 3 is undefined
     FOOT_CONTROLLER_MSB = 4,  # Often used with aftertouch messages. Values based on how the pedal is used.
     PORTAMENTO_TIME_MSB = 5,  # Controls portamento rate to slide between 2 notes played subsequently.
     DATA_ENTRY_MSB = 6,  # Controls Value for NRPN or RPN parameters.
     VOLUME_MSB = 7,  # Control the volume of the channel
     BALANCE_MSB = 8,  # Controls balance, generally for stereo patches.  0 = hard left, 64 = center, 127 = hard right
-    # 9 is undefined
+    UNDEFINED_9 = 9, # 9 is undefined
     PAN_MSB = 10,  # Controls panning, generally for mono patches.  0 = hard left, 64 = center, 127 = hard right
     EXPRESSION_MSB = 11,  # Expression is a percentage of volume (CC7).
     EFFECT_1_MSB = 12,  # Usually used to control a parameter of an effect within the synth/workstation.
     EFFECT_2_MSB = 13,  # Usually used to control a parameter of an effect within the synth/workstation.
-    # 14-15 are undefined
+    UNDEFINED_14 = 14,  # 14-15 are undefined
+    UNDEFINED_15 = 15,
     GENERAL_PURPOSE_1_MSB = 16,
     GENERAL_PURPOSE_2_MSB = 17,
     GENERAL_PURPOSE_3_MSB = 18,
     GENERAL_PURPOSE_4_MSB = 19,
-    # 20-31 are undefined
+    UNDEFINED_20 = 20,  # 20-31 are undefined
+    UNDEFINED_21 = 21,
+    UNDEFINED_22 = 22,
+    UNDEFINED_23 = 23,
+    UNDEFINED_24 = 24,
+    UNDEFINED_25 = 25,
+    UNDEFINED_26 = 26,
+    UNDEFINED_27 = 27,
+    UNDEFINED_28 = 28,
+    UNDEFINED_29 = 29,
+    UNDEFINED_30 = 30,
+    UNDEFINED_31 = 31,
     BANK_SELECT_LSB = 32,
     MODULATION_WHEEL_LSB = 33,
     BREATH_CONTROLLER_LSB = 34,
-    # 35 is undefined
+    UNDEFINED_35 = 35,  # 35 is undefined
     FOOT_CONTROLLER_LSB = 36,
     PORTAMENTO_TIME_LSB = 37,
     DATA_ENTRY_LSB = 38,
     VOLUME_LSB = 39,
     BALANCE_LSB = 40,
-    # 41 is undefined
+    UNDEFINED_41 = 41,  # 41 is undefined
     PAN_LSB = 42,
     EXPRESSION_LSB = 43,
     EFFECT_1_LSB = 44,
     EFFECT_2_LSB = 45,
-    # 46-47 are undefined
+    UNDEFINED_46 = 46,  # 46-47 are undefined
+    UNDEFINED_47 = 47,
     GENERAL_PURPOSE_1_LSB = 48,
     GENERAL_PURPOSE_2_LSB = 49,
     GENERAL_PURPOSE_3_LSB = 50,
     GENERAL_PURPOSE_4_LSB = 51,
-    # 52-63 are undefined
+    UNDEFINED_52 = 52,  # 52-63 are undefined
+    UNDEFINED_53 = 53,
+    UNDEFINED_54 = 54,
+    UNDEFINED_55 = 55,
+    UNDEFINED_56 = 56,
+    UNDEFINED_57 = 57,
+    UNDEFINED_58 = 58,
+    UNDEFINED_59 = 59,
+    UNDEFINED_60 = 60,
+    UNDEFINED_61 = 61,
+    UNDEFINED_62 = 62,
+    UNDEFINED_63 = 63,
     # For On/Off switches: 0..63 = Off, 64..127 = On
     SUSTAIN_PEDAL_SWITCH = 64,  # On/Off switch for sustain. (See also Sostenuto CC 66.)
     PORTAMENTO_SWITCH = 65,  # On/Off switch.
@@ -262,7 +286,12 @@ class ControllerType(IntEnum):
     GENERAL_PURPOSE_7 = 82,  # Generic On/Off switch
     GENERAL_PURPOSE_8 = 83,  # Generic On/Off switch
     PORTAMENTO_AMOUNT = 84,
-    # 85-90 are undefined
+    UNDEFINED_85 = 85,  # 85-90 are undefined
+    UNDEFINED_86 = 86,
+    UNDEFINED_87 = 87,
+    UNDEFINED_88 = 88,
+    UNDEFINED_89 = 89,
+    UNDEFINED_90 = 90,
     EFFECTS_1_DEPTH = 91,  # Usually controls reverb send amount
     EFFECTS_2_DEPTH = 92,  # Usually controls tremolo amount
     EFFECTS_3_DEPTH = 93,  # Usually controls chorus amount
@@ -279,7 +308,24 @@ class ControllerType(IntEnum):
     NRPN_MSB = 99,  # For controllers 6, 38, 96, and 97 it selects the NRPN parameter.
     RPN_LSB = 100,  # For controllers 6, 38, 96, and 97 it selects the RPN parameter.
     RPN_MSB = 101,  # For controllers 6, 38, 96, and 97 it selects the RPN parameter.
-    # 102-119 are undefined
+    UNDEFINED_102 = 102,  # 102-119 are undefined
+    UNDEFINED_103 = 103,
+    UNDEFINED_104 = 104,
+    UNDEFINED_105 = 105,
+    UNDEFINED_106 = 106,
+    UNDEFINED_107 = 107,
+    UNDEFINED_108 = 108,
+    UNDEFINED_109 = 109,
+    UNDEFINED_110 = 110,
+    UNDEFINED_111 = 111,
+    UNDEFINED_112 = 112,
+    UNDEFINED_113 = 113,
+    UNDEFINED_114 = 114,
+    UNDEFINED_115 = 115,
+    UNDEFINED_116 = 116,
+    UNDEFINED_117 = 117,
+    UNDEFINED_118 = 118,
+    UNDEFINED_119 = 119,
     ALL_SOUND_OFF = 120
     RESET_ALL_CONTROLLERS = 121
     LOCAL_ON_OFF_SWITCH = 122
