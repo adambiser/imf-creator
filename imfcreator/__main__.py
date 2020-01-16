@@ -1,11 +1,11 @@
 import logging
 import os
-import threading
-import typing
+import platform
 import shelve
 import shutil
 import subprocess
-import platform
+import threading
+import typing
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 import imfcreator.instruments as instruments
