@@ -6,7 +6,6 @@ import shelve
 import shutil
 import subprocess
 import platform
-from tkinter import PhotoImage
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 import imfcreator.instruments as instruments
