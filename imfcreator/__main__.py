@@ -315,11 +315,7 @@ class MainApplication(ttk.Frame):
     def __init__(self, parent: tk.Tk, *_, **kwargs):
         super().__init__(parent, **kwargs)
         self.parent = parent
-        if is_windows():
-            self.parent.wm_iconbitmap("imfcreator/resources/imfcreator.ico")
-        else:
-            self.parent.iconphoto(True, PhotoImage(file=os.path.dirname(__file__) + "/resources/imfcreator.png"))
-        # self.tk.call("wm", "iconbitmap", self._w, "-default", os.path.join(resources.PATH, "icon.ico"))
+        self.parent.iconphoto(True, resources.get_image("imfcreator.png"))
         # Define variables
         self._adlib_song = None  # type: typing.Optional[AdlibSongFile]
         self._midi_song = None  # type: typing.Optional[MidiSongFile]
