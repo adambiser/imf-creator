@@ -59,6 +59,7 @@ class MidiEngine:
         song.sort()
         self._song = song
         self.channels = [MidiChannelInfo(ch, song) for ch in range(16)]
+        self.on_debug_event = Signal(song_event=_midi.SongEvent)
         # Channel event handlers.
         self.on_note_on = Signal(song_event=NoteEvent)
         self.on_note_off = Signal(song_event=NoteEvent)
@@ -87,6 +88,7 @@ class MidiEngine:
 
     def start(self):
         for song_event in self._song.events:
+            self.on_debug_event(song_event=song_event)
             # Build event args.
             event_args = {
                 "time": song_event.time,
