@@ -255,7 +255,7 @@ class ImfSong(AdlibSongFile):
             bank = midi_channel.bank
             if engine.is_percussion_channel(channel):
                 # _logging.debug(f"Searching for PERCUSSION instrument {event['note']}")
-                return instruments.get(InstrumentType.PERCUSSION, bank, note)
+                return instruments.get(InstrumentType.PERCUSSION, midi_channel.instrument, note)
             else:
                 inst_num = midi_channel.instrument
                 if inst_num is None:
