@@ -282,7 +282,7 @@ class Settings:
     }
 
     def __init__(self):
-        self._db = shelve.open("settings", writeback=True)
+        self._db = shelve.open("settings.dat", writeback=True)
         self.bank_file = tk.StringVar()
         self.song_file = tk.StringVar()
         self.filetype = tk.StringVar()
