@@ -1,3 +1,4 @@
+import logging as _logging
 from enum import IntEnum
 from functools import total_ordering
 
@@ -288,3 +289,20 @@ class ControllerType(IntEnum):
     OMNI_MODE_ON = 125
     MONOPHONIC_MODE = 126
     POLYPHONIC_MODE = 127
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, int) and 0 <= value <= 127:
+            _logging.debug(f"Found undefined controller value {value}.  Creating definition.")
+            return cls._create_pseudo_member_(value)
+        return None
+
+    @classmethod
+    def _create_pseudo_member_(cls, value):
+        pseudo_member = cls._value2member_map_.get(value, None)
+        if pseudo_member is None:
+            pseudo_member = int.__new__(cls)
+            pseudo_member._name_ = f"UNDEFINED_{value}"
+            pseudo_member._value_ = value
+            pseudo_member = cls._value2member_map_.setdefault(value, pseudo_member)
+        return pseudo_member
