@@ -3,6 +3,7 @@ import imfcreator.adlib as _adlib
 from collections import namedtuple
 from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId, InstrumentType
 from ._binary import u8, u16le, u16be, s16be
+from ._midiengine import calculate_msb_lsb
 
 
 _BANK_ENTRY = namedtuple("_BANK_ENTRY", ["name", "lsb", "msb"])
@@ -95,7 +96,7 @@ class WoplFilePlugin(InstrumentFile):
         WoplFilePlugin._read_voice(instrument, 0, u8(entry[40]), entry[42:52])
         WoplFilePlugin._read_voice(instrument, 1, u8(entry[41]), entry[52:62])
         bank_entry = self._get_bank_entry(index)
-        bank = bank_entry.msb * 128 + bank_entry.lsb if bank_entry else 0
+        bank = calculate_msb_lsb(bank_entry.msb, bank_entry.lsb) if bank_entry else 0
         program = index % 128
         return InstrumentId(inst_type, bank, program), instrument
 
