@@ -282,7 +282,8 @@ class Settings:
     }
 
     def __init__(self):
-        self._db = shelve.open("settings", writeback=True)
+        os.makedirs(".imfcreator", exist_ok=True)
+        self._db = shelve.open(".imfcreator/settings", writeback=True)
         self.bank_file = tk.StringVar()
         self.song_file = tk.StringVar()
         self.filetype = tk.StringVar()
@@ -298,7 +299,7 @@ class Settings:
             var.trace_add("write", write_setting)
 
         for var_name in [k for k, v in self.__dict__.items() if isinstance(v, tk.Variable)]:
-            monitor_variable(var_name, Settings._DEFAULT_VALUES.get(var_name, None))
+            monitor_variable(var_name, Settings._DEFAULT_VALUES.get(var_name, ""))
         # monitor_variable(parent.bank_file, "bank_file", "genmidi/GENMIDI.OP2")
         # monitor_variable(parent.song_file, "song_file", "")
         # monitor_variable(parent.filetype, "filetype", "")
