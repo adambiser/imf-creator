@@ -52,8 +52,9 @@ class MidiEngine:
     """
 
     GM_DRUM_BANK = calculate_msb_lsb(120, 0)
+    XG_SFX_BANK = calculate_msb_lsb(126, 0)
     XG_DRUM_BANK = calculate_msb_lsb(127, 0)
-    _DRUM_BANKS = [GM_DRUM_BANK, XG_DRUM_BANK]
+    _DRUM_BANKS = [GM_DRUM_BANK, XG_SFX_BANK, XG_DRUM_BANK]
 
     def __init__(self, song: MidiSongFile):
         song.sort()
@@ -260,10 +261,16 @@ class MidiChannelInfo:
         if self._instrument is None:
             _logging.warning(f"No instrument assigned to channel {self.number}, defaulting to 0.")
             self._instrument = 0
+        # Follow WOPL in that normal drums are 0..127 and SFX are 128..255
+        if self.bank == MidiEngine.XG_SFX_BANK:
+            return self._instrument + 128
         return self._instrument
 
     @instrument.setter
     def instrument(self, value: int):
+        # Adjust SFX banks to be between 0..127.
+        if self.bank == MidiEngine.XG_SFX_BANK and value >= 128:
+            value -= 128
         self._instrument = value
 
     # noinspection PyUnusedLocal
