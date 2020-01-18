@@ -258,10 +258,6 @@ class ImfSong(AdlibSongFile):
                 return instruments.get(InstrumentType.PERCUSSION, midi_channel.instrument, note)
             else:
                 inst_num = midi_channel.instrument
-                if inst_num is None:
-                    _logging.warning(f"No instrument assigned to channel {channel}, defaulting to 0.")
-                    midi_channel.instrument = 0
-                    inst_num = 0
                 # _logging.debug(f"Searching for MELODIC instrument {inst_num}")
                 return instruments.get(InstrumentType.MELODIC, bank, inst_num)
 
@@ -270,7 +266,7 @@ class ImfSong(AdlibSongFile):
                 note = instrument.given_note
             note += instrument.note_offset[voice]
             if note < 0 or note > 127:
-                _logging.error(f"Note out of range: {note}")
+                _logging.error(f"imffileplugin.get_instrument_note: Note out of range: {note}")
                 note = 60
             return note
 

@@ -182,7 +182,7 @@ class MidiChannelInfo:
     def __init__(self, number, song: MidiSongFile):
         self.number = number
         # Set by the MidiEngine.
-        self.instrument = None
+        self._instrument = None
         self.pitch_bend = 0.0
         self.key_pressure = 127
         self.active_notes = []  # type: _typing.List[ActiveNote]
@@ -254,6 +254,17 @@ class MidiChannelInfo:
         # Check controller handlers.
         if controller in _CONTROLLER_HANDLERS:
             _CONTROLLER_HANDLERS[controller](self, controller)
+
+    @property
+    def instrument(self) -> int:
+        if self._instrument is None:
+            _logging.warning(f"No instrument assigned to channel {self.number}, defaulting to 0.")
+            self._instrument = 0
+        return self._instrument
+
+    @instrument.setter
+    def instrument(self, value: int):
+        self._instrument = value
 
     # noinspection PyUnusedLocal
     @_controller_handler(_midi.ControllerType.BANK_SELECT_MSB, _midi.ControllerType.BANK_SELECT_LSB)
