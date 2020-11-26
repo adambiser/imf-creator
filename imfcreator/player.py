@@ -7,6 +7,7 @@ from enum import IntEnum, auto
 from os import SEEK_SET, SEEK_CUR, SEEK_END
 from imfcreator.adlib import *
 from imfcreator.signal import Signal
+from typing import Optional
 
 
 class PlayerState(IntEnum):
@@ -40,7 +41,7 @@ class AdlibPlayer:
             AdlibPlayer._buffer = property(lambda self: bytes(self._data))
 
         # Prepare stream attribute and opl player.
-        self._stream = None  # Created later.
+        self._stream = None  # type: Optional[pyaudio.Stream]  # Created later.
         self._opl = pyopl.opl(freq=freq, sampleSize=AdlibPlayer.SAMPLE_SIZE, channels=AdlibPlayer.CHANNELS)
         # reset
         # self._commands = []
@@ -48,7 +49,7 @@ class AdlibPlayer:
         # rewind
         self._position = 0
         self._delay = 0
-        self.repeat = False
+        self._repeat = False
         # self.ignoreregs = []
         self.onstatechanged = Signal(state=PlayerState)
         # self.mute = [False] * OPL_CHANNELS
@@ -158,7 +159,7 @@ class AdlibPlayer:
         # Build enough of a delay to fill the buffer.
         while self._delay < AdlibPlayer.BUFFER_SAMPLE_COUNT and self._position < self._song.command_count:
             self._process_command()
-            if self.repeat and self._position == self._song.command_count:
+            if self._repeat and self._position == self._song.command_count:
                 self._position = 0
         # If we have enough to fill the buffer, do so. Otherwise quit.
         if self._delay >= AdlibPlayer.BUFFER_SAMPLE_COUNT:
@@ -173,13 +174,13 @@ class AdlibPlayer:
 
     def play(self, repeat: bool = False):
         """Starts playing the song at the current position."""
-        self.repeat = repeat
+        self._repeat = repeat
         if self._song is None or self._song.command_count == 0:
             return
         # If a stream exists and it is not active and not stopped, it needs to be closed and a new one created.
         if self._stream is not None and not self._stream.is_active() and not self._stream.is_stopped():
             self._stream.close()  # close for good measure.
-            self._stream = None
+            self._stream = None  # type: Optional[pyaudio.Stream]
         # If there's no stream at this point, create one.
         if self._stream is None:
             self._create_stream(False)
