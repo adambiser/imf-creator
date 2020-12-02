@@ -49,7 +49,7 @@ class AdlibPlayer:
         # rewind
         self._position = 0
         self._delay = 0
-        self._repeat = False
+        self.repeat = False
         # self.ignoreregs = []
         self.onstatechanged = Signal(state=PlayerState)
         # self.mute = [False] * OPL_CHANNELS
@@ -159,7 +159,7 @@ class AdlibPlayer:
         # Build enough of a delay to fill the buffer.
         while self._delay < AdlibPlayer.BUFFER_SAMPLE_COUNT and self._position < self._song.command_count:
             self._process_command()
-            if self._repeat and self._position == self._song.command_count:
+            if self.repeat and self._position == self._song.command_count:
                 self._position = 0
         # If we have enough to fill the buffer, do so. Otherwise quit.
         if self._delay >= AdlibPlayer.BUFFER_SAMPLE_COUNT:
@@ -174,7 +174,7 @@ class AdlibPlayer:
 
     def play(self, repeat: bool = False):
         """Starts playing the song at the current position."""
-        self._repeat = repeat
+        self.repeat = repeat
         if self._song is None or self._song.command_count == 0:
             return
         # If a stream exists and it is not active and not stopped, it needs to be closed and a new one created.
