@@ -20,7 +20,7 @@ def get_file_extension(filename):
 
 
 # def get_all_subclasses(cls):
-#     """Returns a list of all subclasses of the given class recusively."""
+#     """Returns a list of all subclasses of the given class recursively."""
 #     subclasses = cls.__subclasses__()
 #     for sub in cls.__subclasses__():
 #         subclasses += get_all_subclasses(sub)

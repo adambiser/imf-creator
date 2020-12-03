@@ -89,6 +89,8 @@ class MidiFile(MidiSongFile):
                 data_length = _binary.read_midi_var_length(self.fp)
                 builder.add_sysex_data(event_type, self.fp.read(data_length))
             elif event_type == _midi.EventType.META:
+                # PyCharm bug - https://youtrack.jetbrains.com/issue/PY-42287
+                # noinspection PyArgumentList
                 meta_type = _midi.MetaType(_u8(self.fp))
                 # event_data = {"meta_type": meta_type}
                 data_length = _binary.read_midi_var_length(self.fp)
@@ -138,7 +140,7 @@ class MidiFile(MidiSongFile):
                     if data_length != 2:
                         raise ValueError("MetaType.KEY_SIGNATURE events should have a data length of 2.")
                     sharps_flats, major_minor = _struct.unpack("<bB", self.fp.read(2))
-                    builder.set_key_signqture(sharps_flats, major_minor)
+                    builder.set_key_signature(sharps_flats, major_minor)
                 else:
                     builder.add_meta_event(meta_type, {"data": self.fp.read(data_length)} if data_length else None)
             else:
@@ -152,6 +154,8 @@ class MidiFile(MidiSongFile):
                 elif event_type == _midi.EventType.POLYPHONIC_KEY_PRESSURE:
                     builder.change_polyphonic_key_pressure(channel, note=_u8(self.fp), pressure=_u8(self.fp))
                 elif event_type == _midi.EventType.CONTROLLER_CHANGE:
+                    # PyCharm bug - https://youtrack.jetbrains.com/issue/PY-42287
+                    # noinspection PyArgumentList
                     builder.change_controller(channel,
                                               controller=_midi.ControllerType(_u8(self.fp)),
                                               value=_u8(self.fp))

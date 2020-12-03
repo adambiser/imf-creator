@@ -25,7 +25,7 @@ PyAudio also needs to be installed and if you have Python 3.6, you can use
 
     pip install PyAudio
 
-However for Python 3.7 or later use the wheel for your version from here:
+However, for Python 3.7 or later use the wheel for your version from here:
 https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
 
 Example:
@@ -35,7 +35,7 @@ Example:
 For convenience, compiled versions can also be found in the base folder of this project.
 
 #### Linux
-On Linux you will need to install some of dependencies to be able run this
+On Linux you will need to install some dependencies to run this.
 
 ##### Ubuntu / Debian
 ```bash

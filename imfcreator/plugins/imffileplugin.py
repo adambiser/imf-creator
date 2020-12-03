@@ -135,7 +135,7 @@ class ImfSong(AdlibSongFile):
         # Set up variables.
         engine = _midiengine.MidiEngine(midi_song)
         imf_channels = [_ImfChannelInfo(ch) for ch in range(1, 9)]
-        regs = [None] * 256
+        regs = [None] * 256  # type: _typing.List[_typing.Optional[int]]
 
         # Tempo/delay related variables and methods.
         ticks_per_beat = 0

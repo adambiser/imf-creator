@@ -145,7 +145,7 @@ class SongBuilder:
                                               "number_of_32nd_notes_per_beat": number_of_32nd_notes_per_beat,
                                               })
 
-    def set_key_signqture(self, sharps_flats: int, major_minor: int):
+    def set_key_signature(self, sharps_flats: int, major_minor: int):
         self.add_event(_midi.EventType.META, {"meta_type": _midi.MetaType.KEY_SIGNATURE,
                                               "sharps_flats": sharps_flats,
                                               "major_minor": major_minor,

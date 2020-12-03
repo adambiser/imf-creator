@@ -130,6 +130,7 @@ class AdlibPlayer:
         """Processes the command at the current position and moves to the next command.
         The delay is also incremented if the command has a ticks value.
         """
+        # noinspection PyProtectedMember
         reg, value, ticks = self._song._commands[self._position]
         self.writereg(reg, value)
         self._position += 1

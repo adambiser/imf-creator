@@ -23,6 +23,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
     _get_help_string = argparse.ArgumentDefaultsHelpFormatter._get_help_string
 
     def add_argument(self, action):
+        # noinspection PyUnresolvedReferences
         if isinstance(action, argparse._SubParsersAction):
             # self._add_item(self._format_text, [action.metavar])
             # self._indent()
@@ -30,6 +31,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
             for choice_action in action._choices_actions:
                 # print(choice_action)
                 argparse.HelpFormatter.add_argument(self, choice_action)
+                # noinspection PyUnresolvedReferences
                 subparser = action.choices[choice_action.dest]
                 formatter = subparser._get_formatter()
                 # usage
@@ -63,6 +65,7 @@ def main():
     import imfcreator.instruments as instruments
     from imfcreator.plugins import AdlibSongFile, MidiSongFile, load_plugins
     load_plugins()
+    # noinspection PyTypeChecker
     parser = argparse.ArgumentParser(description="A tool to convert MIDI music files to IMF files.",
                                      formatter_class=HelpFormatter, parents=[logging_parser])
     parser.add_argument("infile", type=str, help="The input file path.")

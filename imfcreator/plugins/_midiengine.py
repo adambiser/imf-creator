@@ -110,6 +110,8 @@ class MidiEngine:
             elif song_event.type == _midi.EventType.POLYPHONIC_KEY_PRESSURE:
                 self.on_polyphonic_key_pressure(song_event=PolyphonicKeyPressureEvent(**event_args))
             elif song_event.type == _midi.EventType.CONTROLLER_CHANGE:
+                # PyCharm bug - https://youtrack.jetbrains.com/issue/PY-42287
+                # noinspection PyArgumentList
                 controller = _midi.ControllerType(song_event["controller"])  # type: _midi.ControllerType
                 value = song_event["value"]
                 self.channels[song_event.channel].set_controller_value(controller, value)
@@ -430,6 +432,8 @@ class MidiChannelInfo:
         else:
             if controller >= 64:
                 raise ValueError("Must be an MSB or LSB controller type.")
+            # PyCharm bug - https://youtrack.jetbrains.com/issue/PY-42287
+            # noinspection PyArgumentList
             msb = _midi.ControllerType(controller % 32)
             lsb = msb + 32
         return self._controllers[msb], self._controllers[lsb]

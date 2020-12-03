@@ -194,7 +194,7 @@ class MetaType(IntEnum):
 class ControllerType(IntEnum):
     """MIDI controller type codes."""
     BANK_SELECT_MSB = 0,  # Allows user to switch bank for patch selection. Program change used with Bank Select.
-    MODULATION_WHEEL_MSB = 1,  # Generally controls a vibrato effect (pitch, loudness, brighness), depends on patch.
+    MODULATION_WHEEL_MSB = 1,  # Generally controls a vibrato effect (pitch, loudness, brightness), depends on patch.
     BREATH_CONTROLLER_MSB = 2,  # Often used with aftertouch messages. Can be used for modulation as well.
     # 3 is undefined
     FOOT_CONTROLLER_MSB = 4,  # Often used with aftertouch messages. Values based on how the pedal is used.
@@ -270,7 +270,7 @@ class ControllerType(IntEnum):
     EFFECTS_4_DEPTH = 94,  # Usually controls detune amount
     EFFECTS_5_DEPTH = 95,  # Usually controls phaser amount
     REVERB_DEPTH = EFFECTS_1_DEPTH
-    TREMELO_DEPTH = EFFECTS_2_DEPTH
+    TREMOLO_DEPTH = EFFECTS_2_DEPTH
     CHORUS_DEPTH = EFFECTS_3_DEPTH
     DETUNE_DEPTH = EFFECTS_4_DEPTH
     PHASER_DEPTH = EFFECTS_5_DEPTH
