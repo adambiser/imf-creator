@@ -37,12 +37,17 @@ def main():
 
     # instruments.add_file("exclude/GENMIDI.OP2")
     # instruments.add_file("test/apogee_xenophage.wopl")
+    # instruments.add_file("test/GENMIDI.GS.wopl")
+    instruments.add_file("test/Apogee-IMF-90.wopl")
     # filename = "test/test-pitchbend.mid"
     # filename = "exclude/OUT1FM.mid"
     # filename = "test/testfmt0.mid"
     # filename = "test/testfmt1.mid"
     # filename = "test/test-velocity.mid"
-    filename = "test/Ecu_10_Bass_xg-hr.mid"
+    # filename = "test/Ecu_10_Bass_xg-hr.mid"
+    # filename = "test/Alternative 148 - Open hat groove (XG - EK).mid"
+    filename = "test/Alternative 174 - 1-4 note kick.mid"
+    filename = "test/TMARSH.MID"
     # filename = "test/test-pitchbend-higher.mid"
     # filename = "test/CC74-Bass-solo.mid"
     # filename = "test/D_RUNNIN.mus"
