@@ -252,7 +252,9 @@ class MidiChannelInfo:
         return self._controllers[controller]
 
     def set_controller_value(self, controller: _midi.ControllerType, value: int):
-        assert 0 <= value <= 127
+        if value > 127:
+            _logging.warning(f"Controller {controller} out of range (Given value {value})")
+            value &= 0x7f
         self._controllers[controller] = value
         # Check controller handlers.
         if controller in _CONTROLLER_HANDLERS:
