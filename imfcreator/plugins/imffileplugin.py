@@ -2,11 +2,10 @@ import logging as _logging
 import math as _math
 import struct as _struct
 import typing as _typing
-import imfcreator.instruments as instruments
 import imfcreator.midi as _midi
 import imfcreator.utils as _utils
 import imfcreator.plugins._midiengine as _midiengine
-from . import AdlibSongFile, FileTypeInfo, FileTypeSetting, InstrumentType, MidiSongFile, plugin
+from . import AdlibSongFile, FileTypeInfo, FileTypeSetting, MidiSongFile, plugin
 from imfcreator.adlib import *
 
 
@@ -250,26 +249,6 @@ class ImfSong(AdlibSongFile):
             assert 0 <= freq <= 0x3ff
             return block, freq
 
-        def get_event_instrument(channel: int, note: int = 0) -> AdlibInstrument:
-            midi_channel = engine.channels[channel]
-            bank = midi_channel.bank
-            if engine.is_percussion_channel(channel):
-                # _logging.debug(f"Searching for PERCUSSION instrument {event['note']}")
-                return instruments.get(InstrumentType.PERCUSSION, midi_channel.instrument, note)
-            else:
-                inst_num = midi_channel.instrument
-                # _logging.debug(f"Searching for MELODIC instrument {inst_num}")
-                return instruments.get(InstrumentType.MELODIC, bank, inst_num)
-
-        def get_instrument_note(instrument: AdlibInstrument, note: int, voice: int = 0):
-            if instrument.use_given_note:
-                note = instrument.given_note
-            note += instrument.note_offset[voice]
-            if note < 0 or note > 127:
-                _logging.error(f"imffileplugin.get_instrument_note: Note out of range: {note}")
-                note = 60
-            return note
-
         def get_volume_commands(imf_channel: _ImfChannelInfo, instrument: AdlibInstrument,
                                 midi_channel: _midiengine.MidiChannelInfo, note_velocity: int, voice: int = 0):
             # https://github.com/lantus/Strife/blob/master/i_oplmusic.c#L288
@@ -327,16 +306,12 @@ class ImfSong(AdlibSongFile):
             ]
 
         def on_note_on(song_event: _midiengine.NoteEvent):
-            instrument = get_event_instrument(song_event.channel, song_event.note)
+            instrument = engine.get_adlib_instrument(song_event)
             if instrument is None:
                 return
             voice = 0
             midi_channel = engine.channels[song_event.channel]
-            adjusted_note = get_instrument_note(instrument, song_event.note, voice)
-            if not engine.is_percussion_channel(song_event.channel):
-                # _logging.debug(f"Adding active note: {event['note']} -> {note}, channel {event.channel}")
-                midi_channel.active_notes.append(_midiengine.ActiveNote(song_event.note, song_event.velocity,
-                                                                        adjusted_note))
+            adjusted_note = instrument.get_play_note(song_event.note, 0)
             imf_channel = find_imf_channel(instrument, adjusted_note)
             if imf_channel:
                 commands = []
@@ -363,28 +338,19 @@ class ImfSong(AdlibSongFile):
             # return commands
 
         def on_note_off(song_event: _midiengine.NoteEvent):
-            instrument = get_event_instrument(song_event.channel, song_event.note)
+            instrument = engine.get_adlib_instrument(song_event)
             if instrument is None:
                 return
             voice = 0
-            adjusted_note = get_instrument_note(instrument, song_event.note, voice)
-            if not engine.is_percussion_channel(song_event.channel):
-                midi_channel = engine.channels[song_event.channel]
-                match = next(filter(lambda note_info: note_info.given_note == song_event.note,
-                                    midi_channel.active_notes), None)  # type: _midiengine.ActiveNote
-                if match:
-                    adjusted_note = match.adjusted_note
-                    midi_channel.active_notes.remove(match)
-                else:
-                    _logging.error(f"Tried to remove non-active note: track {song_event.track}, note {adjusted_note}")
+            adjusted_note = instrument.get_play_note(song_event.note, voice)
             imf_channel = find_imf_channel_for_instrument_note(instrument, adjusted_note)
             if imf_channel:
                 imf_channel.last_note = None
                 add_commands(song_event.time, [
                     (BLOCK_MSG | imf_channel.number, regs[BLOCK_MSG | imf_channel.number] & ~KEY_ON_MASK),
                 ])
-            # else:
-            #     print(f"Could not find note to shut off! inst: {inst_num}, note: {note}")
+            else:
+                _logging.warning(f"Could not find note to shut off! inst: {instrument}, note: {song_event.note}")
 
         def on_pitch_bend(song_event: _midiengine.PitchBendEvent):
             # Can't pitch bend percussion.
@@ -392,9 +358,9 @@ class ImfSong(AdlibSongFile):
                 return
             midi_channel = engine.channels[song_event.channel]
             pitch_bend = midi_channel.scaled_pitch_bend
-            instrument = get_event_instrument(song_event.channel)  # midi_channels[event.channel]["instrument"]
             for active_note in midi_channel.active_notes:
-                note = active_note.adjusted_note
+                instrument = engine.get_adlib_instrument(active_note)
+                note = instrument.get_play_note(active_note.note)
                 imf_channel = find_imf_channel_for_instrument_note(instrument, note)
                 if imf_channel:
                     block, freq = get_block_and_freq(note, pitch_bend)
@@ -416,9 +382,10 @@ class ImfSong(AdlibSongFile):
                 midi_channel = engine.channels[song_event.channel]
                 if midi_channel.active_notes:
                     commands = []
-                    instrument = get_event_instrument(song_event.channel)
                     for active_note in midi_channel.active_notes:
-                        imf_channel = find_imf_channel_for_instrument_note(instrument, active_note.adjusted_note)
+                        instrument = engine.get_adlib_instrument(active_note)
+                        adjusted_note = instrument.get_play_note(active_note.note)
+                        imf_channel = find_imf_channel_for_instrument_note(instrument, adjusted_note)
                         if imf_channel:
                             commands += get_volume_commands(imf_channel, instrument, midi_channel, active_note.velocity)
                     add_commands(song_event.time, commands)
@@ -426,8 +393,11 @@ class ImfSong(AdlibSongFile):
         def on_end_of_song(song_event: _midiengine.EndOfSongEvent):
             add_delay(song_event.time, -1)
 
+        def on_debug(song_event):
+            if song_event.channel == 0:
+                _logging.debug(song_event)
+
         # Set up the song and start the midi engine.
-        set_tempo(0.0, 120)  # Arbitrary default tempo if none is set by the song.
         song._commands = [
             (0, 0, 0),  # Always start with 0, 0, 0
             (0xBD, 0, 0),
@@ -439,11 +409,9 @@ class ImfSong(AdlibSongFile):
         engine.on_pitch_bend.add_handler(on_pitch_bend)
         engine.on_controller_change.add_handler(on_controller_change)
         engine.on_end_of_song.add_handler(on_end_of_song)
+        engine.on_debug_event.add_handler(on_debug)
         engine.start()
-
-        for mc in engine.channels:
-            if mc.active_notes:
-                _logging.warning(f"midi track {mc.number} had open notes: {mc.active_notes}")
+        # Verify that there are no active notes on the IMF channels.
         for ch in imf_channels:
             if ch.last_note:
                 _logging.warning(f"imf channel {ch.number} had open note: {ch.last_note}")

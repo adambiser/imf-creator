@@ -2,14 +2,18 @@ import logging as _logging
 import typing as _typing
 import imfcreator.midi as _midi
 from functools import wraps
-from . import MidiSongFile
+from . import InstrumentType, MidiSongFile
+import imfcreator.instruments as instruments
 from imfcreator.signal import Signal
+from imfcreator.adlib import AdlibInstrument
 
 
 class ActiveNote(_typing.NamedTuple):
-    given_note: int
+    channel: int
+    note: int
     velocity: int
-    adjusted_note: int
+    instrument: int
+    # adjusted_note: int
 
 
 def calculate_msb_lsb(msb: int, lsb: int) -> int:
@@ -87,7 +91,22 @@ class MidiEngine:
     def is_percussion_channel(self, channel: int) -> bool:
         return channel == self._song.PERCUSSION_CHANNEL or self.channels[channel].bank in MidiEngine._DRUM_BANKS
 
+    def get_adlib_instrument(self, event) -> AdlibInstrument:
+        midi_channel = self.channels[event.channel]
+        bank = midi_channel.bank
+        if self.is_percussion_channel(event.channel):
+            # _logging.debug(f"Searching for PERCUSSION instrument {event['note']}")
+            return instruments.get(InstrumentType.PERCUSSION, event.instrument, event.note)
+        else:
+            # _logging.debug(f"Searching for MELODIC instrument {inst_num}")
+            return instruments.get(InstrumentType.MELODIC, bank, event.instrument)
+
     def start(self):
+        # Start with an arbitrary default tempo in the song doesn't set it.
+        self.on_end_of_song(song_event=TempoChangeMetaEvent(time=0.0, track=0,
+                                                            type=_midi.EventType.META,
+                                                            meta_type=_midi.MetaType.SET_TEMPO,
+                                                            bpm=120.0))
         for song_event in self._song.events:
             self.on_debug_event(song_event=song_event)
             # Build event args.
@@ -101,11 +120,22 @@ class MidiEngine:
             event_args.update(song_event.data)
             # Fire events
             if song_event.type == _midi.EventType.NOTE_OFF:
+                active_note = self.channels[song_event.channel].remove_active_note(**event_args)
+                if not active_note:
+                    continue
+                event_args["instrument"] = active_note.instrument
                 self.on_note_off(song_event=NoteEvent(**event_args))
             elif song_event.type == _midi.EventType.NOTE_ON:
                 if song_event["velocity"] == 0:
+                    # Don't display an error when removing NOTE_ON event with velocity 0.
+                    active_note = self.channels[song_event.channel].remove_active_note(show_error=False, **event_args)
+                    if not active_note:
+                        continue
+                    event_args["instrument"] = active_note.instrument
                     self.on_note_off(song_event=NoteEvent(**event_args))
                 else:
+                    active_note = self.channels[song_event.channel].add_active_note(**event_args)
+                    event_args["instrument"] = active_note.instrument
                     self.on_note_on(song_event=NoteEvent(**event_args))
             elif song_event.type == _midi.EventType.POLYPHONIC_KEY_PRESSURE:
                 self.on_polyphonic_key_pressure(song_event=PolyphonicKeyPressureEvent(**event_args))
@@ -169,6 +199,10 @@ class MidiEngine:
                 _logging.error(f"Unexpected MIDI event type: {song_event.type}")
         last_event_time = max([event.time for event in self._song.events])
         self.on_end_of_song(song_event=EndOfSongEvent(time=last_event_time))
+        # Verify that there are no active notes on the MIDI channels.
+        for ch in self.channels:
+            if ch.active_notes:
+                _logging.warning(f"midi track {ch.number} had open notes: {ch.active_notes}")
 
 
 class MidiChannelInfo:
@@ -440,14 +474,20 @@ class MidiChannelInfo:
             lsb = msb + 32
         return self._controllers[msb], self._controllers[lsb]
 
-    # def add_active_note(self):
-    #     pass
-    #
-    # def get_active_note(self):
-    #     pass
-    #
-    # def remove_active_note(self):
-    #     pass
+    def add_active_note(self, note: int, velocity: int, **_):
+        _active_note = ActiveNote(self.number, note, velocity, self.instrument)
+        self.active_notes.append(_active_note)
+        return _active_note
+
+    def remove_active_note(self, channel: int, note: int, track: int, show_error: bool = True, **_):
+        _active_note = next(filter(lambda note_info: note_info.note == note and note_info.channel == channel,
+                                   self.active_notes), None)
+        if _active_note:
+            self.active_notes.remove(_active_note)
+        else:
+            if show_error:
+                _logging.error(f"Tried to remove non-active note: track {track}, channel {channel}, note {note}")
+        return _active_note
 
 
 class NoteEvent(_typing.NamedTuple):
@@ -457,6 +497,7 @@ class NoteEvent(_typing.NamedTuple):
     channel: int
     note: int
     velocity: int
+    instrument: int
 
 
 class PolyphonicKeyPressureEvent(_typing.NamedTuple):
