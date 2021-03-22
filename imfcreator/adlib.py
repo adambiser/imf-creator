@@ -2,6 +2,8 @@
 
 This module contains fields and classes representing Adlib register values and instruments.
 """
+import logging as _logging
+
 OPL_CHANNELS = 9
 
 # OPERATORS
@@ -144,6 +146,15 @@ class AdlibInstrument(object):
             if self.feedback[v] != other.feedback[v]:
                 count += 1
         return count
+
+    def get_play_note(self, note: int, voice: int = 0):
+        if self.use_given_note:
+            note = self.given_note
+        note += self.note_offset[voice]
+        if note < 0 or note > 127:
+            _logging.error(f"Note went out of range: {note}")
+            note = 60
+        return note
 
 
 def _create_bit_property(var_name: str, bits: int, shift: int):
