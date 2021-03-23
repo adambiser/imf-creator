@@ -213,6 +213,20 @@ class MidiSongFile:
         """
         raise NotImplementedError()
 
+    def get_debug_info(self):
+        lines = ["INFORMATION:"]
+        lines += [
+            f"title: {self.title}",
+            f"composer: {self.composer}",
+            f"remarks: {self.remarks}",
+            f"tics_per_second: {self.tics_per_second}",
+        ]
+        lines += ["", f"INSTRUMENTS: {len(self.instruments)}"]
+        lines += [str(instrument) for instrument in self.instruments]
+        lines += ["", f"EVENTS: {len(self.events)}"]
+        lines += [str(event) for event in self.events]
+        return lines
+
     def _load_file(self):
         """Loads file data from self.fp.  Note that self.fp only exists for the duration of _load_file."""
         raise NotImplementedError()
