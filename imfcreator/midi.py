@@ -57,7 +57,7 @@ class SongEvent:
         self.channel = channel  # _typing.Optional[int]
 
     def __repr__(self):
-        text = f"{self.time:0.3f}: {str(self.type)} - #{self.index}"
+        text = f"{self.time:0.3f}: Track {self.track} - {str(self.type)} - #{self.index}"
         if self.type == EventType.META:
             text += f" - {str(self.data['meta_type'])}"
         elif self.channel is not None:
@@ -73,7 +73,7 @@ class SongEvent:
     def __eq__(self, other: "SongEvent"):
         if self.time != other.time:
             return False
-        if _EVENT_TYPE_ORDER[self.type] != _EVENT_TYPE_ORDER[other.type]:
+        if _get_event_type_order(self) != _get_event_type_order(other):
             return False
         if self.channel != other.channel:
             return False
@@ -88,9 +88,9 @@ class SongEvent:
             return True
         elif self.time > other.time:
             return False
-        if _EVENT_TYPE_ORDER[self.type] < _EVENT_TYPE_ORDER[other.type]:
+        if _get_event_type_order(self) < _get_event_type_order(other):
             return True
-        elif _EVENT_TYPE_ORDER[self.type] > _EVENT_TYPE_ORDER[other.type]:
+        elif _get_event_type_order(self) > _get_event_type_order(other):
             return False
         # Non-channel events are "less than" channel events.
         self_channel = -1 if self.channel is None else self.channel
@@ -131,20 +131,6 @@ class EventType(IntEnum):
     F0_SYSEX = 0xf0
     F7_SYSEX = 0xf7
     META = 0xff
-
-
-_EVENT_TYPE_ORDER = {
-    EventType.NOTE_OFF: 10,
-    EventType.NOTE_ON: 100,
-    EventType.POLYPHONIC_KEY_PRESSURE: 40,
-    EventType.CONTROLLER_CHANGE: 2,  # Controller changes are high priority (volume), just lower than program change.
-    EventType.PROGRAM_CHANGE: 1,  # Program changes are high priority.
-    EventType.CHANNEL_KEY_PRESSURE: 50,
-    EventType.PITCH_BEND: 30,
-    EventType.F0_SYSEX: 0,
-    EventType.F7_SYSEX: 0,
-    EventType.META: 0,  # Tempo changes, for example, should be high priority.
-}
 
 
 class MetaType(IntEnum):
@@ -189,6 +175,26 @@ class MetaType(IntEnum):
     TIME_SIGNATURE = 0x58,
     KEY_SIGNATURE = 0x59,
     SEQUENCER_SPECIFIC = 0x7f,
+
+
+_EVENT_TYPE_ORDER = {
+    EventType.NOTE_OFF: 10,
+    EventType.NOTE_ON: 100,
+    EventType.POLYPHONIC_KEY_PRESSURE: 40,
+    EventType.CONTROLLER_CHANGE: 2,  # Controller changes are high priority (volume), just lower than program change.
+    EventType.PROGRAM_CHANGE: 1,  # Program changes are high priority.
+    EventType.CHANNEL_KEY_PRESSURE: 50,
+    EventType.PITCH_BEND: 30,
+    EventType.F0_SYSEX: 0,
+    EventType.F7_SYSEX: 0,
+    EventType.META: 0,  # Tempo changes, for example, should be high priority.
+    MetaType.END_OF_TRACK: 255,  # END_OF_TRACK is the exception.
+}
+
+
+def _get_event_type_order(event: SongEvent) -> int:
+    return (_EVENT_TYPE_ORDER.get(event.data['meta_type']) if event.type == EventType.META else None) \
+           or _EVENT_TYPE_ORDER[event.type]
 
 
 class ControllerType(IntEnum):
