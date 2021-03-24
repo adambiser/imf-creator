@@ -87,7 +87,9 @@ class MidiFile(MidiSongFile):
             # Read event type data
             if event_type in [_midi.EventType.F0_SYSEX, _midi.EventType.F7_SYSEX]:
                 data_length = _binary.read_midi_var_length(self.fp)
-                builder.add_sysex_data(event_type, self.fp.read(data_length))
+                # PyCharm bug - https://youtrack.jetbrains.com/issue/PY-42287
+                # noinspection PyArgumentList
+                builder.add_sysex_data(_midi.EventType(event_type), self.fp.read(data_length))
             elif event_type == _midi.EventType.META:
                 # PyCharm bug - https://youtrack.jetbrains.com/issue/PY-42287
                 # noinspection PyArgumentList

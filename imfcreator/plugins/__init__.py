@@ -213,6 +213,21 @@ class MidiSongFile:
         """
         raise NotImplementedError()
 
+    def get_debug_info(self):
+        """Returns a string containing debug information for the song."""
+        info = f"""INFORMATION:
+title: {self.title}
+composer: {self.composer}
+remarks: {self.remarks}
+tics_per_second: {self.tics_per_second}
+
+INSTRUMENTS: {len(self.instruments)}
+"""
+        info += '\n'.join(str(instrument) for instrument in self.instruments)
+        info += f"\nEVENTS: {len(self.events)}\n"
+        info += '\n'.join(str(event) for event in self.events)
+        return info + "\n"
+
     def _load_file(self):
         """Loads file data from self.fp.  Note that self.fp only exists for the duration of _load_file."""
         raise NotImplementedError()
@@ -295,6 +310,10 @@ class AdlibSongFile:
         :param fp: A file object opened with "wb" mode.
         :param filename: The filename.
         """
+        raise NotImplementedError()
+
+    def get_debug_info(self):
+        """Returns a string containing debug information for the song."""
         raise NotImplementedError()
 
     @classmethod
