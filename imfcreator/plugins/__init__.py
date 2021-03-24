@@ -221,10 +221,10 @@ composer: {self.composer}
 remarks: {self.remarks}
 tics_per_second: {self.tics_per_second}
 
-INSTRUMENTS: {len(self.instruments)}
+INSTRUMENTS:
 """
         info += '\n'.join(str(instrument) for instrument in self.instruments)
-        info += f"\nEVENTS: {len(self.events)}\n"
+        info += f"\nEVENTS:\n"
         info += '\n'.join(str(event) for event in self.events)
         return info + "\n"
 

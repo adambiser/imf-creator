@@ -4,9 +4,9 @@ composer: None
 remarks: None
 tics_per_second: 0
 
-INSTRUMENTS: 0
+INSTRUMENTS:
 
-EVENTS: 4736
+EVENTS:
 [0.000: Track 0 - EventType.META - #0 - MetaType.TRACK_NAME - {'meta_type': <MetaType.TRACK_NAME: 3>, 'text': b'\xc0\xd1'}]
 [0.000: Track 0 - EventType.META - #1 - MetaType.TEXT_EVENT - {'meta_type': <MetaType.TEXT_EVENT: 1>, 'text': b'Converted by dmm2xm v0.8, built on 15 Sep 2007\n'}]
 [0.000: Track 0 - EventType.F0_SYSEX - #2 - {'data': b'\x7f\x7f\x04\x01\x7f\x7f\xf7'}]

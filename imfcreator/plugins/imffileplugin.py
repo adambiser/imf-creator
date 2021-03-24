@@ -55,7 +55,7 @@ composer: {self.composer}
 remarks: {self.remarks}
 program: {self.program}
 
-COMMANDS: {len(self._commands)}
+COMMANDS:
 """
         info += '\n'.join(str(c) for c in self._commands)
         return info + "\n"

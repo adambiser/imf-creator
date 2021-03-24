@@ -4,9 +4,9 @@ composer: None
 remarks: None
 tics_per_second: 0
 
-INSTRUMENTS: 0
+INSTRUMENTS:
 
-EVENTS: 7206
+EVENTS:
 [0.000: Track 0 - EventType.META - #0 - MetaType.TRACK_NAME - {'meta_type': <MetaType.TRACK_NAME: 3>, 'text': b'Ievan Polka'}]
 [0.000: Track 0 - EventType.META - #1 - MetaType.COPYRIGHT - {'meta_type': <MetaType.COPYRIGHT: 2>, 'text': b'Copyright \xa9 2014-2015 by Wohlstand'}]
 [0.000: Track 0 - EventType.META - #2 - MetaType.TIME_SIGNATURE - {'meta_type': <MetaType.TIME_SIGNATURE: 88>, 'numerator': 4, 'denominator': 4, 'midi_clocks_per_metronome_tick': 24, 'number_of_32nd_notes_per_beat': 8}]
