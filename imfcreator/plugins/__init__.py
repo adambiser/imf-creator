@@ -215,6 +215,7 @@ class MidiSongFile:
 
     def get_debug_info(self):
         """Returns a string containing debug information for the song."""
+        # Do not change anything in here.  Doing so will screw up the tests.
         info = f"""INFORMATION:
 title: {self.title}
 composer: {self.composer}

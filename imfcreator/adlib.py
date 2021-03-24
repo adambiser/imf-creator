@@ -237,3 +237,50 @@ def _check_range(value: int, max_value: int):
         return value
     else:
         raise ValueError(f"Value should be between 0 and {max_value} inclusive. Got: {value}.")
+
+
+def get_repr_adlib_reg(reg: int, value: int, delay: int):
+    # Do not change anything in here.  Doing so will screw up the tests.
+    text = f"{delay:<5d}: {reg:#04x} <= {value:#04x} ({value:08b}): "
+
+    def get_operator_str():
+        r = reg % 0x20
+        try:
+            return f"channel {MODULATORS.index(r)} modulator"
+        except ValueError:
+            return f"channel {CARRIERS.index(r)} carrier"
+
+    def get_channel_str():
+        return f"channel {reg % 10}"
+
+    if reg == TEST_MSG:
+        text += "Test LSI / Enable Waveform"  # (--w-----)"
+    elif reg == TIMER_1_COUNT_MSG:
+        text += "Timer 1"
+    elif reg == TIMER_2_COUNT_MSG:
+        text += "Timer 2"
+    elif reg == IRQ_RESET_MSG:
+        text += "Timer Mask/Control / IRQ Reset"  # (imm---cc)"
+    elif reg == COMP_SINE_WAVE_MODE_MSG:
+        text += "CSM Mode / Keyboard Split"  # (ck------)"
+    elif VIBRATO_MSG <= reg <= VIBRATO_MSG + 0x15:
+        text += "AM / Vibrato / Envelope / KSR / Mod Freq Mult - " + get_operator_str()  # (avekffff)
+    elif VOLUME_MSG <= reg <= VOLUME_MSG + 0x15:
+        text += "Volume - " + get_operator_str()  # (ssvvvvvv)
+    elif ATTACK_DECAY_MSG <= reg <= ATTACK_DECAY_MSG + 0x15:
+        text += "Attack / Decay - " + get_operator_str()  # (aaaadddd)
+    elif SUSTAIN_RELEASE_MSG <= reg <= SUSTAIN_RELEASE_MSG + 0x15:
+        text += "Sustain / Release - " + get_operator_str()  # (ssssrrrr)
+    elif FREQ_MSG <= reg <= FREQ_MSG + 0x08:
+        text += "Frequency - " + get_channel_str()
+    elif BLOCK_MSG <= reg <= BLOCK_MSG + 0x08:
+        text += "Octave / F-Number / Key On - " + get_channel_str()  # (--koooff)
+    elif reg == DRUM_MSG:
+        text += "Drums"  # (avrbstch)
+    elif FEEDBACK_MSG <= reg <= FEEDBACK_MSG + 0x08:
+        text += "Feedback - " + get_channel_str()  # (----fffd)
+    elif WAVEFORM_SELECT_MSG <= reg <= WAVEFORM_SELECT_MSG + 0x15:
+        text += "Waveform Select - " + get_operator_str()  # (------ww)
+    else:
+        text += "UNKNOWN"
+    return text
