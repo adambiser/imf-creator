@@ -47,6 +47,20 @@ class ImfSong(AdlibSongFile):
             _logging.warning(f"The title, composer, remarks, and program settings are not used by type '{filetype}'.")
         self._commands = []  # type: _typing.List[_typing.Tuple[int, int, int]]  # reg, value, delay
 
+    def get_debug_info(self):
+        info = f"""INFORMATION:
+filetype: {self._filetype}
+ticks: {self.ticks}
+title: {self.title}
+composer: {self.composer}
+remarks: {self.remarks}
+program: {self.program}
+
+COMMANDS: {len(self._commands)}
+"""
+        info += '\n'.join(str(c) for c in self._commands)
+        return info + "\n"
+
     @property
     def ticks(self) -> int:
         """The song speed.  Must be 280, 560, or 700 depending on the game."""
