@@ -78,11 +78,13 @@ class SongTestCase(LoggingTestCase):
                 with open(result_file, "r") as fp:
                     result_info = fp.read().splitlines()
                 debug_lines = debug_info.splitlines()
-                self.assertEqual(len(debug_lines), len(result_info), "Line count mismatch.")
-                for index in range(len(debug_lines)):
+                for index in range(min(len(debug_lines), len(result_info))):
                     self.assertEqual(debug_lines[index], result_info[index],
                                      f"First difference found in line {index + 1}.  "
                                      f"File: {os.path.basename(result_file)}")
+                # Do the line count check after making sure everything up to the end of one list is the same.
+                self.assertEqual(len(debug_lines), len(result_info), f"Line count mismatch.  "
+                                                                     f"File: {os.path.basename(result_file)}")
             except AssertionError:
                 # Write the new results to a temp file.
                 with open(self.filename + f".{calling_function}.fail.log", "w") as fp:
