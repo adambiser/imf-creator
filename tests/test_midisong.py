@@ -92,7 +92,7 @@ class SongTestCase(LoggingTestCase):
             # No verification, save what we have for next time.
             with open(result_file, "w") as fp:
                 fp.write(debug_info)
-            self.fail(f"Verify file did not exist.  Created verify file: {os.path.basename(result_file)}")
+            print(f"Verify file did not exist.  Created verify file: {os.path.basename(result_file)}")
 
     def test_midi_load(self):
         midi_song = imfcreator.plugins.MidiSongFile.load_file(self.filename)
@@ -116,7 +116,7 @@ def get_test_files(path: str, extension: str):
             if os.path.splitext(f)[1].lower() == extension]
 
 
-def load_tests():
+def get_tests():
     suite = unittest.TestSuite([
         PluginTestCase("test_load_plugins"),
         PluginTestCase("test_check_for_midi_filetype"),
@@ -133,4 +133,4 @@ def load_tests():
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner(failfast=True)
-    runner.run(load_tests())
+    runner.run(get_tests())

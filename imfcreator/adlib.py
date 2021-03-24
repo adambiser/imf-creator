@@ -240,7 +240,7 @@ def get_repr_adlib_reg(reg: int, value: int, delay: int):
             return f"channel {CARRIERS.index(r)} carrier"
 
     def get_channel_str():
-        return f"channel {reg % 10}"
+        return f"channel {reg % 0x10}"
 
     if reg == TEST_MSG:
         text += "Test LSI / Enable Waveform"  # (--w-----)"
