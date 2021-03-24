@@ -48,6 +48,7 @@ class ImfSong(AdlibSongFile):
         self._commands = []  # type: _typing.List[_typing.Tuple[int, int, int]]  # reg, value, delay
 
     def get_debug_info(self):
+        # Do not change anything in here.  Doing so will screw up the tests.
         info = f"""INFORMATION:
 filetype: {self._filetype}
 ticks: {self.ticks}
@@ -58,7 +59,7 @@ program: {self.program}
 
 COMMANDS: {len(self._commands)}
 """
-        info += '\n'.join(str(c) for c in self._commands)
+        info += '\n'.join(get_repr_adlib_reg(*c) for c in self._commands)
         return info + "\n"
 
     @property
@@ -444,8 +445,8 @@ COMMANDS: {len(self._commands)}
         set_tempo(0.0, 120)  # Arbitrary default tempo if none is set by the song.
         song._commands = [
             (0, 0, 0),  # Always start with 0, 0, 0
-            (0xBD, 0, 0),
-            (0x8, 0, 0),
+            (DRUM_MSG, 0, 0),
+            (COMP_SINE_WAVE_MODE_MSG, 0, 0),
         ]
         engine.on_tempo_change.add_handler(on_tempo_change)
         engine.on_note_on.add_handler(on_note_on)
