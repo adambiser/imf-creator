@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import threading
 import typing
+import pickle
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 import imfcreator.instruments as instruments
@@ -295,7 +296,11 @@ class Settings:
                 self._db[settings_key] = var.get()
 
             var = getattr(self, settings_key)
-            var.set(self._db.get(settings_key, default))
+            try:
+                var.set(self._db.get(settings_key, default))
+            except pickle.UnpicklingError:
+                logging.error(f"UnpicklingError: {settings_key}")
+                var.set(default)
             var.trace_add("write", write_setting)
 
         for var_name in [k for k, v in self.__dict__.items() if isinstance(v, tk.Variable)]:
