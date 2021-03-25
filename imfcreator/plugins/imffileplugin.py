@@ -365,7 +365,9 @@ COMMANDS:
                     (BLOCK_MSG | imf_channel.number, regs[BLOCK_MSG | imf_channel.number] & ~KEY_ON_MASK),
                 ])
             else:
-                _logging.warning(f"Could not find note to shut off! inst: {instrument}, note: {song_event.note}")
+                _logging.warning(f"Could not find note to shut off! note: {song_event.note}"
+                                 f"{f' => {adjusted_note}' if adjusted_note != song_event.note else ''}, "
+                                 f"inst: {instrument},")
 
         def on_pitch_bend(song_event: _midiengine.PitchBendEvent):
             # Can't pitch bend percussion.
@@ -408,9 +410,9 @@ COMMANDS:
         def on_end_of_song(song_event: _midiengine.EndOfSongEvent):
             add_delay(song_event.time, -1)
 
-        def on_debug(song_event):
-            if song_event.channel == 0:
-                _logging.debug(song_event)
+        # def on_debug(song_event):
+        #     if song_event.channel == 0:
+        #         _logging.debug(song_event)
 
         # Set up the song and start the midi engine.
         song._commands = [
@@ -424,7 +426,7 @@ COMMANDS:
         engine.on_pitch_bend.add_handler(on_pitch_bend)
         engine.on_controller_change.add_handler(on_controller_change)
         engine.on_end_of_song.add_handler(on_end_of_song)
-        engine.on_debug_event.add_handler(on_debug)
+        # engine.on_debug_event.add_handler(on_debug)
         engine.start()
         # Verify that there are no active notes on the IMF channels.
         for ch in imf_channels:
