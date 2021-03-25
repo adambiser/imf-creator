@@ -153,7 +153,10 @@ class AdlibInstrument(object):
         note += self.note_offset[voice]
         if note < 0 or note > 127:
             _logging.error(f"Note went out of range: {note}")
-            note = 60
+            while note < 0:
+                note += 12
+            while note > 127:
+                note -= 12
         return note
 
 
