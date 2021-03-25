@@ -79,7 +79,11 @@ class WoplFilePlugin(InstrumentFile):
         # Set up the instrument.
         inst_type = InstrumentType.MELODIC if entry_offset < self._percussive_inst_offset \
             else InstrumentType.PERCUSSION
-        instrument = _adlib.AdlibInstrument(name=entry[0:32].decode('utf-8'), num_voices=2)
+        name = entry[0:32].decode('utf-8')  # type: str
+        # truncate at null terminator
+        if "\x00" in name:
+            name = name[0: name.index("\x00")]
+        instrument = _adlib.AdlibInstrument(name=name, num_voices=2)
         instrument.note_offset[0] = s16be(entry[32:34]) - 12
         instrument.note_offset[1] = s16be(entry[34:36]) - 12
         flags = u8(entry[39])
@@ -104,7 +108,10 @@ class WoplFilePlugin(InstrumentFile):
         if self._version >= 2:
             bank = index // 128
             self.fp.seek(self._bank_meta_entry_start + (bank * self._bank_meta_entry_size))
-            name = self.fp.read(32).decode("utf-8")
+            name = self.fp.read(32).decode("utf-8")  # type: str
+            # truncate at null terminator
+            if "\x00" in name:
+                name = name[0: name.index("\x00")]
             lsb = u8(self.fp.read(1))
             msb = u8(self.fp.read(1))
             return _BANK_ENTRY(name, lsb, msb)
