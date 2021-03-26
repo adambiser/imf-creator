@@ -56,13 +56,20 @@ class SongEvent:
         self.data = data
         self.channel = channel  # _typing.Optional[int]
 
-    def __repr__(self):
-        text = f"{self.time:0.3f}: Track {self.track} - {str(self.type)} - #{self.index}"
+    def __str__(self):
+        text = f"[{self.index}] {self.time:0.3f}: Track {self.track}"
+        if self.channel is not None:
+            text += f", ch {self.channel:2d}"
+        text += f": {str(self.type)}"  # - #{self.index}"
         if self.type == EventType.META:
-            text += f" - {str(self.data['meta_type'])}"
-        elif self.channel is not None:
-            text += f" - ch {self.channel}"
-        return f"[{text} - {self.data}]"
+            text += f": {str(self.data['meta_type'])}"
+        # elif self.channel is not None:
+        #     text += f" - ch {self.channel}"
+
+        data = ", ".join([f"{k}: {self.data[k]:.5g}" if type(self.data[k]) is float
+                          else f"{k}: {self.data[k]}"
+                          for k in sorted(self.data.keys())])
+        return f"{text}: {data}"
 
     def __getitem__(self, key):
         return self.data[key]
@@ -132,6 +139,9 @@ class EventType(IntEnum):
     F7_SYSEX = 0xf7
     META = 0xff
 
+    def __str__(self):
+        return self._name_
+
 
 class MetaType(IntEnum):
     """Song meta event types.
@@ -175,6 +185,9 @@ class MetaType(IntEnum):
     TIME_SIGNATURE = 0x58,
     KEY_SIGNATURE = 0x59,
     SEQUENCER_SPECIFIC = 0x7f,
+
+    def __str__(self):
+        return self._name_
 
 
 _EVENT_TYPE_ORDER = {
@@ -296,10 +309,16 @@ class ControllerType(IntEnum):
     MONOPHONIC_MODE = 126
     POLYPHONIC_MODE = 127
 
+    def __str__(self):
+        return self._name_
+
     @classmethod
     def _missing_(cls, value):
+        if isinstance(value, int) and value > 127:
+            _logging.error(f"Controller number out of range: {value}")
+            return None
         if isinstance(value, int) and 0 <= value <= 127:
-            _logging.debug(f"Found undefined controller value {value}.  Creating definition.")
+            _logging.warning(f"Found undefined controller value {value}.  Creating definition.")
             return cls._create_pseudo_member_(value)
         return None
 
