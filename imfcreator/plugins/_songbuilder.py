@@ -1,3 +1,4 @@
+import logging as _logging
 import typing as _typing
 import imfcreator.midi as _midi
 
@@ -23,6 +24,7 @@ class SongBuilder:
     def add_event(self, event_type: _midi.EventType, data: dict = None, channel: int = None):
         song_event = _midi.SongEvent(len(self._events), self.track, self.current_time / float(self.playback_rate),
                                      event_type, data, channel)
+        _logging.debug(song_event)
         self._events.append(song_event)
 
     @property
