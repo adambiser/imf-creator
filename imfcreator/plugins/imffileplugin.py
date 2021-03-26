@@ -45,6 +45,8 @@ class ImfSong(AdlibSongFile):
         if (self.title or self.composer or self.remarks or self.program) and filetype not in ["imf1"]:
             _logging.warning(f"The title, composer, remarks, and program settings are not used by type '{filetype}'.")
         self._commands = []  # type: _typing.List[_typing.Tuple[int, int, int]]  # reg, value, delay
+        self._ignored_notes = []  # type: _typing.List[_midiengine.ActiveNote]
+        self._active_ignored_notes = []  # type: _typing.List[_midiengine.ActiveNote]
 
     def get_debug_info(self):
         # Do not change anything in here.  Doing so will screw up the tests.
@@ -199,6 +201,7 @@ COMMANDS:
                 _logging.error(f"Value out of range! 0x{reg:x}, 0x{value:x}, {delay}, cmd: {len(song._commands)}")
                 raise
             regs[reg] = value
+            _logging.debug(get_repr_adlib_reg(reg, value, delay))
             song._commands.append((reg, value, delay))
 
         def add_commands(event_time: float, commands):
@@ -210,7 +213,7 @@ COMMANDS:
                 add_delay(event_time, old_commands_length - 1)
 
         # noinspection PyUnusedLocal
-        def find_imf_channel(instrument: AdlibInstrument, note: int):
+        def find_imf_channel(instrument: AdlibInstrument, note: int) -> _typing.Optional[_ImfChannelInfo]:
             # Find a channel that is set to the given instrument and is not currently playing a note.
             channel = next(filter(lambda ch: ch.instrument == instrument and ch.last_note is None, imf_channels), None)
             if channel:
@@ -348,8 +351,13 @@ COMMANDS:
                     (BLOCK_MSG | imf_channel.number, KEY_ON_MASK | (block << 2) | (freq >> 8)),
                 ]
                 add_commands(song_event.time, commands)
-                # else:
-            #     print(f"Could not find channel for note on! inst: {inst_num}, note: {note}")
+            else:
+                active_note = _midiengine.ActiveNote(song_event.channel, song_event.note, song_event.velocity,
+                                                     song_event.instrument)
+                song._ignored_notes.append(active_note)
+                song._active_ignored_notes.append(active_note)
+                _logging.warning(f"Could not find channel for note on!  Channel {song_event.channel}, "
+                                 f"instrument: {song_event.instrument}, note: {song_event.note}")
             # return commands
 
         def on_note_off(song_event: _midiengine.NoteEvent):
@@ -365,9 +373,14 @@ COMMANDS:
                     (BLOCK_MSG | imf_channel.number, regs[BLOCK_MSG | imf_channel.number] & ~KEY_ON_MASK),
                 ])
             else:
-                _logging.warning(f"Could not find note to shut off! note: {song_event.note}"
-                                 f"{f' => {adjusted_note}' if adjusted_note != song_event.note else ''}, "
-                                 f"inst: {instrument},")
+                # Check active, but ignored notes before reporting.  Don't use velocity for matching..
+                ignored_note = next(filter(lambda n: n == song_event, song._active_ignored_notes), None)
+                if ignored_note:
+                    song._active_ignored_notes.remove(ignored_note)
+                else:
+                    print("had ignored note")
+                    _logging.warning(f"Could not find channel for note off!  Channel {song_event.channel}, "
+                                     f"instrument: {song_event.instrument}, note: {song_event.note}")
 
         def on_pitch_bend(song_event: _midiengine.PitchBendEvent):
             # Can't pitch bend percussion.
@@ -410,9 +423,8 @@ COMMANDS:
         def on_end_of_song(song_event: _midiengine.EndOfSongEvent):
             add_delay(song_event.time, -1)
 
-        # def on_debug(song_event):
-        #     if song_event.channel == 0:
-        #         _logging.debug(song_event)
+        def on_debug(song_event):
+            _logging.debug(song_event)
 
         # Set up the song and start the midi engine.
         song._commands = [
@@ -426,13 +438,15 @@ COMMANDS:
         engine.on_pitch_bend.add_handler(on_pitch_bend)
         engine.on_controller_change.add_handler(on_controller_change)
         engine.on_end_of_song.add_handler(on_end_of_song)
-        # engine.on_debug_event.add_handler(on_debug)
+        engine.on_debug_event.add_handler(on_debug)
         engine.start()
         # Verify that there are no active notes on the IMF channels.
         for ch in imf_channels:
             if ch.last_note:
-                _logging.warning(f"imf channel {ch.number} had open note: {ch.last_note}")
+                _logging.warning(f"IMF channel {ch.number} ended with an active note: {ch.last_note}")
 
+        if song._ignored_notes:
+            _logging.warning(f"Ignored notes: {len(song._ignored_notes)}")
         # Remove commands that do nothing, ie: register value changes with no delay.
         # temp_commands = []
         # removed_commands = 0
@@ -453,5 +467,7 @@ COMMANDS:
 class _ImfChannelInfo:
     def __init__(self, number):
         self.number = number
-        self.instrument = None
-        self.last_note = None
+        self.instrument = None  # type: _typing.Optional[AdlibInstrument]
+        self.last_note = None  # type: _typing.Optional[_midiengine.ActiveNote]
+        # self.is_active = False
+        # self.active_note = None  # type: _typing.Optional[_midiengine.ActiveNote]
