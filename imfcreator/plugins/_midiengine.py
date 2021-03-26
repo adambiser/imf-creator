@@ -9,11 +9,20 @@ from imfcreator.adlib import AdlibInstrument
 
 
 class ActiveNote(_typing.NamedTuple):
+    # TODO? track: int
     channel: int
     note: int
     velocity: int
     instrument: int
     # adjusted_note: int
+
+    @classmethod
+    def from_note_event(cls, note_event: "NoteEvent"):
+        return ActiveNote(note_event.channel, note_event.note, note_event.velocity, note_event.instrument)
+
+    def __eq__(self, other):
+        # Does not compare against velocity.
+        return self.instrument == other.instrument and self.channel == other.channel and self.note == other.note
 
 
 def calculate_msb_lsb(msb: int, lsb: int) -> int:
@@ -148,7 +157,9 @@ class MidiEngine:
                 self.on_controller_change(song_event=ControllerChangeEvent(**event_args))
             elif song_event.type == _midi.EventType.PROGRAM_CHANGE:
                 # Only trigger the signal if the value changes.
-                if self.channels[song_event.channel].instrument != song_event["program"]:
+                # Use the private member so the "no program assigned" warning doesn't fire.
+                # noinspection PyProtectedMember
+                if self.channels[song_event.channel]._instrument != song_event["program"]:
                     self.channels[song_event.channel].instrument = song_event["program"]
                     self.on_program_change(song_event=ProgramChangeEvent(**event_args))
             elif song_event.type == _midi.EventType.CHANNEL_KEY_PRESSURE:
@@ -202,7 +213,7 @@ class MidiEngine:
         # Verify that there are no active notes on the MIDI channels.
         for ch in self.channels:
             if ch.active_notes:
-                _logging.warning(f"midi track {ch.number} had open notes: {ch.active_notes}")
+                _logging.warning(f"MIDI track {ch.number} ended with active notes: {ch.active_notes}")
 
 
 class MidiChannelInfo:
@@ -286,8 +297,8 @@ class MidiChannelInfo:
         return self._controllers[controller]
 
     def set_controller_value(self, controller: _midi.ControllerType, value: int):
-        if value > 127:
-            _logging.warning(f"Controller {controller} out of range (Given value {value})")
+        if value & ~0x7f:
+            _logging.warning(f"Controller {controller} out of range: {value}")
             value &= 0x7f
         self._controllers[controller] = value
         # Check controller handlers.
