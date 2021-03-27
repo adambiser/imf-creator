@@ -213,9 +213,17 @@ COMMANDS:
                 add_delay(event_time, old_commands_length - 1)
 
         # noinspection PyUnusedLocal
-        def find_imf_channel(instrument: AdlibInstrument, note: int) -> _typing.Optional[_ImfChannelInfo]:
+        # def find_imf_channel(instrument: AdlibInstrument, note: int) -> _typing.Optional[_ImfChannelInfo]:
+        def find_imf_channel(note_event: _midiengine.NoteEvent) -> _typing.Optional[_ImfChannelInfo]:
             # Find a channel that is set to the given instrument and is not currently playing a note.
-            channel = next(filter(lambda ch: ch.instrument == instrument and ch.last_note is None, imf_channels), None)
+            def is_channel_free(ch: _ImfChannelInfo, check_instrument: bool) -> bool:
+                if ch.is_active:
+                    return False
+                if check_instrument:
+                    return ch.last_note and ch.last_note.instrument == note_event.instrument
+                return True
+
+            channel = next(filter(lambda ch: is_channel_free(ch, True), imf_channels), None)
             if channel:
                 return channel
             # Find a channel that isn't playing a note that requires the least register changes.
@@ -225,15 +233,16 @@ COMMANDS:
             #                   key=lambda ch: 0 if ch.instrument is None else
             #                   instrument.compare_registers(ch.instrument))
             # Find a channel that isn't playing a note.
-            channel = next(filter(lambda ch: ch.last_note is None, imf_channels), None)
+            channel = next(filter(lambda ch: is_channel_free(ch, False), imf_channels), None)
             if channel:
                 # print("OPEN", channel.instrument.compare_registers(instrument) if channel.instrument else "NONE")
                 return channel
             # TODO Aggressive channel find.
             return None
 
-        def find_imf_channel_for_instrument_note(instrument: AdlibInstrument, note: int):
-            return next(filter(lambda ch: ch.instrument == instrument and ch.last_note == note, imf_channels), None)
+        # def find_imf_channel_for_instrument_note(instrument: AdlibInstrument, note: int):
+        def find_imf_channel_for_instrument_note(note_event: _midiengine.NoteEvent):
+            return next(filter(lambda ch: ch.is_active and ch.last_note == note_event, imf_channels), None)
 
         def get_block_and_freq(note: int, scaled_pitch_bend: float):
             assert note < 128
@@ -330,20 +339,21 @@ COMMANDS:
             voice = 0
             midi_channel = engine.channels[song_event.channel]
             adjusted_note = instrument.get_play_note(song_event.note, 0)
-            imf_channel = find_imf_channel(instrument, adjusted_note)
+            imf_channel = find_imf_channel(song_event)  # instrument, adjusted_note)
             if imf_channel:
                 commands = []
                 # Check for instrument change.
-                if imf_channel.instrument != instrument:
-                    # Removed volume messages. Volume will initialize to OFF.
-                    commands += [cmd for cmd in instrument.get_regs(imf_channel.number, voice) if
-                                 (cmd[0] & 0xf0) != VOLUME_MSG]
-                    # commands += [
-                    #     (VOLUME_MSG | MODULATORS[channel.number], 0x3f),
-                    #     (VOLUME_MSG | CARRIERS[channel.number], 0x3f),
-                    # ]
-                    imf_channel.instrument = instrument
-                imf_channel.last_note = adjusted_note
+                # if imf_channel.instrument != instrument:
+                # Removed volume messages. Volume will initialize to OFF.
+                commands += [cmd for cmd in instrument.get_regs(imf_channel.number, voice) if
+                             (cmd[0] & 0xf0) != VOLUME_MSG]
+                # commands += [
+                #     (VOLUME_MSG | MODULATORS[channel.number], 0x3f),
+                #     (VOLUME_MSG | CARRIERS[channel.number], 0x3f),
+                # ]
+                # imf_channel.instrument = instrument
+                imf_channel.last_note = _midiengine.ActiveNote.from_note_event(song_event)  # adjusted_note
+                imf_channel.is_active = True
                 block, freq = get_block_and_freq(adjusted_note, midi_channel.scaled_pitch_bend)
                 commands += get_volume_commands(imf_channel, instrument, midi_channel, song_event.velocity)
                 commands += [
@@ -352,8 +362,7 @@ COMMANDS:
                 ]
                 add_commands(song_event.time, commands)
             else:
-                active_note = _midiengine.ActiveNote(song_event.channel, song_event.note, song_event.velocity,
-                                                     song_event.instrument)
+                active_note = _midiengine.ActiveNote.from_note_event(song_event)
                 song._ignored_notes.append(active_note)
                 song._active_ignored_notes.append(active_note)
                 _logging.warning(f"Could not find channel for note on!  Channel {song_event.channel}, "
@@ -365,10 +374,10 @@ COMMANDS:
             if instrument is None:
                 return
             voice = 0
-            adjusted_note = instrument.get_play_note(song_event.note, voice)
-            imf_channel = find_imf_channel_for_instrument_note(instrument, adjusted_note)
+            # adjusted_note = instrument.get_play_note(song_event.note, voice)
+            imf_channel = find_imf_channel_for_instrument_note(song_event)  # instrument, adjusted_note)
             if imf_channel:
-                imf_channel.last_note = None
+                imf_channel.is_active = False
                 add_commands(song_event.time, [
                     (BLOCK_MSG | imf_channel.number, regs[BLOCK_MSG | imf_channel.number] & ~KEY_ON_MASK),
                 ])
@@ -378,7 +387,6 @@ COMMANDS:
                 if ignored_note:
                     song._active_ignored_notes.remove(ignored_note)
                 else:
-                    print("had ignored note")
                     _logging.warning(f"Could not find channel for note off!  Channel {song_event.channel}, "
                                      f"instrument: {song_event.instrument}, note: {song_event.note}")
 
@@ -391,7 +399,7 @@ COMMANDS:
             for active_note in midi_channel.active_notes:
                 instrument = engine.get_adlib_instrument(active_note)
                 note = instrument.get_play_note(active_note.note)
-                imf_channel = find_imf_channel_for_instrument_note(instrument, note)
+                imf_channel = find_imf_channel_for_instrument_note(active_note)  # instrument, note)
                 if imf_channel:
                     block, freq = get_block_and_freq(note, pitch_bend)
                     add_commands(song_event.time, [
@@ -414,8 +422,8 @@ COMMANDS:
                     commands = []
                     for active_note in midi_channel.active_notes:
                         instrument = engine.get_adlib_instrument(active_note)
-                        adjusted_note = instrument.get_play_note(active_note.note)
-                        imf_channel = find_imf_channel_for_instrument_note(instrument, adjusted_note)
+                        # adjusted_note = instrument.get_play_note(active_note.note)
+                        imf_channel = find_imf_channel_for_instrument_note(active_note)  # instrument, adjusted_note)
                         if imf_channel:
                             commands += get_volume_commands(imf_channel, instrument, midi_channel, active_note.velocity)
                     add_commands(song_event.time, commands)
@@ -442,7 +450,7 @@ COMMANDS:
         engine.start()
         # Verify that there are no active notes on the IMF channels.
         for ch in imf_channels:
-            if ch.last_note:
+            if ch.is_active:
                 _logging.warning(f"IMF channel {ch.number} ended with an active note: {ch.last_note}")
 
         if song._ignored_notes:
@@ -467,7 +475,7 @@ COMMANDS:
 class _ImfChannelInfo:
     def __init__(self, number):
         self.number = number
-        self.instrument = None  # type: _typing.Optional[AdlibInstrument]
+        # self.instrument = None  # type: _typing.Optional[AdlibInstrument]
         self.last_note = None  # type: _typing.Optional[_midiengine.ActiveNote]
-        # self.is_active = False
+        self.is_active = False
         # self.active_note = None  # type: _typing.Optional[_midiengine.ActiveNote]
