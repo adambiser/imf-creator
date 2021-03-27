@@ -140,8 +140,10 @@ class ConvertTestCase(LoggingTestCase):
 
     def test_convert_to_imf(self):
         """Tests the conversion process."""
-        imfcreator.plugins.AdlibSongFile.convert_from(self.song, "imf1")
-        self.validate_log_results(self.filename)
+        try:
+            imfcreator.plugins.AdlibSongFile.convert_from(self.song, "imf1")
+        finally:
+            self.validate_log_results(self.filename)
 
 
 def get_test_files(path: str, extension: str):
