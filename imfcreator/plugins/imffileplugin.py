@@ -346,7 +346,7 @@ COMMANDS:
                 # if imf_channel.instrument != instrument:
                 # Removed volume messages. Volume will initialize to OFF.
                 commands += [cmd for cmd in instrument.get_regs(imf_channel.number, voice) if
-                             (cmd[0] & 0xf0) != VOLUME_MSG]
+                             cmd[0] < VOLUME_MSG or cmd[0] > VOLUME_MSG + 0x15]
                 # commands += [
                 #     (VOLUME_MSG | MODULATORS[channel.number], 0x3f),
                 #     (VOLUME_MSG | CARRIERS[channel.number], 0x3f),
