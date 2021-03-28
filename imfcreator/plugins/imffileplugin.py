@@ -364,17 +364,15 @@ COMMANDS:
             else:
                 song._ignored_notes.append(song_event)
                 song._active_ignored_notes.append(song_event)
-                _logging.warning(f"Could not find channel for note on!  Channel {song_event.channel}, "
-                                 f"instrument: {song_event.instrument}, note: {song_event.note}")
+                _logging.warning(f"Ignoring note:  Track {song_event.track}, ch {song_event.channel}, "
+                                 f"note: {song_event.note}, instrument: {song_event.instrument}")
             # return commands
 
         def on_note_off(song_event: _midiengine.NoteEvent):
             instrument = engine.get_adlib_instrument(song_event)
             if instrument is None:
                 return
-            voice = 0
-            # adjusted_note = instrument.get_play_note(song_event.note, voice)
-            imf_channel = find_imf_channel_for_instrument_note(song_event)  # instrument, adjusted_note)
+            imf_channel = find_imf_channel_for_instrument_note(song_event)
             if imf_channel:
                 imf_channel.is_active = False
                 add_commands(song_event.time, [
@@ -386,8 +384,9 @@ COMMANDS:
                 if ignored_note:
                     song._active_ignored_notes.remove(ignored_note)
                 else:
-                    _logging.warning(f"Could not find channel for note off!  Channel {song_event.channel}, "
-                                     f"instrument: {song_event.instrument}, note: {song_event.note}")
+                    _logging.error(f"Could not find channel for note off!  "
+                                   f"Track {song_event.track}, ch {song_event.channel}, "
+                                   f"note: {song_event.note}, instrument: {song_event.instrument}")
 
         def on_pitch_bend(song_event: _midiengine.PitchBendEvent):
             # Can't pitch bend percussion.

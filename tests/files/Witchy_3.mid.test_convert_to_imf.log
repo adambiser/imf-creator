@@ -777,7 +777,7 @@ DEBUG	0    : 0x55 <= 0x87 (10000111): ch 8 car - Volume: 7, KSL: 2
 DEBUG	0    : 0xa8 <= 0x44 (01000100): ch 8 - Freq: 68
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[244] 16.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 117
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[245] 16.250: Track 7, ch  6: NOTE_OFF: note: 60, velocity: 127
 DEBUG	0    : 0xb5 <= 0x0e (00001110): ch 5 - Oct: 3, Freq (msb): 2, Key OFF
 DEBUG	[246] 16.250: Track 3, ch  2: NOTE_ON: note: 36, velocity: 0
@@ -817,7 +817,7 @@ DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[261] 17.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 103
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[262] 17.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 100
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[263] 17.250: Track 7, ch  6: NOTE_OFF: note: 59, velocity: 127
 DEBUG	0    : 0xb5 <= 0x0e (00001110): ch 5 - Oct: 3, Freq (msb): 2, Key OFF
 DEBUG	[264] 17.250: Track 3, ch  2: NOTE_ON: note: 35, velocity: 0
@@ -922,7 +922,7 @@ DEBUG	0    : 0x54 <= 0x87 (10000111): ch 7 car - Volume: 7, KSL: 2
 DEBUG	0    : 0xa7 <= 0x44 (01000100): ch 7 - Freq: 68
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[291] 19.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 99
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[292] 19.250: Track 3, ch  2: NOTE_ON: note: 36, velocity: 0
 DEBUG	0    : 0xb3 <= 0x06 (00000110): ch 3 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[293] 19.250: Track 3, ch  2: NOTE_ON: note: 24, velocity: 0
@@ -980,7 +980,7 @@ DEBUG	[306] 20.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 103
 DEBUG	0    : 0xa8 <= 0x44 (01000100): ch 8 - Freq: 68
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[307] 20.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 117
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[308] 20.250: Track 3, ch  2: NOTE_ON: note: 28, velocity: 0
 DEBUG	0    : 0xb4 <= 0x03 (00000011): ch 4 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[309] 20.250: Track 3, ch  2: NOTE_ON: note: 40, velocity: 0
@@ -1013,7 +1013,7 @@ DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[321] 21.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 103
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[322] 21.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 117
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[323] 21.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[324] 21.388: Track 0: META: SET_TEMPO: bpm: 70, meta_type: SET_TEMPO
 DEBUG	[325] 21.391: Track 9, ch  7: NOTE_OFF: note: 64, velocity: 87
@@ -2336,7 +2336,7 @@ DEBUG	0    : 0x53 <= 0x0e (00001110): ch 6 car - Volume: 14, KSL: 0
 DEBUG	0    : 0xa6 <= 0xdb (11011011): ch 6 - Freq: 219
 DEBUG	0    : 0xb6 <= 0x2a (00101010): ch 6 - Oct: 2, Freq (msb): 2, Key ON
 DEBUG	[652] 72.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[653] 72.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[654] 72.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -4187,9 +4187,9 @@ DEBUG	0    : 0x51 <= 0x9a (10011010): ch 7 mod - Volume: 26, KSL: 2
 DEBUG	0    : 0x54 <= 0x86 (10000110): ch 7 car - Volume: 6, KSL: 2
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1084] 112.000: Track 9, ch  7: NOTE_ON: note: 59, velocity: 107
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 59
+WARNING	Ignoring note:  Track 9, ch 7, note: 59, instrument: 60
 DEBUG	[1085] 112.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 107
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[1086] 112.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 0
 DEBUG	0    : 0xb8 <= 0x0a (00001010): ch 8 - Oct: 2, Freq (msb): 2, Key OFF
 DEBUG	[1087] 112.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 127
@@ -4260,9 +4260,9 @@ DEBUG	0    : 0x55 <= 0x86 (10000110): ch 8 car - Volume: 6, KSL: 2
 DEBUG	0    : 0xa8 <= 0x8b (10001011): ch 8 - Freq: 139
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1108] 113.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 107
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[1109] 113.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1110] 113.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[1111] 113.391: Track 9, ch  7: NOTE_OFF: note: 56, velocity: 87
 DEBUG	0    : 0xb7 <= 0x0e (00001110): ch 7 - Oct: 3, Freq (msb): 2, Key OFF
@@ -4325,7 +4325,7 @@ DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa8 <= 0xdb (11011011): ch 8 - Freq: 219
 DEBUG	0    : 0xb8 <= 0x2a (00101010): ch 8 - Oct: 2, Freq (msb): 2, Key ON
 DEBUG	[1128] 114.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1129] 114.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb7 <= 0x12 (00010010): ch 7 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1130] 114.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -4677,9 +4677,9 @@ DEBUG	0    : 0x55 <= 0x82 (10000010): ch 8 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa8 <= 0xb2 (10110010): ch 8 - Freq: 178
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1210] 121.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 123
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[1211] 121.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1212] 121.250: Track 3, ch  2: NOTE_ON: note: 32, velocity: 0
 DEBUG	0    : 0xb3 <= 0x06 (00000110): ch 3 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1213] 121.250: Track 3, ch  2: NOTE_ON: note: 44, velocity: 0
@@ -4764,9 +4764,9 @@ DEBUG	0    : 0xb7 <= 0x33 (00110011): ch 7 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1237] 122.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 123
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1238] 122.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 123
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[1239] 122.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1240] 122.250: Track 3, ch  2: NOTE_ON: note: 31, velocity: 0
 DEBUG	0    : 0xb4 <= 0x06 (00000110): ch 4 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1241] 122.250: Track 3, ch  2: NOTE_ON: note: 43, velocity: 0
@@ -4846,9 +4846,9 @@ DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa8 <= 0x44 (01000100): ch 8 - Freq: 68
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[1258] 123.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1259] 123.000: Track 8, ch 11: NOTE_ON: note: 75, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 75
+WARNING	Ignoring note:  Track 8, ch 11, note: 75, instrument: 56
 DEBUG	[1260] 123.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1261] 123.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -4908,9 +4908,9 @@ DEBUG	0    : 0x55 <= 0x07 (00000111): ch 8 car - Volume: 7, KSL: 0
 DEBUG	0    : 0xa8 <= 0x34 (00110100): ch 8 - Freq: 52
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1274] 124.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 105
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[1275] 124.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 105
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1276] 124.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb6 <= 0x12 (00010010): ch 6 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1277] 124.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -5092,9 +5092,9 @@ DEBUG	0    : 0x54 <= 0x82 (10000010): ch 7 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa7 <= 0xb2 (10110010): ch 7 - Freq: 178
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1322] 127.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 123
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[1323] 127.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 109
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1324] 127.250: Track 3, ch  2: NOTE_ON: note: 31, velocity: 0
 DEBUG	0    : 0xb3 <= 0x06 (00000110): ch 3 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1325] 127.250: Track 3, ch  2: NOTE_ON: note: 43, velocity: 0
@@ -5180,9 +5180,9 @@ DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1349] 128.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 123
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1350] 128.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 123
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[1351] 128.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 114
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1352] 128.250: Track 3, ch  2: NOTE_ON: note: 32, velocity: 0
 DEBUG	0    : 0xb4 <= 0x06 (00000110): ch 4 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1353] 128.250: Track 3, ch  2: NOTE_ON: note: 44, velocity: 0
@@ -5253,9 +5253,9 @@ DEBUG	[1369] 129.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
 DEBUG	0    : 0xa8 <= 0x44 (01000100): ch 8 - Freq: 68
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[1370] 129.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1371] 129.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[1372] 129.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1373] 129.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -5315,9 +5315,9 @@ DEBUG	0    : 0x55 <= 0x06 (00000110): ch 8 car - Volume: 6, KSL: 0
 DEBUG	0    : 0xa8 <= 0x65 (01100101): ch 8 - Freq: 101
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1386] 130.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 108
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[1387] 130.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 108
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1388] 130.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb6 <= 0x12 (00010010): ch 6 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1389] 130.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -5499,9 +5499,9 @@ DEBUG	0    : 0x54 <= 0x82 (10000010): ch 7 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa7 <= 0xb2 (10110010): ch 7 - Freq: 178
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1434] 133.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 124
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[1435] 133.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 109
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1436] 133.250: Track 3, ch  2: NOTE_ON: note: 32, velocity: 0
 DEBUG	0    : 0xb3 <= 0x06 (00000110): ch 3 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1437] 133.250: Track 3, ch  2: NOTE_ON: note: 44, velocity: 0
@@ -5589,9 +5589,9 @@ DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1461] 134.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 124
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1462] 134.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 124
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[1463] 134.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 107
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1464] 134.250: Track 3, ch  2: NOTE_ON: note: 31, velocity: 0
 DEBUG	0    : 0xb4 <= 0x06 (00000110): ch 4 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1465] 134.250: Track 3, ch  2: NOTE_ON: note: 43, velocity: 0
@@ -5665,9 +5665,9 @@ DEBUG	[1481] 135.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
 DEBUG	0    : 0xa8 <= 0x44 (01000100): ch 8 - Freq: 68
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[1482] 135.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1483] 135.000: Track 8, ch 11: NOTE_ON: note: 75, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 75
+WARNING	Ignoring note:  Track 8, ch 11, note: 75, instrument: 56
 DEBUG	[1484] 135.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1485] 135.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -5727,9 +5727,9 @@ DEBUG	0    : 0x55 <= 0x05 (00000101): ch 8 car - Volume: 5, KSL: 0
 DEBUG	0    : 0xa8 <= 0x34 (00110100): ch 8 - Freq: 52
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1498] 136.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 110
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[1499] 136.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 110
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1500] 136.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb6 <= 0x12 (00010010): ch 6 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1501] 136.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -5770,9 +5770,9 @@ DEBUG	[1517] 137.000: Track 8, ch 11: NOTE_ON: note: 75, velocity: 125
 DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1518] 137.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[1519] 137.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1520] 137.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb6 <= 0x12 (00010010): ch 6 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1521] 137.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -5878,7 +5878,7 @@ DEBUG	0    : 0x54 <= 0x82 (10000010): ch 7 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa7 <= 0x65 (01100101): ch 7 - Freq: 101
 DEBUG	0    : 0xb7 <= 0x2f (00101111): ch 7 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[1546] 139.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 99
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1547] 139.328: Track 7, ch  6: NOTE_OFF: note: 76, velocity: 125
 DEBUG	0    : 0xb8 <= 0x13 (00010011): ch 8 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[1548] 139.328: Track 7, ch  6: NOTE_OFF: note: 71, velocity: 125
@@ -5961,9 +5961,9 @@ DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1571] 140.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 125
 DEBUG	0    : 0xb7 <= 0x2f (00101111): ch 7 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[1572] 140.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 78
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[1573] 140.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 100
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1574] 140.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	[1575] 140.328: Track 7, ch  6: NOTE_OFF: note: 76, velocity: 125
 DEBUG	0    : 0xb3 <= 0x13 (00010011): ch 3 - Oct: 4, Freq (msb): 3, Key OFF
@@ -6091,9 +6091,9 @@ DEBUG	0    : 0xb7 <= 0x2f (00101111): ch 7 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[1605] 142.000: Track 8, ch 11: NOTE_ON: note: 80, velocity: 125
 DEBUG	0    : 0xb8 <= 0x36 (00110110): ch 8 - Oct: 5, Freq (msb): 2, Key ON
 DEBUG	[1606] 142.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[1607] 142.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[1608] 142.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb3 <= 0x03 (00000011): ch 3 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[1609] 142.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -6186,11 +6186,11 @@ DEBUG	0    : 0x55 <= 0x08 (00001000): ch 8 car - Volume: 8, KSL: 0
 DEBUG	0    : 0xa8 <= 0x06 (00000110): ch 8 - Freq: 6
 DEBUG	0    : 0xb8 <= 0x2f (00101111): ch 8 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[1632] 143.000: Track 8, ch 11: NOTE_ON: note: 80, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 80
+WARNING	Ignoring note:  Track 8, ch 11, note: 80, instrument: 56
 DEBUG	[1633] 143.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[1634] 143.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[1635] 143.250: Track 3, ch  2: NOTE_ON: note: 32, velocity: 0
 DEBUG	0    : 0xb3 <= 0x06 (00000110): ch 3 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1636] 143.250: Track 3, ch  2: NOTE_ON: note: 44, velocity: 0
@@ -6314,9 +6314,9 @@ DEBUG	0    : 0x55 <= 0x82 (10000010): ch 8 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa8 <= 0xb2 (10110010): ch 8 - Freq: 178
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1666] 145.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 125
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[1667] 145.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 95
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1668] 145.250: Track 3, ch  2: NOTE_ON: note: 32, velocity: 0
 DEBUG	0    : 0xb3 <= 0x06 (00000110): ch 3 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1669] 145.250: Track 3, ch  2: NOTE_ON: note: 44, velocity: 0
@@ -6399,9 +6399,9 @@ DEBUG	0    : 0xb7 <= 0x33 (00110011): ch 7 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1693] 146.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 125
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1694] 146.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 125
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[1695] 146.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 97
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1696] 146.250: Track 3, ch  2: NOTE_ON: note: 31, velocity: 0
 DEBUG	0    : 0xb4 <= 0x06 (00000110): ch 4 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1697] 146.250: Track 3, ch  2: NOTE_ON: note: 43, velocity: 0
@@ -6483,9 +6483,9 @@ DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa8 <= 0x44 (01000100): ch 8 - Freq: 68
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[1714] 147.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1715] 147.000: Track 8, ch 11: NOTE_ON: note: 75, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 75
+WARNING	Ignoring note:  Track 8, ch 11, note: 75, instrument: 56
 DEBUG	[1716] 147.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1717] 147.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -6545,9 +6545,9 @@ DEBUG	0    : 0x55 <= 0x06 (00000110): ch 8 car - Volume: 6, KSL: 0
 DEBUG	0    : 0xa8 <= 0x34 (00110100): ch 8 - Freq: 52
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1730] 148.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 107
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[1731] 148.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 107
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1732] 148.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb6 <= 0x12 (00010010): ch 6 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1733] 148.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -6735,9 +6735,9 @@ DEBUG	0    : 0x54 <= 0x81 (10000001): ch 7 car - Volume: 1, KSL: 2
 DEBUG	0    : 0xa7 <= 0xb2 (10110010): ch 7 - Freq: 178
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1778] 151.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 126
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[1779] 151.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 99
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1780] 151.250: Track 3, ch  2: NOTE_ON: note: 31, velocity: 0
 DEBUG	0    : 0xb3 <= 0x06 (00000110): ch 3 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1781] 151.250: Track 3, ch  2: NOTE_ON: note: 43, velocity: 0
@@ -6823,9 +6823,9 @@ DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1805] 152.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 126
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1806] 152.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 126
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[1807] 152.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 100
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1808] 152.250: Track 3, ch  2: NOTE_ON: note: 32, velocity: 0
 DEBUG	0    : 0xb4 <= 0x06 (00000110): ch 4 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[1809] 152.250: Track 3, ch  2: NOTE_ON: note: 44, velocity: 0
@@ -6899,9 +6899,9 @@ DEBUG	[1825] 153.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
 DEBUG	0    : 0xa8 <= 0x44 (01000100): ch 8 - Freq: 68
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[1826] 153.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1827] 153.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[1828] 153.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1829] 153.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -6961,9 +6961,9 @@ DEBUG	0    : 0x55 <= 0x06 (00000110): ch 8 car - Volume: 6, KSL: 0
 DEBUG	0    : 0xa8 <= 0x65 (01100101): ch 8 - Freq: 101
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1842] 154.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 106
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[1843] 154.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 106
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1844] 154.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb6 <= 0x12 (00010010): ch 6 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1845] 154.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -7128,7 +7128,7 @@ DEBUG	0    : 0x54 <= 0x81 (10000001): ch 7 car - Volume: 1, KSL: 2
 DEBUG	0    : 0xa7 <= 0x65 (01100101): ch 7 - Freq: 101
 DEBUG	0    : 0xb7 <= 0x2f (00101111): ch 7 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[1886] 157.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 95
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1887] 157.328: Track 7, ch  6: NOTE_OFF: note: 76, velocity: 125
 DEBUG	0    : 0xb8 <= 0x13 (00010011): ch 8 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[1888] 157.328: Track 7, ch  6: NOTE_OFF: note: 71, velocity: 125
@@ -7208,9 +7208,9 @@ DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[1911] 158.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 127
 DEBUG	0    : 0xb7 <= 0x2f (00101111): ch 7 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[1912] 158.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 68
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[1913] 158.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 93
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1914] 158.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	[1915] 158.328: Track 7, ch  6: NOTE_OFF: note: 76, velocity: 125
 DEBUG	0    : 0xb3 <= 0x13 (00010011): ch 3 - Oct: 4, Freq (msb): 3, Key OFF
@@ -7350,7 +7350,7 @@ DEBUG	0    : 0x54 <= 0x02 (00000010): ch 7 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa7 <= 0xb2 (10110010): ch 7 - Freq: 178
 DEBUG	0    : 0xb7 <= 0x32 (00110010): ch 7 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[1942] 160.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[1943] 160.328: Track 8, ch 11: NOTE_OFF: note: 77, velocity: 125
 DEBUG	0    : 0xb8 <= 0x13 (00010011): ch 8 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[1944] 160.328: Track 8, ch 11: NOTE_OFF: note: 72, velocity: 125
@@ -7440,9 +7440,9 @@ DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa8 <= 0x99 (10011001): ch 8 - Freq: 153
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[1966] 161.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[1967] 161.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[1968] 161.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb6 <= 0x12 (00010010): ch 6 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[1969] 161.328: Track 8, ch 11: NOTE_OFF: note: 77, velocity: 125
@@ -7548,7 +7548,7 @@ DEBUG	0    : 0x54 <= 0x81 (10000001): ch 7 car - Volume: 1, KSL: 2
 DEBUG	0    : 0xa7 <= 0x65 (01100101): ch 7 - Freq: 101
 DEBUG	0    : 0xb7 <= 0x2f (00101111): ch 7 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[1994] 163.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 92
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[1995] 163.328: Track 7, ch  6: NOTE_OFF: note: 76, velocity: 125
 DEBUG	0    : 0xb8 <= 0x13 (00010011): ch 8 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[1996] 163.328: Track 7, ch  6: NOTE_OFF: note: 71, velocity: 125
@@ -7632,9 +7632,9 @@ DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2019] 164.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 127
 DEBUG	0    : 0xb7 <= 0x2f (00101111): ch 7 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2020] 164.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 64
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[2021] 164.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 95
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2022] 164.250: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	[2023] 164.328: Track 7, ch  6: NOTE_OFF: note: 76, velocity: 125
 DEBUG	0    : 0xb3 <= 0x13 (00010011): ch 3 - Oct: 4, Freq (msb): 3, Key OFF
@@ -7782,11 +7782,11 @@ DEBUG	0    : 0x55 <= 0x09 (00001001): ch 8 car - Volume: 9, KSL: 0
 DEBUG	0    : 0xa8 <= 0x06 (00000110): ch 8 - Freq: 6
 DEBUG	0    : 0xb8 <= 0x2f (00101111): ch 8 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2050] 166.000: Track 8, ch 11: NOTE_ON: note: 80, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 80
+WARNING	Ignoring note:  Track 8, ch 11, note: 80, instrument: 56
 DEBUG	[2051] 166.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[2052] 166.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[2053] 166.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb2 <= 0x03 (00000011): ch 2 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[2054] 166.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -7896,9 +7896,9 @@ DEBUG	0    : 0x54 <= 0x02 (00000010): ch 7 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa7 <= 0x23 (00100011): ch 7 - Freq: 35
 DEBUG	0    : 0xb7 <= 0x36 (00110110): ch 7 - Oct: 5, Freq (msb): 2, Key ON
 DEBUG	[2080] 167.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[2081] 167.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[2082] 167.250: Track 3, ch  2: NOTE_ON: note: 32, velocity: 0
 DEBUG	0    : 0xb1 <= 0x06 (00000110): ch 1 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[2083] 167.250: Track 3, ch  2: NOTE_ON: note: 44, velocity: 0
@@ -7983,11 +7983,11 @@ DEBUG	0    : 0x55 <= 0x88 (10001000): ch 8 car - Volume: 8, KSL: 2
 DEBUG	0    : 0xa8 <= 0x65 (01100101): ch 8 - Freq: 101
 DEBUG	0    : 0xb8 <= 0x2b (00101011): ch 8 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[2102] 168.000: Track 10, ch  8: NOTE_ON: note: 57, velocity: 100
-WARNING	Could not find channel for note on!  Channel 8, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 10, ch 8, note: 57, instrument: 60
 DEBUG	[2103] 168.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[2104] 168.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2105] 168.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	[2106] 168.656: Track 3, ch  2: NOTE_OFF: note: 33, velocity: 87
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
@@ -8009,11 +8009,11 @@ DEBUG	0    : 0x4b <= 0x86 (10000110): ch 3 car - Volume: 6, KSL: 2
 DEBUG	0    : 0xa3 <= 0x65 (01100101): ch 3 - Freq: 101
 DEBUG	0    : 0xb3 <= 0x2f (00101111): ch 3 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2111] 169.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 107
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2112] 169.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 75
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2113] 169.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2114] 169.125: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2115] 169.391: Track 9, ch  7: NOTE_OFF: note: 60, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -8046,11 +8046,11 @@ DEBUG	[2126] 170.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 112
 DEBUG	0    : 0x4b <= 0x85 (10000101): ch 3 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xb3 <= 0x2f (00101111): ch 3 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2127] 170.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2128] 170.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 67
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2129] 170.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2130] 170.125: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2131] 170.391: Track 9, ch  7: NOTE_OFF: note: 60, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -8091,9 +8091,9 @@ DEBUG	0    : 0x54 <= 0x01 (00000001): ch 7 car - Volume: 1, KSL: 0
 DEBUG	0    : 0xa7 <= 0x44 (01000100): ch 7 - Freq: 68
 DEBUG	0    : 0xb7 <= 0x32 (00110010): ch 7 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[2143] 171.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 67
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2144] 171.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2145] 171.656: Track 3, ch  2: NOTE_OFF: note: 33, velocity: 87
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[2146] 171.656: Track 3, ch  2: NOTE_OFF: note: 45, velocity: 87
@@ -8114,12 +8114,12 @@ DEBUG	0    : 0x4b <= 0x85 (10000101): ch 3 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa3 <= 0xb2 (10110010): ch 3 - Freq: 178
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2150] 172.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2151] 172.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 68
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2152] 172.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 0
 DEBUG	[2153] 172.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2154] 172.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2155] 172.391: Track 9, ch  7: NOTE_OFF: note: 64, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -8149,11 +8149,11 @@ DEBUG	0    : 0xb2 <= 0x2f (00101111): ch 2 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2166] 173.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 112
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2167] 173.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2168] 173.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 72
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2169] 173.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2170] 173.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2171] 173.391: Track 9, ch  7: NOTE_OFF: note: 64, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -8210,11 +8210,11 @@ DEBUG	[2189] 174.000: Track 10, ch  8: NOTE_ON: note: 46, velocity: 100
 DEBUG	0    : 0xa8 <= 0x67 (01100111): ch 8 - Freq: 103
 DEBUG	0    : 0xb8 <= 0x2a (00101010): ch 8 - Oct: 2, Freq (msb): 2, Key ON
 DEBUG	[2190] 174.000: Track 10, ch  8: NOTE_ON: note: 51, velocity: 100
-WARNING	Could not find channel for note on!  Channel 8, instrument: 60, note: 51
+WARNING	Ignoring note:  Track 10, ch 8, note: 51, instrument: 60
 DEBUG	[2191] 174.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 75
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2192] 174.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2193] 174.656: Track 3, ch  2: NOTE_OFF: note: 27, velocity: 87
 DEBUG	0    : 0xb2 <= 0x03 (00000011): ch 2 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[2194] 174.656: Track 3, ch  2: NOTE_OFF: note: 39, velocity: 87
@@ -8236,11 +8236,11 @@ DEBUG	0    : 0x4b <= 0x85 (10000101): ch 3 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa3 <= 0x67 (01100111): ch 3 - Freq: 103
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2199] 175.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[2200] 175.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 76
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2201] 175.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2202] 175.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2203] 175.391: Track 9, ch  7: NOTE_OFF: note: 55, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -8271,11 +8271,11 @@ DEBUG	0    : 0xb2 <= 0x2e (00101110): ch 2 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2214] 176.000: Track 9, ch  7: NOTE_ON: note: 58, velocity: 112
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2215] 176.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[2216] 176.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 75
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2217] 176.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2218] 176.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2219] 176.391: Track 9, ch  7: NOTE_OFF: note: 55, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -8316,9 +8316,9 @@ DEBUG	0    : 0x54 <= 0x01 (00000001): ch 7 car - Volume: 1, KSL: 0
 DEBUG	0    : 0xa7 <= 0x67 (01100111): ch 7 - Freq: 103
 DEBUG	0    : 0xb7 <= 0x32 (00110010): ch 7 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[2231] 177.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 74
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2232] 177.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2233] 177.656: Track 3, ch  2: NOTE_OFF: note: 27, velocity: 87
 DEBUG	0    : 0xb2 <= 0x03 (00000011): ch 2 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[2234] 177.656: Track 3, ch  2: NOTE_OFF: note: 39, velocity: 87
@@ -8339,12 +8339,12 @@ DEBUG	0    : 0x4b <= 0x85 (10000101): ch 3 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa3 <= 0x67 (01100111): ch 3 - Freq: 103
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2238] 178.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[2239] 178.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 72
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2240] 178.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 0
 DEBUG	[2241] 178.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2242] 178.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2243] 178.391: Track 9, ch  7: NOTE_OFF: note: 55, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -8372,9 +8372,9 @@ DEBUG	0    : 0xb2 <= 0x2e (00101110): ch 2 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2250] 179.000: Track 9, ch  7: NOTE_ON: note: 58, velocity: 112
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2251] 179.000: Track 9, ch  7: NOTE_ON: note: 63, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 63
+WARNING	Ignoring note:  Track 9, ch 7, note: 63, instrument: 60
 DEBUG	[2252] 179.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 86
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2253] 179.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	0    : 0xb1 <= 0x0f (00001111): ch 1 - Oct: 3, Freq (msb): 3, Key OFF
 DEBUG	[2254] 179.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
@@ -8457,11 +8457,11 @@ DEBUG	0    : 0x51 <= 0x0e (00001110): ch 7 mod - Volume: 14, KSL: 0
 DEBUG	0    : 0xa7 <= 0x23 (00100011): ch 7 - Freq: 35
 DEBUG	0    : 0xb7 <= 0x32 (00110010): ch 7 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[2274] 180.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2275] 180.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[2276] 180.000: Track 8, ch 11: NOTE_ON: note: 64, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 64
+WARNING	Ignoring note:  Track 8, ch 11, note: 64, instrument: 56
 DEBUG	[2277] 180.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb7 <= 0x12 (00010010): ch 7 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[2278] 180.656: Track 3, ch  2: NOTE_OFF: note: 33, velocity: 87
@@ -8495,9 +8495,9 @@ DEBUG	0    : 0x54 <= 0x85 (10000101): ch 7 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa7 <= 0x44 (01000100): ch 7 - Freq: 68
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2284] 181.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 81
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2285] 181.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2286] 181.125: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2287] 181.391: Track 9, ch  7: NOTE_OFF: note: 60, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -8521,13 +8521,13 @@ DEBUG	0    : 0xb3 <= 0x2f (00101111): ch 3 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2297] 182.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2298] 182.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 84
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2299] 182.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2300] 182.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 118
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[2301] 182.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 118
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[2302] 182.125: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2303] 182.391: Track 9, ch  7: NOTE_OFF: note: 60, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -8573,11 +8573,11 @@ DEBUG	0    : 0x54 <= 0x16 (00010110): ch 7 car - Volume: 22, KSL: 0
 DEBUG	0    : 0xa7 <= 0x65 (01100101): ch 7 - Freq: 101
 DEBUG	0    : 0xb7 <= 0x33 (00110011): ch 7 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[2314] 183.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2315] 183.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[2316] 183.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[2317] 183.656: Track 3, ch  2: NOTE_OFF: note: 33, velocity: 87
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[2318] 183.656: Track 3, ch  2: NOTE_OFF: note: 45, velocity: 87
@@ -8614,9 +8614,9 @@ DEBUG	0    : 0x54 <= 0x85 (10000101): ch 7 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa7 <= 0x44 (01000100): ch 7 - Freq: 68
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2324] 184.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 86
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2325] 184.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2326] 184.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2327] 184.391: Track 9, ch  7: NOTE_OFF: note: 64, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -8640,13 +8640,13 @@ DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2337] 185.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2338] 185.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 86
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2339] 185.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2340] 185.000: Track 8, ch 11: NOTE_ON: note: 74, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 74
+WARNING	Ignoring note:  Track 8, ch 11, note: 74, instrument: 56
 DEBUG	[2341] 185.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[2342] 185.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2343] 185.391: Track 9, ch  7: NOTE_OFF: note: 64, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -8726,9 +8726,9 @@ DEBUG	0    : 0xb7 <= 0x2b (00101011): ch 7 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[2363] 186.000: Track 10, ch  8: NOTE_ON: note: 40, velocity: 100
 DEBUG	0    : 0xb8 <= 0x27 (00100111): ch 8 - Oct: 1, Freq (msb): 3, Key ON
 DEBUG	[2364] 186.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 89
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2365] 186.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2366] 186.000: Track 8, ch 11: NOTE_ON: note: 70, velocity: 0
 DEBUG	0    : 0xb2 <= 0x12 (00010010): ch 2 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[2367] 186.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 126
@@ -8736,7 +8736,7 @@ DEBUG	0    : 0x45 <= 0x01 (00000001): ch 2 car - Volume: 1, KSL: 0
 DEBUG	0    : 0xa2 <= 0x65 (01100101): ch 2 - Freq: 101
 DEBUG	0    : 0xb2 <= 0x33 (00110011): ch 2 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[2368] 186.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[2369] 186.656: Track 3, ch  2: NOTE_OFF: note: 35, velocity: 87
 DEBUG	0    : 0xb3 <= 0x06 (00000110): ch 3 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[2370] 186.656: Track 3, ch  2: NOTE_OFF: note: 47, velocity: 87
@@ -8758,11 +8758,11 @@ DEBUG	0    : 0x4c <= 0x85 (10000101): ch 4 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa4 <= 0x65 (01100101): ch 4 - Freq: 101
 DEBUG	0    : 0xb4 <= 0x2f (00101111): ch 4 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2375] 187.000: Track 9, ch  7: NOTE_ON: note: 56, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 56
+WARNING	Ignoring note:  Track 9, ch 7, note: 56, instrument: 60
 DEBUG	[2376] 187.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 90
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2377] 187.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2378] 187.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2379] 187.391: Track 9, ch  7: NOTE_OFF: note: 62, velocity: 87
 DEBUG	0    : 0xb3 <= 0x0f (00001111): ch 3 - Oct: 3, Freq (msb): 3, Key OFF
@@ -8788,9 +8788,9 @@ DEBUG	0    : 0x44 <= 0x85 (10000101): ch 1 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa1 <= 0x23 (00100011): ch 1 - Freq: 35
 DEBUG	0    : 0xb1 <= 0x2e (00101110): ch 1 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2387] 188.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 90
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2388] 188.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2389] 188.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2390] 188.391: Track 9, ch  7: NOTE_OFF: note: 62, velocity: 87
 DEBUG	0    : 0xb3 <= 0x0f (00001111): ch 3 - Oct: 3, Freq (msb): 3, Key OFF
@@ -8840,11 +8840,11 @@ DEBUG	0    : 0x49 <= 0x0a (00001010): ch 4 mod - Volume: 10, KSL: 0
 DEBUG	0    : 0x4c <= 0x16 (00010110): ch 4 car - Volume: 22, KSL: 0
 DEBUG	0    : 0xb4 <= 0x33 (00110011): ch 4 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[2400] 189.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2401] 189.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[2402] 189.000: Track 8, ch 11: NOTE_ON: note: 68, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 68
+WARNING	Ignoring note:  Track 8, ch 11, note: 68, instrument: 56
 DEBUG	[2403] 189.656: Track 3, ch  2: NOTE_OFF: note: 35, velocity: 87
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[2404] 189.656: Track 3, ch  2: NOTE_OFF: note: 47, velocity: 87
@@ -8881,9 +8881,9 @@ DEBUG	0    : 0x4c <= 0x85 (10000101): ch 4 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa4 <= 0x23 (00100011): ch 4 - Freq: 35
 DEBUG	0    : 0xb4 <= 0x2e (00101110): ch 4 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2410] 190.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 101
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2411] 190.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 99
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2412] 190.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2413] 190.391: Track 9, ch  7: NOTE_OFF: note: 62, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -8914,7 +8914,7 @@ DEBUG	0    : 0xb3 <= 0x2f (00101111): ch 3 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2421] 191.000: Track 9, ch  7: NOTE_ON: note: 56, velocity: 112
 DEBUG	0    : 0xb4 <= 0x2e (00101110): ch 4 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2422] 191.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 95
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2423] 191.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	0    : 0xb1 <= 0x0f (00001111): ch 1 - Oct: 3, Freq (msb): 3, Key OFF
 DEBUG	[2424] 191.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 85
@@ -8995,11 +8995,11 @@ DEBUG	0    : 0xb7 <= 0x2a (00101010): ch 7 - Oct: 2, Freq (msb): 2, Key ON
 DEBUG	[2443] 192.000: Track 10, ch  8: NOTE_ON: note: 52, velocity: 100
 DEBUG	0    : 0xb8 <= 0x2b (00101011): ch 8 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[2444] 192.000: Track 10, ch  8: NOTE_ON: note: 57, velocity: 100
-WARNING	Could not find channel for note on!  Channel 8, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 10, ch 8, note: 57, instrument: 60
 DEBUG	[2445] 192.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[2446] 192.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 126
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2447] 192.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	[2448] 192.656: Track 3, ch  2: NOTE_OFF: note: 33, velocity: 87
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
@@ -9021,11 +9021,11 @@ DEBUG	0    : 0x4b <= 0x85 (10000101): ch 3 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa3 <= 0x65 (01100101): ch 3 - Freq: 101
 DEBUG	0    : 0xb3 <= 0x2f (00101111): ch 3 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2453] 193.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2454] 193.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 76
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2455] 193.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2456] 193.125: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2457] 193.391: Track 9, ch  7: NOTE_OFF: note: 60, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -9056,11 +9056,11 @@ DEBUG	0    : 0xb2 <= 0x2e (00101110): ch 2 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2468] 194.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 112
 DEBUG	0    : 0xb3 <= 0x2f (00101111): ch 3 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2469] 194.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2470] 194.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 80
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2471] 194.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2472] 194.125: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2473] 194.391: Track 9, ch  7: NOTE_OFF: note: 60, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -9115,11 +9115,11 @@ DEBUG	0    : 0xb7 <= 0x2a (00101010): ch 7 - Oct: 2, Freq (msb): 2, Key ON
 DEBUG	[2491] 195.000: Track 10, ch  8: NOTE_ON: note: 52, velocity: 100
 DEBUG	0    : 0xb8 <= 0x2b (00101011): ch 8 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[2492] 195.000: Track 10, ch  8: NOTE_ON: note: 56, velocity: 100
-WARNING	Could not find channel for note on!  Channel 8, instrument: 60, note: 56
+WARNING	Ignoring note:  Track 10, ch 8, note: 56, instrument: 60
 DEBUG	[2493] 195.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 78
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[2494] 195.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 124
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2495] 195.656: Track 3, ch  2: NOTE_OFF: note: 32, velocity: 87
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[2496] 195.656: Track 3, ch  2: NOTE_OFF: note: 44, velocity: 87
@@ -9141,11 +9141,11 @@ DEBUG	0    : 0x4b <= 0x85 (10000101): ch 3 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa3 <= 0xb2 (10110010): ch 3 - Freq: 178
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2501] 196.000: Track 9, ch  7: NOTE_ON: note: 56, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 56
+WARNING	Ignoring note:  Track 9, ch 7, note: 56, instrument: 60
 DEBUG	[2502] 196.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 76
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2503] 196.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2504] 196.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2505] 196.391: Track 9, ch  7: NOTE_OFF: note: 64, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -9175,11 +9175,11 @@ DEBUG	0    : 0xb2 <= 0x2f (00101111): ch 2 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2516] 197.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 112
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2517] 197.000: Track 9, ch  7: NOTE_ON: note: 56, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 56
+WARNING	Ignoring note:  Track 9, ch 7, note: 56, instrument: 60
 DEBUG	[2518] 197.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 74
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2519] 197.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2520] 197.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2521] 197.391: Track 9, ch  7: NOTE_OFF: note: 64, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -9234,11 +9234,11 @@ DEBUG	0    : 0xb7 <= 0x2a (00101010): ch 7 - Oct: 2, Freq (msb): 2, Key ON
 DEBUG	[2539] 198.000: Track 10, ch  8: NOTE_ON: note: 52, velocity: 100
 DEBUG	0    : 0xb8 <= 0x2b (00101011): ch 8 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[2540] 198.000: Track 10, ch  8: NOTE_ON: note: 55, velocity: 100
-WARNING	Could not find channel for note on!  Channel 8, instrument: 60, note: 55
+WARNING	Ignoring note:  Track 10, ch 8, note: 55, instrument: 60
 DEBUG	[2541] 198.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 95
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[2542] 198.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 124
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2543] 198.656: Track 3, ch  2: NOTE_OFF: note: 31, velocity: 87
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[2544] 198.656: Track 3, ch  2: NOTE_OFF: note: 43, velocity: 87
@@ -9260,11 +9260,11 @@ DEBUG	0    : 0x4b <= 0x85 (10000101): ch 3 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa3 <= 0x65 (01100101): ch 3 - Freq: 101
 DEBUG	0    : 0xb3 <= 0x2f (00101111): ch 3 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2549] 199.000: Track 9, ch  7: NOTE_ON: note: 55, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 55
+WARNING	Ignoring note:  Track 9, ch 7, note: 55, instrument: 60
 DEBUG	[2550] 199.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 82
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2551] 199.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2552] 199.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2553] 199.391: Track 9, ch  7: NOTE_OFF: note: 60, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -9292,11 +9292,11 @@ DEBUG	0    : 0xb2 <= 0x2e (00101110): ch 2 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2564] 200.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 112
 DEBUG	0    : 0xb3 <= 0x2f (00101111): ch 3 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2565] 200.000: Track 9, ch  7: NOTE_ON: note: 55, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 55
+WARNING	Ignoring note:  Track 9, ch 7, note: 55, instrument: 60
 DEBUG	[2566] 200.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 78
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2567] 200.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2568] 200.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2569] 200.328: Track 7, ch  6: NOTE_OFF: note: 72, velocity: 87
 DEBUG	0    : 0xb4 <= 0x12 (00010010): ch 4 - Oct: 4, Freq (msb): 2, Key OFF
@@ -9349,11 +9349,11 @@ DEBUG	0    : 0xb7 <= 0x2a (00101010): ch 7 - Oct: 2, Freq (msb): 2, Key ON
 DEBUG	[2587] 201.000: Track 10, ch  8: NOTE_ON: note: 52, velocity: 100
 DEBUG	0    : 0xb8 <= 0x2b (00101011): ch 8 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[2588] 201.000: Track 10, ch  8: NOTE_ON: note: 54, velocity: 100
-WARNING	Could not find channel for note on!  Channel 8, instrument: 60, note: 54
+WARNING	Ignoring note:  Track 10, ch 8, note: 54, instrument: 60
 DEBUG	[2589] 201.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[2590] 201.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2591] 201.656: Track 3, ch  2: NOTE_OFF: note: 30, velocity: 87
 DEBUG	0    : 0xb2 <= 0x03 (00000011): ch 2 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[2592] 201.656: Track 3, ch  2: NOTE_OFF: note: 42, velocity: 87
@@ -9375,11 +9375,11 @@ DEBUG	0    : 0x4b <= 0x85 (10000101): ch 3 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa3 <= 0xb2 (10110010): ch 3 - Freq: 178
 DEBUG	0    : 0xb3 <= 0x2e (00101110): ch 3 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2597] 202.000: Track 9, ch  7: NOTE_ON: note: 54, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 54
+WARNING	Ignoring note:  Track 9, ch 7, note: 54, instrument: 60
 DEBUG	[2598] 202.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 108
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2599] 202.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2600] 202.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2601] 202.391: Track 9, ch  7: NOTE_OFF: note: 64, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -9509,11 +9509,11 @@ DEBUG	0    : 0x4d <= 0x01 (00000001): ch 5 car - Volume: 1, KSL: 0
 DEBUG	0    : 0xa5 <= 0x23 (00100011): ch 5 - Freq: 35
 DEBUG	0    : 0xb5 <= 0x32 (00110010): ch 5 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[2632] 204.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2633] 204.000: Track 8, ch 11: NOTE_ON: note: 77, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 77
+WARNING	Ignoring note:  Track 8, ch 11, note: 77, instrument: 56
 DEBUG	[2634] 204.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[2635] 204.656: Track 3, ch  2: NOTE_OFF: note: 29, velocity: 87
 DEBUG	0    : 0xb2 <= 0x03 (00000011): ch 2 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[2636] 204.656: Track 3, ch  2: NOTE_OFF: note: 41, velocity: 87
@@ -9547,9 +9547,9 @@ DEBUG	0    : 0x4d <= 0x85 (10000101): ch 5 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa5 <= 0x99 (10011001): ch 5 - Freq: 153
 DEBUG	0    : 0xb5 <= 0x2f (00101111): ch 5 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2642] 205.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 80
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2643] 205.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2644] 205.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2645] 205.391: Track 9, ch  7: NOTE_OFF: note: 57, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -9581,7 +9581,7 @@ DEBUG	0    : 0x44 <= 0x16 (00010110): ch 1 car - Volume: 22, KSL: 0
 DEBUG	0    : 0xa1 <= 0x65 (01100101): ch 1 - Freq: 101
 DEBUG	0    : 0xb1 <= 0x33 (00110011): ch 1 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[2654] 206.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2655] 206.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2656] 206.391: Track 9, ch  7: NOTE_OFF: note: 57, velocity: 87
 DEBUG	0    : 0xb2 <= 0x0e (00001110): ch 2 - Oct: 3, Freq (msb): 2, Key OFF
@@ -9653,11 +9653,11 @@ DEBUG	0    : 0x55 <= 0x01 (00000001): ch 8 car - Volume: 1, KSL: 0
 DEBUG	0    : 0xa8 <= 0x23 (00100011): ch 8 - Freq: 35
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[2674] 207.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2675] 207.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[2676] 207.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[2677] 207.656: Track 2, ch  1: NOTE_OFF: note: 52, velocity: 127
 DEBUG	0    : 0xb1 <= 0x0b (00001011): ch 1 - Oct: 2, Freq (msb): 3, Key OFF
 DEBUG	[2678] 207.656: Track 3, ch  2: NOTE_OFF: note: 28, velocity: 87
@@ -9699,13 +9699,13 @@ DEBUG	0    : 0x55 <= 0x85 (10000101): ch 8 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa8 <= 0x65 (01100101): ch 8 - Freq: 101
 DEBUG	0    : 0xb8 <= 0x2f (00101111): ch 8 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2688] 208.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2689] 208.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2690] 208.000: Track 8, ch 11: NOTE_ON: note: 78, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 78
+WARNING	Ignoring note:  Track 8, ch 11, note: 78, instrument: 56
 DEBUG	[2691] 208.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[2692] 208.250: Track 8, ch 11: NOTE_OFF: note: 78, velocity: 87
 DEBUG	[2693] 208.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2694] 208.250: Track 8, ch 11: NOTE_ON: note: 72, velocity: 0
@@ -9741,18 +9741,18 @@ DEBUG	[2703] 209.000: Track 9, ch  7: NOTE_ON: note: 59, velocity: 112
 DEBUG	0    : 0xa8 <= 0x8b (10001011): ch 8 - Freq: 139
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2704] 209.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[2705] 209.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 83
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2706] 209.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
 DEBUG	[2707] 209.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
 DEBUG	0    : 0x45 <= 0x07 (00000111): ch 2 car - Volume: 7, KSL: 0
 DEBUG	0    : 0xb2 <= 0x2f (00101111): ch 2 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2708] 209.000: Track 8, ch 11: NOTE_ON: note: 80, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 80
+WARNING	Ignoring note:  Track 8, ch 11, note: 80, instrument: 56
 DEBUG	[2709] 209.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[2710] 209.250: Track 8, ch 11: NOTE_OFF: note: 80, velocity: 87
 DEBUG	[2711] 209.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	0    : 0xb2 <= 0x0f (00001111): ch 2 - Oct: 3, Freq (msb): 3, Key OFF
@@ -9821,11 +9821,11 @@ DEBUG	0    : 0x55 <= 0x01 (00000001): ch 8 car - Volume: 1, KSL: 0
 DEBUG	0    : 0xa8 <= 0x23 (00100011): ch 8 - Freq: 35
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[2730] 210.000: Track 13, ch  9: NOTE_ON: note: 36, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 36
+WARNING	Ignoring note:  Track 13, ch 9, note: 36, instrument: 48
 DEBUG	[2731] 210.000: Track 8, ch 11: NOTE_ON: note: 81, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 81
+WARNING	Ignoring note:  Track 8, ch 11, note: 81, instrument: 56
 DEBUG	[2732] 210.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[2733] 210.656: Track 2, ch  1: NOTE_OFF: note: 57, velocity: 127
 DEBUG	0    : 0xb1 <= 0x0e (00001110): ch 1 - Oct: 3, Freq (msb): 2, Key OFF
 DEBUG	[2734] 210.656: Track 3, ch  2: NOTE_OFF: note: 45, velocity: 87
@@ -9861,17 +9861,17 @@ DEBUG	0    : 0x55 <= 0x85 (10000101): ch 8 car - Volume: 5, KSL: 2
 DEBUG	0    : 0xa8 <= 0xb2 (10110010): ch 8 - Freq: 178
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2744] 211.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[2745] 211.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2746] 211.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 82
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2747] 211.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2748] 211.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[2749] 211.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[2750] 211.250: Track 3, ch  2: NOTE_ON: note: 40, velocity: 0
 DEBUG	0    : 0xb2 <= 0x07 (00000111): ch 2 - Oct: 1, Freq (msb): 3, Key OFF
 DEBUG	[2751] 211.250: Track 3, ch  2: NOTE_ON: note: 28, velocity: 0
@@ -9901,17 +9901,17 @@ DEBUG	0    : 0xb3 <= 0x22 (00100010): ch 3 - Oct: 0, Freq (msb): 2, Key ON
 DEBUG	[2763] 212.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 112
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[2764] 212.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 64
+WARNING	Ignoring note:  Track 9, ch 7, note: 64, instrument: 60
 DEBUG	[2765] 212.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2766] 212.000: Track 12, ch  9: NOTE_ON: note: 53, velocity: 80
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 53
+WARNING	Ignoring note:  Track 12, ch 9, note: 53, instrument: 48
 DEBUG	[2767] 212.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2768] 212.000: Track 8, ch 11: NOTE_ON: note: 72, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 72
+WARNING	Ignoring note:  Track 8, ch 11, note: 72, instrument: 56
 DEBUG	[2769] 212.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[2770] 212.250: Track 3, ch  2: NOTE_ON: note: 36, velocity: 0
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[2771] 212.250: Track 3, ch  2: NOTE_ON: note: 24, velocity: 0
@@ -9940,17 +9940,17 @@ DEBUG	[2783] 213.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 112
 DEBUG	0    : 0xa8 <= 0x65 (01100101): ch 8 - Freq: 101
 DEBUG	0    : 0xb8 <= 0x2f (00101111): ch 8 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[2784] 213.000: Track 9, ch  7: NOTE_ON: note: 60, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 60
+WARNING	Ignoring note:  Track 9, ch 7, note: 60, instrument: 60
 DEBUG	[2785] 213.000: Track 9, ch  7: NOTE_ON: note: 57, velocity: 112
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 57
+WARNING	Ignoring note:  Track 9, ch 7, note: 57, instrument: 60
 DEBUG	[2786] 213.000: Track 12, ch  9: NOTE_ON: note: 55, velocity: 127
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 55
+WARNING	Ignoring note:  Track 12, ch 9, note: 55, instrument: 48
 DEBUG	[2787] 213.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 85
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[2788] 213.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[2789] 213.000: Track 8, ch 11: NOTE_ON: note: 64, velocity: 126
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 64
+WARNING	Ignoring note:  Track 8, ch 11, note: 64, instrument: 56
 DEBUG	[2790] 213.250: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	[2791] 213.656: Track 3, ch  2: NOTE_OFF: note: 33, velocity: 87
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
@@ -13226,9 +13226,9 @@ DEBUG	0    : 0x55 <= 0x87 (10000111): ch 8 car - Volume: 7, KSL: 2
 DEBUG	0    : 0xa8 <= 0x67 (01100111): ch 8 - Freq: 103
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[3710] 325.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 102
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 62
+WARNING	Ignoring note:  Track 9, ch 7, note: 62, instrument: 60
 DEBUG	[3711] 325.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 111
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[3712] 325.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb3 <= 0x03 (00000011): ch 3 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[3713] 325.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -13318,9 +13318,9 @@ DEBUG	[3737] 326.000: Track 9, ch  7: NOTE_ON: note: 58, velocity: 107
 DEBUG	0    : 0x55 <= 0x86 (10000110): ch 8 car - Volume: 6, KSL: 2
 DEBUG	0    : 0xb8 <= 0x2e (00101110): ch 8 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[3738] 326.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 107
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 62
+WARNING	Ignoring note:  Track 9, ch 7, note: 62, instrument: 60
 DEBUG	[3739] 326.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 107
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[3740] 326.250: Track 3, ch  2: NOTE_ON: note: 29, velocity: 0
 DEBUG	0    : 0xb4 <= 0x03 (00000011): ch 4 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[3741] 326.250: Track 3, ch  2: NOTE_ON: note: 41, velocity: 0
@@ -13401,9 +13401,9 @@ DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa8 <= 0xdb (11011011): ch 8 - Freq: 219
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[3758] 327.000: Track 8, ch 11: NOTE_ON: note: 70, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 70
+WARNING	Ignoring note:  Track 8, ch 11, note: 70, instrument: 56
 DEBUG	[3759] 327.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[3760] 327.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[3761] 327.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -13472,7 +13472,7 @@ DEBUG	0    : 0x54 <= 0x07 (00000111): ch 7 car - Volume: 7, KSL: 0
 DEBUG	0    : 0xa7 <= 0x67 (01100111): ch 7 - Freq: 103
 DEBUG	0    : 0xb7 <= 0x32 (00110010): ch 7 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[3774] 328.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 105
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[3775] 328.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	0    : 0xb6 <= 0x0f (00001111): ch 6 - Oct: 3, Freq (msb): 3, Key OFF
 DEBUG	[3776] 328.391: Track 9, ch  7: NOTE_OFF: note: 58, velocity: 87
@@ -13633,9 +13633,9 @@ DEBUG	0    : 0x53 <= 0x82 (10000010): ch 6 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa6 <= 0x67 (01100111): ch 6 - Freq: 103
 DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[3818] 331.000: Track 9, ch  7: NOTE_ON: note: 61, velocity: 122
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 61
+WARNING	Ignoring note:  Track 9, ch 7, note: 61, instrument: 60
 DEBUG	[3819] 331.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 105
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[3820] 331.250: Track 3, ch  2: NOTE_ON: note: 29, velocity: 0
 DEBUG	0    : 0xb3 <= 0x03 (00000011): ch 3 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[3821] 331.250: Track 3, ch  2: NOTE_ON: note: 41, velocity: 0
@@ -13722,9 +13722,9 @@ DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[3845] 332.000: Track 9, ch  7: NOTE_ON: note: 58, velocity: 122
 DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[3846] 332.000: Track 9, ch  7: NOTE_ON: note: 61, velocity: 122
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 61
+WARNING	Ignoring note:  Track 9, ch 7, note: 61, instrument: 60
 DEBUG	[3847] 332.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 107
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[3848] 332.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb4 <= 0x03 (00000011): ch 4 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[3849] 332.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -13798,9 +13798,9 @@ DEBUG	[3865] 333.000: Track 8, ch 11: NOTE_ON: note: 74, velocity: 125
 DEBUG	0    : 0xa8 <= 0x06 (00000110): ch 8 - Freq: 6
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[3866] 333.000: Track 8, ch 11: NOTE_ON: note: 70, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 70
+WARNING	Ignoring note:  Track 8, ch 11, note: 70, instrument: 56
 DEBUG	[3867] 333.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[3868] 333.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[3869] 333.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -13869,7 +13869,7 @@ DEBUG	0    : 0x54 <= 0x08 (00001000): ch 7 car - Volume: 8, KSL: 0
 DEBUG	0    : 0xa7 <= 0x67 (01100111): ch 7 - Freq: 103
 DEBUG	0    : 0xb7 <= 0x32 (00110010): ch 7 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[3882] 334.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 101
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[3883] 334.328: Track 9, ch  7: NOTE_OFF: note: 58, velocity: 87
 DEBUG	0    : 0xb3 <= 0x0e (00001110): ch 3 - Oct: 3, Freq (msb): 2, Key OFF
 DEBUG	[3884] 334.328: Track 9, ch  7: NOTE_OFF: note: 62, velocity: 87
@@ -14029,9 +14029,9 @@ DEBUG	0    : 0x53 <= 0x82 (10000010): ch 6 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa6 <= 0x67 (01100111): ch 6 - Freq: 103
 DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[3926] 337.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 122
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 62
+WARNING	Ignoring note:  Track 9, ch 7, note: 62, instrument: 60
 DEBUG	[3927] 337.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 100
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[3928] 337.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb3 <= 0x03 (00000011): ch 3 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[3929] 337.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -14120,9 +14120,9 @@ DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[3953] 338.000: Track 9, ch  7: NOTE_ON: note: 58, velocity: 122
 DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[3954] 338.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 122
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 62
+WARNING	Ignoring note:  Track 9, ch 7, note: 62, instrument: 60
 DEBUG	[3955] 338.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 102
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[3956] 338.250: Track 3, ch  2: NOTE_ON: note: 29, velocity: 0
 DEBUG	0    : 0xb4 <= 0x03 (00000011): ch 4 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[3957] 338.250: Track 3, ch  2: NOTE_ON: note: 41, velocity: 0
@@ -14194,9 +14194,9 @@ DEBUG	[3973] 339.000: Track 8, ch 11: NOTE_ON: note: 70, velocity: 125
 DEBUG	0    : 0xa8 <= 0x67 (01100111): ch 8 - Freq: 103
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[3974] 339.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[3975] 339.062: Track 2, ch  1: NOTE_ON: note: 39, velocity: 127
-WARNING	Could not find channel for note on!  Channel 1, instrument: 57, note: 39
+WARNING	Ignoring note:  Track 2, ch 1, note: 39, instrument: 57
 DEBUG	[3976] 339.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb2 <= 0x12 (00010010): ch 2 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[3977] 339.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -14336,7 +14336,7 @@ DEBUG	[4007] 341.000: Track 8, ch 11: NOTE_ON: note: 70, velocity: 125
 DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4008] 341.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[4009] 341.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	0    : 0xb6 <= 0x0f (00001111): ch 6 - Oct: 3, Freq (msb): 3, Key OFF
 DEBUG	[4010] 341.391: Track 9, ch  7: NOTE_OFF: note: 58, velocity: 87
@@ -14451,7 +14451,7 @@ DEBUG	0    : 0x53 <= 0x82 (10000010): ch 6 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa6 <= 0x06 (00000110): ch 6 - Freq: 6
 DEBUG	0    : 0xb6 <= 0x2f (00101111): ch 6 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4034] 343.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 99
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4035] 343.328: Track 7, ch  6: NOTE_OFF: note: 74, velocity: 125
 DEBUG	0    : 0xb7 <= 0x13 (00010011): ch 7 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4036] 343.328: Track 7, ch  6: NOTE_OFF: note: 69, velocity: 125
@@ -14532,7 +14532,7 @@ DEBUG	0    : 0xb5 <= 0x2b (00101011): ch 5 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[4059] 344.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 122
 DEBUG	0    : 0xb6 <= 0x2f (00101111): ch 6 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4060] 344.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 93
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4061] 344.328: Track 7, ch  6: NOTE_OFF: note: 74, velocity: 125
 DEBUG	0    : 0xb3 <= 0x13 (00010011): ch 3 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4062] 344.328: Track 7, ch  6: NOTE_OFF: note: 69, velocity: 125
@@ -14663,9 +14663,9 @@ DEBUG	[4091] 346.000: Track 8, ch 11: NOTE_ON: note: 74, velocity: 125
 DEBUG	0    : 0xa8 <= 0x06 (00000110): ch 8 - Freq: 6
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[4092] 346.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[4093] 346.000: Track 8, ch 11: NOTE_ON: note: 78, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 78
+WARNING	Ignoring note:  Track 8, ch 11, note: 78, instrument: 56
 DEBUG	[4094] 346.250: Track 3, ch  2: NOTE_ON: note: 28, velocity: 0
 DEBUG	0    : 0xb3 <= 0x03 (00000011): ch 3 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[4095] 346.250: Track 3, ch  2: NOTE_ON: note: 40, velocity: 0
@@ -14739,9 +14739,9 @@ DEBUG	[4117] 347.000: Track 8, ch 11: NOTE_ON: note: 74, velocity: 125
 DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[4118] 347.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[4119] 347.000: Track 8, ch 11: NOTE_ON: note: 78, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 78
+WARNING	Ignoring note:  Track 8, ch 11, note: 78, instrument: 56
 DEBUG	[4120] 347.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb3 <= 0x03 (00000011): ch 3 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[4121] 347.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -14859,9 +14859,9 @@ DEBUG	0    : 0x54 <= 0x82 (10000010): ch 7 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa7 <= 0x67 (01100111): ch 7 - Freq: 103
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[4150] 349.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 122
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 62
+WARNING	Ignoring note:  Track 9, ch 7, note: 62, instrument: 60
 DEBUG	[4151] 349.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 99
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4152] 349.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb3 <= 0x03 (00000011): ch 3 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[4153] 349.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -14950,9 +14950,9 @@ DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4177] 350.000: Track 9, ch  7: NOTE_ON: note: 58, velocity: 122
 DEBUG	0    : 0xb7 <= 0x2e (00101110): ch 7 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[4178] 350.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 122
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 62
+WARNING	Ignoring note:  Track 9, ch 7, note: 62, instrument: 60
 DEBUG	[4179] 350.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 95
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4180] 350.250: Track 3, ch  2: NOTE_ON: note: 29, velocity: 0
 DEBUG	0    : 0xb4 <= 0x03 (00000011): ch 4 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[4181] 350.250: Track 3, ch  2: NOTE_ON: note: 41, velocity: 0
@@ -15025,9 +15025,9 @@ DEBUG	[4197] 351.000: Track 8, ch 11: NOTE_ON: note: 73, velocity: 125
 DEBUG	0    : 0xa8 <= 0xdb (11011011): ch 8 - Freq: 219
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4198] 351.000: Track 8, ch 11: NOTE_ON: note: 70, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 70
+WARNING	Ignoring note:  Track 8, ch 11, note: 70, instrument: 56
 DEBUG	[4199] 351.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[4200] 351.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[4201] 351.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -15096,7 +15096,7 @@ DEBUG	0    : 0x54 <= 0x04 (00000100): ch 7 car - Volume: 4, KSL: 0
 DEBUG	0    : 0xa7 <= 0x67 (01100111): ch 7 - Freq: 103
 DEBUG	0    : 0xb7 <= 0x32 (00110010): ch 7 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4214] 352.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 115
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[4215] 352.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
 DEBUG	0    : 0xb6 <= 0x0f (00001111): ch 6 - Oct: 3, Freq (msb): 3, Key OFF
 DEBUG	[4216] 352.391: Track 9, ch  7: NOTE_OFF: note: 58, velocity: 87
@@ -15258,9 +15258,9 @@ DEBUG	0    : 0x53 <= 0x82 (10000010): ch 6 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa6 <= 0x67 (01100111): ch 6 - Freq: 103
 DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[4258] 355.000: Track 9, ch  7: NOTE_ON: note: 61, velocity: 122
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 61
+WARNING	Ignoring note:  Track 9, ch 7, note: 61, instrument: 60
 DEBUG	[4259] 355.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 96
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4260] 355.250: Track 3, ch  2: NOTE_ON: note: 29, velocity: 0
 DEBUG	0    : 0xb3 <= 0x03 (00000011): ch 3 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[4261] 355.250: Track 3, ch  2: NOTE_ON: note: 41, velocity: 0
@@ -15347,9 +15347,9 @@ DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4285] 356.000: Track 9, ch  7: NOTE_ON: note: 58, velocity: 122
 DEBUG	0    : 0xb6 <= 0x2e (00101110): ch 6 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[4286] 356.000: Track 9, ch  7: NOTE_ON: note: 61, velocity: 122
-WARNING	Could not find channel for note on!  Channel 7, instrument: 60, note: 61
+WARNING	Ignoring note:  Track 9, ch 7, note: 61, instrument: 60
 DEBUG	[4287] 356.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 98
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4288] 356.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb4 <= 0x03 (00000011): ch 4 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[4289] 356.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -15425,9 +15425,9 @@ DEBUG	[4305] 357.000: Track 8, ch 11: NOTE_ON: note: 74, velocity: 125
 DEBUG	0    : 0xa8 <= 0x06 (00000110): ch 8 - Freq: 6
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[4306] 357.000: Track 8, ch 11: NOTE_ON: note: 70, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 70
+WARNING	Ignoring note:  Track 8, ch 11, note: 70, instrument: 56
 DEBUG	[4307] 357.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[4308] 357.375: Track 12, ch  9: NOTE_ON: note: 55, velocity: 0
 DEBUG	0    : 0xb5 <= 0x12 (00010010): ch 5 - Oct: 4, Freq (msb): 2, Key OFF
 DEBUG	[4309] 357.375: Track 14, ch  9: NOTE_ON: note: 40, velocity: 0
@@ -15496,7 +15496,7 @@ DEBUG	0    : 0x54 <= 0x05 (00000101): ch 7 car - Volume: 5, KSL: 0
 DEBUG	0    : 0xa7 <= 0x67 (01100111): ch 7 - Freq: 103
 DEBUG	0    : 0xb7 <= 0x32 (00110010): ch 7 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4322] 358.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 111
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[4323] 358.328: Track 9, ch  7: NOTE_OFF: note: 58, velocity: 87
 DEBUG	0    : 0xb3 <= 0x0e (00001110): ch 3 - Oct: 3, Freq (msb): 2, Key OFF
 DEBUG	[4324] 358.328: Track 9, ch  7: NOTE_OFF: note: 62, velocity: 87
@@ -15653,7 +15653,7 @@ DEBUG	0    : 0x53 <= 0x82 (10000010): ch 6 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa6 <= 0x06 (00000110): ch 6 - Freq: 6
 DEBUG	0    : 0xb6 <= 0x2f (00101111): ch 6 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4362] 361.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 104
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4363] 361.328: Track 7, ch  6: NOTE_OFF: note: 74, velocity: 125
 DEBUG	0    : 0xb7 <= 0x13 (00010011): ch 7 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4364] 361.328: Track 7, ch  6: NOTE_OFF: note: 69, velocity: 125
@@ -15733,7 +15733,7 @@ DEBUG	0    : 0xb5 <= 0x2b (00101011): ch 5 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[4387] 362.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 122
 DEBUG	0    : 0xb6 <= 0x2f (00101111): ch 6 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4388] 362.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 108
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4389] 362.328: Track 7, ch  6: NOTE_OFF: note: 74, velocity: 125
 DEBUG	0    : 0xb3 <= 0x13 (00010011): ch 3 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4390] 362.328: Track 7, ch  6: NOTE_OFF: note: 69, velocity: 125
@@ -15879,7 +15879,7 @@ DEBUG	0    : 0x53 <= 0x02 (00000010): ch 6 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa6 <= 0x67 (01100111): ch 6 - Freq: 103
 DEBUG	0    : 0xb6 <= 0x32 (00110010): ch 6 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4416] 364.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[4417] 364.328: Track 8, ch 11: NOTE_OFF: note: 75, velocity: 125
 DEBUG	0    : 0xb8 <= 0x13 (00010011): ch 8 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4418] 364.328: Track 8, ch 11: NOTE_OFF: note: 70, velocity: 125
@@ -15949,7 +15949,7 @@ DEBUG	[4439] 365.000: Track 8, ch 11: NOTE_ON: note: 70, velocity: 125
 DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4440] 365.000: Track 8, ch 11: NOTE_ON: note: 67, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 67
+WARNING	Ignoring note:  Track 8, ch 11, note: 67, instrument: 56
 DEBUG	[4441] 365.328: Track 8, ch 11: NOTE_OFF: note: 75, velocity: 125
 DEBUG	0    : 0xb6 <= 0x13 (00010011): ch 6 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4442] 365.328: Track 8, ch 11: NOTE_OFF: note: 70, velocity: 125
@@ -16063,7 +16063,7 @@ DEBUG	0    : 0x4d <= 0x82 (10000010): ch 5 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa5 <= 0x06 (00000110): ch 5 - Freq: 6
 DEBUG	0    : 0xb5 <= 0x2f (00101111): ch 5 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4466] 367.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 98
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4467] 367.328: Track 7, ch  6: NOTE_OFF: note: 74, velocity: 125
 DEBUG	0    : 0xb6 <= 0x13 (00010011): ch 6 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4468] 367.328: Track 7, ch  6: NOTE_OFF: note: 69, velocity: 125
@@ -16146,7 +16146,7 @@ DEBUG	0    : 0xb4 <= 0x2b (00101011): ch 4 - Oct: 2, Freq (msb): 3, Key ON
 DEBUG	[4491] 368.000: Track 9, ch  7: NOTE_ON: note: 62, velocity: 122
 DEBUG	0    : 0xb5 <= 0x2f (00101111): ch 5 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4492] 368.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 103
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4493] 368.328: Track 7, ch  6: NOTE_OFF: note: 74, velocity: 125
 DEBUG	0    : 0xb2 <= 0x13 (00010011): ch 2 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4494] 368.328: Track 7, ch  6: NOTE_OFF: note: 69, velocity: 125
@@ -16284,7 +16284,7 @@ DEBUG	0    : 0x53 <= 0x02 (00000010): ch 6 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa6 <= 0x44 (01000100): ch 6 - Freq: 68
 DEBUG	0    : 0xb6 <= 0x32 (00110010): ch 6 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4520] 370.000: Track 8, ch 11: NOTE_ON: note: 78, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 78
+WARNING	Ignoring note:  Track 8, ch 11, note: 78, instrument: 56
 DEBUG	[4521] 370.328: Track 8, ch 11: NOTE_OFF: note: 74, velocity: 125
 DEBUG	0    : 0xb8 <= 0x13 (00010011): ch 8 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4522] 370.328: Track 8, ch 11: NOTE_OFF: note: 69, velocity: 125
@@ -16379,9 +16379,9 @@ DEBUG	0    : 0x55 <= 0x02 (00000010): ch 8 car - Volume: 2, KSL: 0
 DEBUG	0    : 0xa8 <= 0x06 (00000110): ch 8 - Freq: 6
 DEBUG	0    : 0xb8 <= 0x33 (00110011): ch 8 - Oct: 4, Freq (msb): 3, Key ON
 DEBUG	[4546] 371.000: Track 8, ch 11: NOTE_ON: note: 69, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 69
+WARNING	Ignoring note:  Track 8, ch 11, note: 69, instrument: 56
 DEBUG	[4547] 371.000: Track 8, ch 11: NOTE_ON: note: 78, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 78
+WARNING	Ignoring note:  Track 8, ch 11, note: 78, instrument: 56
 DEBUG	[4548] 371.328: Track 8, ch 11: NOTE_OFF: note: 74, velocity: 125
 DEBUG	0    : 0xb8 <= 0x13 (00010011): ch 8 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4549] 371.328: Track 8, ch 11: NOTE_OFF: note: 69, velocity: 125
@@ -16507,7 +16507,7 @@ DEBUG	0    : 0x53 <= 0x82 (10000010): ch 6 car - Volume: 2, KSL: 2
 DEBUG	0    : 0xa6 <= 0x65 (01100101): ch 6 - Freq: 101
 DEBUG	0    : 0xb6 <= 0x2f (00101111): ch 6 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4576] 373.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 97
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4577] 373.328: Track 7, ch  6: NOTE_OFF: note: 76, velocity: 125
 DEBUG	0    : 0xb8 <= 0x13 (00010011): ch 8 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4578] 373.328: Track 7, ch  6: NOTE_OFF: note: 71, velocity: 125
@@ -16591,7 +16591,7 @@ DEBUG	0    : 0xb5 <= 0x2e (00101110): ch 5 - Oct: 3, Freq (msb): 2, Key ON
 DEBUG	[4601] 374.000: Track 9, ch  7: NOTE_ON: note: 64, velocity: 122
 DEBUG	0    : 0xb6 <= 0x2f (00101111): ch 6 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4602] 374.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 97
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4603] 374.328: Track 7, ch  6: NOTE_OFF: note: 76, velocity: 125
 DEBUG	0    : 0xb2 <= 0x13 (00010011): ch 2 - Oct: 4, Freq (msb): 3, Key OFF
 DEBUG	[4604] 374.328: Track 7, ch  6: NOTE_OFF: note: 71, velocity: 125
@@ -16728,11 +16728,11 @@ DEBUG	0    : 0x55 <= 0x0a (00001010): ch 8 car - Volume: 10, KSL: 0
 DEBUG	0    : 0xa8 <= 0x06 (00000110): ch 8 - Freq: 6
 DEBUG	0    : 0xb8 <= 0x2f (00101111): ch 8 - Oct: 3, Freq (msb): 3, Key ON
 DEBUG	[4630] 376.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[4631] 376.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[4632] 376.000: Track 8, ch 11: NOTE_ON: note: 80, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 80
+WARNING	Ignoring note:  Track 8, ch 11, note: 80, instrument: 56
 DEBUG	[4633] 376.250: Track 3, ch  2: NOTE_ON: note: 30, velocity: 0
 DEBUG	0    : 0xb2 <= 0x03 (00000011): ch 2 - Oct: 0, Freq (msb): 3, Key OFF
 DEBUG	[4634] 376.250: Track 3, ch  2: NOTE_ON: note: 42, velocity: 0
@@ -16830,13 +16830,13 @@ DEBUG	0    : 0x55 <= 0x01 (00000001): ch 8 car - Volume: 1, KSL: 0
 DEBUG	0    : 0xa8 <= 0x8b (10001011): ch 8 - Freq: 139
 DEBUG	0    : 0xb8 <= 0x32 (00110010): ch 8 - Oct: 4, Freq (msb): 2, Key ON
 DEBUG	[4660] 377.000: Track 14, ch  9: NOTE_ON: note: 40, velocity: 98
-WARNING	Could not find channel for note on!  Channel 9, instrument: 48, note: 40
+WARNING	Ignoring note:  Track 14, ch 9, note: 40, instrument: 48
 DEBUG	[4661] 377.000: Track 8, ch 11: NOTE_ON: note: 76, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 76
+WARNING	Ignoring note:  Track 8, ch 11, note: 76, instrument: 56
 DEBUG	[4662] 377.000: Track 8, ch 11: NOTE_ON: note: 71, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 71
+WARNING	Ignoring note:  Track 8, ch 11, note: 71, instrument: 56
 DEBUG	[4663] 377.000: Track 8, ch 11: NOTE_ON: note: 80, velocity: 125
-WARNING	Could not find channel for note on!  Channel 11, instrument: 56, note: 80
+WARNING	Ignoring note:  Track 8, ch 11, note: 80, instrument: 56
 DEBUG	[4664] 377.250: Track 3, ch  2: NOTE_ON: note: 32, velocity: 0
 DEBUG	0    : 0xb2 <= 0x06 (00000110): ch 2 - Oct: 1, Freq (msb): 2, Key OFF
 DEBUG	[4665] 377.250: Track 3, ch  2: NOTE_ON: note: 44, velocity: 0
