@@ -8,23 +8,6 @@ from imfcreator.signal import Signal
 from imfcreator.adlib import AdlibInstrument
 
 
-class ActiveNote(_typing.NamedTuple):
-    # TODO? track: int
-    channel: int
-    note: int
-    velocity: int
-    instrument: int
-    # adjusted_note: int
-
-    @classmethod
-    def from_note_event(cls, note_event: "NoteEvent"):
-        return ActiveNote(note_event.channel, note_event.note, note_event.velocity, note_event.instrument)
-
-    def __eq__(self, other):
-        # Does not compare against velocity.
-        return self.instrument == other.instrument and self.channel == other.channel and self.note == other.note
-
-
 def calculate_msb_lsb(msb: int, lsb: int) -> int:
     assert msb & ~0x7f == 0
     assert lsb & ~0x7f == 0
@@ -143,9 +126,10 @@ class MidiEngine:
                     event_args["instrument"] = active_note.instrument
                     self.on_note_off(song_event=NoteEvent(**event_args))
                 else:
-                    active_note = self.channels[song_event.channel].add_active_note(**event_args)
-                    event_args["instrument"] = active_note.instrument
-                    self.on_note_on(song_event=NoteEvent(**event_args))
+                    event_args["instrument"] = self.channels[song_event.channel].instrument
+                    note_event = NoteEvent(**event_args)
+                    self.channels[song_event.channel].add_active_note(note_event)
+                    self.on_note_on(song_event=note_event)
             elif song_event.type == _midi.EventType.POLYPHONIC_KEY_PRESSURE:
                 self.on_polyphonic_key_pressure(song_event=PolyphonicKeyPressureEvent(**event_args))
             elif song_event.type == _midi.EventType.CONTROLLER_CHANGE:
@@ -233,7 +217,7 @@ class MidiChannelInfo:
         self._instrument = None
         self.pitch_bend = 0.0
         self.key_pressure = 127
-        self.active_notes = []  # type: _typing.List[ActiveNote]
+        self.active_notes = []  # type: _typing.List[NoteEvent]
         # Controller value cache.
         self._controllers = [0] * 128
         self._in_rpn_data = None
@@ -485,13 +469,13 @@ class MidiChannelInfo:
             lsb = msb + 32
         return self._controllers[msb], self._controllers[lsb]
 
-    def add_active_note(self, note: int, velocity: int, **_):
-        _active_note = ActiveNote(self.number, note, velocity, self.instrument)
-        self.active_notes.append(_active_note)
-        return _active_note
+    def add_active_note(self, note_event: "NoteEvent"):
+        # _active_note = ActiveNote(self.number, note, velocity, self.instrument)
+        self.active_notes.append(note_event)
+        # return _active_note
 
     def remove_active_note(self, channel: int, note: int, track: int, show_error: bool = True, **_):
-        _active_note = next(filter(lambda note_info: note_info.note == note and note_info.channel == channel,
+        _active_note = next(filter(lambda note_event: note_event.note == note and note_event.channel == channel,
                                    self.active_notes), None)
         if _active_note:
             self.active_notes.remove(_active_note)
@@ -509,6 +493,10 @@ class NoteEvent(_typing.NamedTuple):
     note: int
     velocity: int
     instrument: int
+
+    def matches_note(self, other: "NoteEvent"):
+        # Does not compare against velocity.
+        return self.instrument == other.instrument and self.channel == other.channel and self.note == other.note
 
 
 class PolyphonicKeyPressureEvent(_typing.NamedTuple):

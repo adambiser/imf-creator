@@ -45,8 +45,8 @@ class ImfSong(AdlibSongFile):
         if (self.title or self.composer or self.remarks or self.program) and filetype not in ["imf1"]:
             _logging.warning(f"The title, composer, remarks, and program settings are not used by type '{filetype}'.")
         self._commands = []  # type: _typing.List[_typing.Tuple[int, int, int]]  # reg, value, delay
-        self._ignored_notes = []  # type: _typing.List[_midiengine.ActiveNote]
-        self._active_ignored_notes = []  # type: _typing.List[_midiengine.ActiveNote]
+        self._ignored_notes = []  # type: _typing.List[_midiengine.NoteEvent]
+        self._active_ignored_notes = []  # type: _typing.List[_midiengine.NoteEvent]
 
     def get_debug_info(self):
         # Do not change anything in here.  Doing so will screw up the tests.
@@ -242,7 +242,7 @@ COMMANDS:
 
         # def find_imf_channel_for_instrument_note(instrument: AdlibInstrument, note: int):
         def find_imf_channel_for_instrument_note(note_event: _midiengine.NoteEvent):
-            return next(filter(lambda ch: ch.is_active and ch.last_note == note_event, imf_channels), None)
+            return next(filter(lambda ch: ch.is_active and ch.last_note.matches_note(note_event), imf_channels), None)
 
         def get_block_and_freq(note: int, scaled_pitch_bend: float):
             assert note < 128
@@ -352,7 +352,7 @@ COMMANDS:
                 #     (VOLUME_MSG | CARRIERS[channel.number], 0x3f),
                 # ]
                 # imf_channel.instrument = instrument
-                imf_channel.last_note = _midiengine.ActiveNote.from_note_event(song_event)  # adjusted_note
+                imf_channel.last_note = song_event  # adjusted_note
                 imf_channel.is_active = True
                 block, freq = get_block_and_freq(adjusted_note, midi_channel.scaled_pitch_bend)
                 commands += get_volume_commands(imf_channel, instrument, midi_channel, song_event.velocity)
@@ -362,9 +362,8 @@ COMMANDS:
                 ]
                 add_commands(song_event.time, commands)
             else:
-                active_note = _midiengine.ActiveNote.from_note_event(song_event)
-                song._ignored_notes.append(active_note)
-                song._active_ignored_notes.append(active_note)
+                song._ignored_notes.append(song_event)
+                song._active_ignored_notes.append(song_event)
                 _logging.warning(f"Could not find channel for note on!  Channel {song_event.channel}, "
                                  f"instrument: {song_event.instrument}, note: {song_event.note}")
             # return commands
@@ -383,7 +382,7 @@ COMMANDS:
                 ])
             else:
                 # Check active, but ignored notes before reporting.  Don't use velocity for matching..
-                ignored_note = next(filter(lambda n: n == song_event, song._active_ignored_notes), None)
+                ignored_note = next(filter(lambda n: n.matches_note(song_event), song._active_ignored_notes), None)
                 if ignored_note:
                     song._active_ignored_notes.remove(ignored_note)
                 else:
@@ -476,6 +475,6 @@ class _ImfChannelInfo:
     def __init__(self, number):
         self.number = number
         # self.instrument = None  # type: _typing.Optional[AdlibInstrument]
-        self.last_note = None  # type: _typing.Optional[_midiengine.ActiveNote]
+        self.last_note = None  # type: _typing.Optional[_midiengine.NoteEvent]
         self.is_active = False
         # self.active_note = None  # type: _typing.Optional[_midiengine.ActiveNote]
