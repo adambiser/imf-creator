@@ -14,9 +14,9 @@ except ImportError:
 
 _FILES_FOLDER = os.path.abspath("files")
 _MIDI_FILES = [
-    # "AC.mid",
-    # "ievan_polkka2.mid",
-    # "D_OPENIN.mus",
+    "AC.mid",
+    "ievan_polkka2.mid",
+    "D_OPENIN.mus",
     "Witchy_3.mid",
 ]
 
@@ -166,7 +166,7 @@ def get_tests():
     # for filename in get_test_files(_FILES_FOLDER, ".mid"):
     for f in _MIDI_FILES:
         filename = os.path.join(_FILES_FOLDER, f)
-        # suite.addTest(SongLoadTestCase("test_load_file", filename))
+        suite.addTest(SongLoadTestCase("test_load_file", filename))
         # suite.addTest(ConvertTestCase("test_check_song", filename))
         suite.addTest(ConvertTestCase("test_convert_to_imf", filename))
     return suite
