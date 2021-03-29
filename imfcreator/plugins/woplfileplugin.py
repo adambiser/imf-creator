@@ -1,3 +1,4 @@
+import logging as _logging
 import typing as _typing
 import imfcreator.adlib as _adlib
 from collections import namedtuple
@@ -58,6 +59,9 @@ class WoplFilePlugin(InstrumentFile):
         self._percussive_bank_count = u16be(self.fp.read(2))
         self._flags = u8(self.fp.read(1))
         self._volumeModel = u8(self.fp.read(1))
+        _logging.debug(f"WOPL version: {self._version}")
+        _logging.debug(f"Melodic bank count: {self._melodic_bank_count}")
+        _logging.debug(f"Percussive bank count: {self._percussive_bank_count}")
         if self._version >= 2:
             self._instrument_entry_start = self._bank_meta_entry_start + \
                                           ((self._melodic_bank_count + self._percussive_bank_count) *
@@ -102,6 +106,7 @@ class WoplFilePlugin(InstrumentFile):
         bank_entry = self._get_bank_entry(index)
         bank = calculate_msb_lsb(bank_entry.msb, bank_entry.lsb) if bank_entry else 0
         program = index % 128
+        _logging.debug(f"({inst_type}, {bank}, {program}): {instrument}")
         return InstrumentId(inst_type, bank, program), instrument
 
     def _get_bank_entry(self, index) -> _typing.Optional[_BANK_ENTRY]:
