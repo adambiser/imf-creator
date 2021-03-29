@@ -130,6 +130,10 @@ class InstrumentFile:
         """
         raise NotImplementedError()
 
+    def _add_instrument(self, inst_id: InstrumentId, instrument: _AdlibInstrument):
+        _logging.debug(f"({int(inst_id.instrument_type)}, {inst_id.bank}, {inst_id.program}): {instrument}")
+        self.instruments[inst_id] = instrument
+
     def _load_file(self):
         """Loads file data from self.fp.  Note that self.fp only exists while this method is being called."""
         raise NotImplementedError()

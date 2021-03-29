@@ -53,8 +53,8 @@ class LoggingTestCase(unittest.TestCase):
             debug_log = self.get_stream_value()
         # Replace absolute file path with the base filename.
         debug_log = debug_log.replace(filename, os.path.basename(filename))
-        calling_function = inspect.stack()[1].function
-        result_file = filename + f".{calling_function.replace('test_', '')}.log"
+        calling_function = inspect.stack()[1].function.replace('test_', '')
+        result_file = filename + f".{calling_function}.log"
         if os.path.exists(result_file):
             try:
                 with open(result_file, "r") as fp:
@@ -103,11 +103,17 @@ class PluginTestCase(unittest.TestCase):
 
 
 class InstrumentTestCase(LoggingTestCase):
+    def test_load_op2(self):
+        filename = os.path.join(_FILES_FOLDER, "GENMIDI.OP2")
+        # Test loading, but don't use the instruments when testing conversions.
+        imfcreator.instruments._InstrumentFile.load_file(filename)
+        self.validate_log_results(filename)
+
     def test_load_wopl(self):
-        wopl_filename = os.path.join(_FILES_FOLDER, "Apogee-IMF-90.wopl")
-        imfcreator.instruments.add_file(wopl_filename)
+        filename = os.path.join(_FILES_FOLDER, "Apogee-IMF-90.wopl")
+        imfcreator.instruments.add_file(filename)
         self.assertEqual(imfcreator.instruments.count(), 174)
-        self.validate_log_results(wopl_filename)
+        self.validate_log_results(filename)
 
 
 class SongLoadTestCase(LoggingTestCase):
@@ -161,6 +167,7 @@ def get_tests():
         PluginTestCase("test_check_for_midi_filetype"),
         PluginTestCase("test_check_for_mus_filetype"),
         PluginTestCase("test_check_for_imf1_filetype"),
+        InstrumentTestCase("test_load_op2"),
         InstrumentTestCase("test_load_wopl"),
     ])
     # for filename in get_test_files(_FILES_FOLDER, ".mid"):

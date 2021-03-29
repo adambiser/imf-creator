@@ -1,0 +1,177 @@
+INFO	Loading "GENMIDI.OP2".
+DEBUG	(1, 0, 0): Voice 0: 10,1c,90,f6,00,10,80,a1,f5,00,0a, offset: 0, Secondary voice: 0, Fine tuning: 128: Acoustic Grand Piano
+DEBUG	(1, 0, 1): Voice 0: 10,1b,90,f6,00,10,40,a1,f5,00,0c, offset: 0, Secondary voice: 0, Fine tuning: 128: Bright Acoustic Piano
+DEBUG	(1, 0, 2): Voice 0: 10,15,90,f6,00,10,40,a1,f5,00,06, offset: 0, Secondary voice: 0, Fine tuning: 128: Electric Grand Piano
+DEBUG	(1, 0, 3): Voice 0: 10,1c,90,f6,00,10,40,a1,f5,00,0a, offset: 0, Voice 1: 10,15,90,f6,00,10,40,a1,f5,00,06, offset: 0, Secondary voice: 4, Fine tuning: 128: Honky-tonk Piano
+DEBUG	(1, 0, 4): Voice 0: 10,57,90,f6,00,10,80,a1,f5,00,08, offset: 0, Voice 1: 10,57,91,f6,00,10,80,91,f5,00,08, offset: 0, Secondary voice: 4, Fine tuning: 128: Electric Piano 1
+DEBUG	(1, 0, 5): Voice 0: 11,00,e1,63,02,10,00,92,72,00,17, offset: -12, Secondary voice: 0, Fine tuning: 128: Electric Piano 2
+DEBUG	(1, 0, 6): Voice 0: 23,8a,e3,79,01,00,00,f4,a8,03,04, offset: 0, Secondary voice: 0, Fine tuning: 128: Harpsichord
+DEBUG	(1, 0, 7): Voice 0: 22,9c,f4,18,02,01,00,f3,55,01,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Clavi
+DEBUG	(1, 0, 8): Voice 0: 02,00,93,74,00,01,00,b6,45,00,25, offset: -12, Secondary voice: 0, Fine tuning: 128: Celesta
+DEBUG	(1, 0, 9): Voice 0: 1b,5a,d6,53,00,17,00,f3,53,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Glockenspiel
+DEBUG	(1, 0, 10): Voice 0: 1b,5a,f6,f6,00,14,00,63,73,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Music Box
+DEBUG	(1, 0, 11): Voice 0: 8b,5a,d8,16,00,84,00,f4,e5,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: Vibraphone
+DEBUG	(1, 0, 12): Voice 0: 08,c0,fd,56,00,01,00,f6,68,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: Marimba
+DEBUG	(1, 0, 13): Voice 0: 08,c0,f9,56,00,03,00,f7,68,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: Xylophone
+DEBUG	(1, 0, 14): Voice 0: 35,cd,f2,f1,00,11,00,f2,f2,00,34, offset: -12, Secondary voice: 0, Fine tuning: 128: Tubular Bells
+DEBUG	(1, 0, 15): Voice 0: 18,9a,b3,8a,01,02,00,f0,d3,01,1c, offset: -12, Secondary voice: 0, Fine tuning: 128: Dulcimer
+DEBUG	(1, 0, 16): Voice 0: 24,d4,81,06,03,61,00,61,a6,00,12, offset: -12, Secondary voice: 0, Fine tuning: 128: Drawbar Organ
+DEBUG	(1, 0, 17): Voice 0: a3,95,81,f9,01,21,00,d1,0d,00,12, offset: -12, Secondary voice: 0, Fine tuning: 128: Percussive Organ
+DEBUG	(1, 0, 18): Voice 0: 25,d2,81,06,00,61,00,d1,35,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Rock Organ
+DEBUG	(1, 0, 19): Voice 0: 27,23,74,11,00,21,00,60,05,00,22, offset: -12, Secondary voice: 0, Fine tuning: 128: Church Organ
+DEBUG	(1, 0, 20): Voice 0: 22,24,76,06,02,21,00,76,06,01,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Reed Organ
+DEBUG	(1, 0, 21): Voice 0: 23,1b,66,05,00,21,00,66,06,01,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Accordion
+DEBUG	(1, 0, 22): Voice 0: 22,15,41,04,03,b2,00,31,04,01,22, offset: -12, Secondary voice: 0, Fine tuning: 128: Harmonica
+DEBUG	(1, 0, 23): Voice 0: 21,1e,76,04,00,22,00,66,17,02,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Tango Accordion
+DEBUG	(1, 0, 24): Voice 0: 01,c0,b5,52,01,11,00,d2,72,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Acoustic Guitar (nylon)
+DEBUG	(1, 0, 25): Voice 0: 23,8a,85,54,01,11,00,d2,73,00,28, offset: -12, Secondary voice: 0, Fine tuning: 128: Acoustic Guitar (steel)
+DEBUG	(1, 0, 26): Voice 0: 04,12,fd,43,00,01,00,f2,a6,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Electric Guitar (jazz)
+DEBUG	(1, 0, 27): Voice 0: 23,00,fc,67,03,01,00,f4,c6,02,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Electric Guitar (clean)
+DEBUG	(1, 0, 28): Voice 0: 02,06,f6,27,01,01,00,f6,25,01,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Electric Guitar (muted)
+DEBUG	(1, 0, 29): Voice 0: 21,c1,f2,13,00,22,00,f2,16,02,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Overdriven Guitar
+DEBUG	(1, 0, 30): Voice 0: 21,41,f2,14,03,21,00,f2,15,01,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Distortion Guitar
+DEBUG	(1, 0, 31): Voice 0: 0b,40,65,1a,00,01,00,f2,3e,03,3c, offset: -12, Secondary voice: 0, Fine tuning: 128: Guitar harmonics
+DEBUG	(1, 0, 32): Voice 0: 01,0f,d8,96,00,01,00,82,66,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Acoustic Bass
+DEBUG	(1, 0, 33): Voice 0: 01,0b,f2,97,00,01,00,f6,e6,01,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Electric Bass (finger)
+DEBUG	(1, 0, 34): Voice 0: 02,04,f2,95,01,01,00,f6,e6,01,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Electric Bass (pick)
+DEBUG	(1, 0, 35): Voice 0: 01,48,c7,96,00,01,00,91,e6,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: Fretless Bass
+DEBUG	(1, 0, 36): Voice 0: 05,00,fa,86,03,01,00,f3,b6,01,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Slap Bass 1
+DEBUG	(1, 0, 37): Voice 0: 0b,00,fa,87,02,01,00,f3,b7,01,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Slap Bass 2
+DEBUG	(1, 0, 38): Voice 0: c1,00,e5,65,00,01,00,f5,95,00,21, offset: -12, Secondary voice: 0, Fine tuning: 128: Synth Bass 1
+DEBUG	(1, 0, 39): Voice 0: c1,00,f2,45,00,01,00,f2,96,00,21, offset: -12, Secondary voice: 0, Fine tuning: 128: Synth Bass 2
+DEBUG	(1, 0, 40): Voice 0: 62,ca,b4,25,00,61,00,44,06,01,0e, offset: -12, Secondary voice: 0, Fine tuning: 128: Violin
+DEBUG	(1, 0, 41): Voice 0: 24,cb,88,24,00,21,00,66,15,01,0e, offset: -12, Secondary voice: 0, Fine tuning: 128: Viola
+DEBUG	(1, 0, 42): Voice 0: 24,d3,88,24,00,21,00,66,16,01,0e, offset: -12, Secondary voice: 0, Fine tuning: 128: Cello
+DEBUG	(1, 0, 43): Voice 0: 71,23,51,43,00,61,00,52,15,00,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: Contrabass
+DEBUG	(1, 0, 44): Voice 0: a2,cb,84,13,00,a1,00,51,55,02,2a, offset: -12, Secondary voice: 0, Fine tuning: 128: Tremolo Strings
+DEBUG	(1, 0, 45): Voice 0: f1,00,f5,a8,00,e2,80,fd,ac,00,37, offset: -12, Secondary voice: 0, Fine tuning: 128: Pizzicato Strings
+DEBUG	(1, 0, 46): Voice 0: 22,00,d4,34,01,02,00,c4,26,00,29, offset: -12, Secondary voice: 0, Fine tuning: 128: Orchestral Harp
+DEBUG	(1, 0, 47): Voice 0: 10,55,30,09,03,10,00,b0,04,03,2a, offset: -12, Secondary voice: 0, Fine tuning: 128: Timpani
+DEBUG	(1, 0, 48): Voice 0: 62,8b,71,33,01,a2,40,43,e5,00,24, offset: -12, Secondary voice: 0, Fine tuning: 128: String Ensemble 1
+DEBUG	(1, 0, 49): Voice 0: 61,8b,71,33,01,21,40,43,e5,00,14, offset: -12, Secondary voice: 0, Fine tuning: 128: String Ensemble 2
+DEBUG	(1, 0, 50): Voice 0: 62,4b,71,33,01,22,40,76,31,00,0a, offset: -12, Secondary voice: 0, Fine tuning: 128: SynthStrings 1
+DEBUG	(1, 0, 51): Voice 0: 01,13,51,15,02,21,00,44,04,01,10, offset: -12, Secondary voice: 0, Fine tuning: 128: SynthStrings 2
+DEBUG	(1, 0, 52): Voice 0: f3,95,32,40,02,c1,00,43,46,01,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Choir Aahs
+DEBUG	(1, 0, 53): Voice 0: f3,51,a2,a4,00,c1,00,62,84,01,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: Voice Oohs
+DEBUG	(1, 0, 54): Voice 0: e0,4d,52,51,02,e3,00,65,35,00,36, offset: -12, Secondary voice: 0, Fine tuning: 128: Synth Voice
+DEBUG	(1, 0, 55): Voice 0: 20,07,f7,b5,00,00,00,96,46,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Orchestra Hit
+DEBUG	(1, 0, 56): Voice 0: 21,1c,53,14,00,a1,00,52,35,00,1c, offset: -12, Secondary voice: 0, Fine tuning: 128: Trumpet
+DEBUG	(1, 0, 57): Voice 0: 21,1a,53,19,00,a2,80,52,39,00,2a, offset: -12, Secondary voice: 0, Fine tuning: 128: Trombone
+DEBUG	(1, 0, 58): Voice 0: 21,21,63,8c,00,21,00,85,2c,00,3c, offset: -12, Secondary voice: 0, Fine tuning: 128: Tuba
+DEBUG	(1, 0, 59): Voice 0: e1,98,71,a5,01,e3,00,81,96,00,1c, offset: -12, Secondary voice: 0, Fine tuning: 128: Muted Trumpet
+DEBUG	(1, 0, 60): Voice 0: 31,55,53,54,00,21,00,aa,15,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: French Horn
+DEBUG	(1, 0, 61): Voice 0: 21,1b,53,15,00,a2,80,52,36,00,3a, offset: -12, Secondary voice: 0, Fine tuning: 128: Brass Section
+DEBUG	(1, 0, 62): Voice 0: 22,20,83,75,03,21,00,81,86,01,0e, offset: -12, Secondary voice: 0, Fine tuning: 128: SynthBrass 1
+DEBUG	(1, 0, 63): Voice 0: 21,8e,9b,25,00,21,80,90,05,00,18, offset: -12, Secondary voice: 0, Fine tuning: 128: SynthBrass 2
+DEBUG	(1, 0, 64): Voice 0: 00,15,70,e5,02,02,00,70,e6,00,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Soprano Sax
+DEBUG	(1, 0, 65): Voice 0: 01,14,80,e5,02,01,00,70,e6,00,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Alto Sax
+DEBUG	(1, 0, 66): Voice 0: 01,12,80,e5,02,01,00,70,e6,00,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Tenor Sax
+DEBUG	(1, 0, 67): Voice 0: 01,91,51,57,01,a3,00,52,77,00,2a, offset: -12, Secondary voice: 0, Fine tuning: 128: Baritone Sax
+DEBUG	(1, 0, 68): Voice 0: 71,c9,6e,13,00,64,00,8b,07,01,12, offset: -12, Secondary voice: 0, Fine tuning: 128: Oboe
+DEBUG	(1, 0, 69): Voice 0: a1,25,71,a5,00,a3,00,82,97,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: English Horn
+DEBUG	(1, 0, 70): Voice 0: 01,13,f0,22,00,24,00,80,07,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Bassoon
+DEBUG	(1, 0, 71): Voice 0: 34,1d,a2,14,00,31,00,51,24,00,0a, offset: -12, Secondary voice: 0, Fine tuning: 128: Clarinet
+DEBUG	(1, 0, 72): Voice 0: 21,20,77,43,00,a1,00,65,06,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Piccolo
+DEBUG	(1, 0, 73): Voice 0: 01,a4,6a,64,02,a1,00,63,66,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Flute
+DEBUG	(1, 0, 74): Voice 0: 22,ac,67,89,00,21,00,65,28,00,2e, offset: -12, Secondary voice: 0, Fine tuning: 128: Recorder
+DEBUG	(1, 0, 75): Voice 0: e3,e9,6d,8d,00,a1,00,65,29,00,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: Pan Flute
+DEBUG	(1, 0, 76): Voice 0: 20,10,d8,68,00,26,00,68,97,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Blown Bottle
+DEBUG	(1, 0, 77): Voice 0: 22,6c,47,0f,00,21,00,65,2a,00,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: Shakuhachi
+DEBUG	(1, 0, 78): Voice 0: e1,ff,70,0c,00,e2,00,62,fb,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Whistle
+DEBUG	(1, 0, 79): Voice 0: 32,2b,57,46,00,31,00,68,06,00,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Ocarina
+DEBUG	(1, 0, 80): Voice 0: 91,97,2a,02,00,13,80,42,f3,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Lead 1 (square)
+DEBUG	(1, 0, 81): Voice 0: 00,91,51,53,01,a2,00,52,76,00,3e, offset: 0, Secondary voice: 0, Fine tuning: 128: Lead 2 (sawtooth)
+DEBUG	(1, 0, 82): Voice 0: 23,d8,50,00,03,21,00,72,f8,00,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: Lead 3 (calliope)
+DEBUG	(1, 0, 83): Voice 0: d1,00,b7,66,02,a0,00,87,06,02,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Lead 4 (chiff)
+DEBUG	(1, 0, 84): Voice 0: 00,4f,71,53,00,15,00,52,74,00,26, offset: -12, Secondary voice: 0, Fine tuning: 128: Lead 5 (charang)
+DEBUG	(1, 0, 85): Voice 0: e0,c5,52,a1,00,e1,00,65,35,00,36, offset: -12, Secondary voice: 0, Fine tuning: 128: Lead 6 (voice)
+DEBUG	(1, 0, 86): Voice 0: b0,00,d5,13,01,b1,00,26,13,00,35, offset: -12, Secondary voice: 0, Fine tuning: 128: Lead 7 (fifths)
+DEBUG	(1, 0, 87): Voice 0: 21,1d,53,14,00,a1,80,52,35,00,2a, offset: -12, Secondary voice: 0, Fine tuning: 128: Lead 8 (bass + lead)
+DEBUG	(1, 0, 88): Voice 0: 21,1b,51,15,01,a1,00,82,45,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Pad 1 (new age)
+DEBUG	(1, 0, 89): Voice 0: e1,a3,6e,8f,01,a1,00,65,06,00,2e, offset: -12, Secondary voice: 0, Fine tuning: 128: Pad 2 (warm)
+DEBUG	(1, 0, 90): Voice 0: 20,00,c3,f4,02,01,00,f0,f5,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Pad 3 (polysynth)
+DEBUG	(1, 0, 91): Voice 0: f1,51,a2,40,00,c2,00,63,46,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Pad 4 (choir)
+DEBUG	(1, 0, 92): Voice 0: e1,4d,71,33,01,a2,00,43,e5,00,16, offset: -12, Secondary voice: 0, Fine tuning: 128: Pad 5 (bowed)
+DEBUG	(1, 0, 93): Voice 0: 21,40,63,83,00,21,00,30,15,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Pad 6 (metallic)
+DEBUG	(1, 0, 94): Voice 0: 24,24,67,8f,02,21,00,65,2a,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Pad 7 (halo)
+DEBUG	(1, 0, 95): Voice 0: 24,15,27,88,02,21,00,65,26,00,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: Pad 8 (sweep)
+DEBUG	(1, 0, 96): Voice 0: 08,c0,fb,66,00,83,00,f5,66,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: FX 1 (rain)
+DEBUG	(1, 0, 97): Voice 0: f4,54,25,bd,00,e1,00,f0,47,01,10, offset: -12, Secondary voice: 0, Fine tuning: 128: FX 2 (soundtrack)
+DEBUG	(1, 0, 98): Voice 0: b4,0a,67,88,02,a1,00,65,2a,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: FX 3 (crystal)
+DEBUG	(1, 0, 99): Voice 0: 23,db,47,8f,02,21,00,65,2a,00,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: FX 4 (atmosphere)
+DEBUG	(1, 0, 100): Voice 0: 24,22,47,8f,02,21,00,65,2a,00,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: FX 5 (brightness)
+DEBUG	(1, 0, 101): Voice 0: e6,0b,25,b5,00,30,00,f0,45,00,28, offset: -12, Secondary voice: 0, Fine tuning: 128: FX 6 (goblins)
+DEBUG	(1, 0, 102): Voice 0: e3,50,25,b0,00,70,80,f0,45,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: FX 7 (echoes)
+DEBUG	(1, 0, 103): Voice 0: e2,98,86,28,00,e1,80,d9,26,00,0e, offset: -12, Secondary voice: 0, Fine tuning: 128: FX 8 (sci-fi)
+DEBUG	(1, 0, 104): Voice 0: 25,12,f7,43,00,00,00,f8,05,03,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Sitar
+DEBUG	(1, 0, 105): Voice 0: 01,00,f4,a6,02,00,00,f8,35,00,05, offset: -12, Secondary voice: 0, Fine tuning: 128: Banjo
+DEBUG	(1, 0, 106): Voice 0: 04,09,fa,a6,00,07,00,f8,fb,00,14, offset: -12, Secondary voice: 0, Fine tuning: 128: Shamisen
+DEBUG	(1, 0, 107): Voice 0: 00,13,f2,13,00,01,00,f4,f5,00,18, offset: -12, Secondary voice: 0, Fine tuning: 128: Koto
+DEBUG	(1, 0, 108): Voice 0: 00,0f,f2,13,00,01,00,f4,f5,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: Kalimba
+DEBUG	(1, 0, 109): Voice 0: 11,0c,d0,f2,00,32,00,80,05,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Bag pipe
+DEBUG	(1, 0, 110): Voice 0: 10,43,9b,30,03,21,40,69,0e,02,00, offset: -12, Secondary voice: 0, Fine tuning: 128: Fiddle
+DEBUG	(1, 0, 111): Voice 0: 11,0c,d0,f3,00,32,00,80,05,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Shanai
+DEBUG	(1, 0, 112): Voice 0: 16,4f,f6,53,00,17,00,f3,53,00,20, offset: -12, Secondary voice: 0, Fine tuning: 128: Tinkle Bell
+DEBUG	(1, 0, 113): Voice 0: 17,00,fa,57,00,12,00,f5,58,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: Agogo
+DEBUG	(1, 0, 114): Voice 0: 00,0d,a8,4b,00,00,00,d6,4a,01,28, offset: -12, Secondary voice: 0, Fine tuning: 128: Steel Drums
+DEBUG	(1, 0, 115): Voice 0: 32,4a,f8,ff,00,10,00,f5,7f,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Woodblock
+DEBUG	(1, 0, 116): Voice 0: 00,0d,a8,4c,00,00,00,d6,4f,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Taiko Drum
+DEBUG	(1, 0, 117): Voice 0: 12,01,fb,a7,00,30,00,f3,53,00,10, offset: -12, Secondary voice: 0, Fine tuning: 128: Melodic Tom
+DEBUG	(1, 0, 118): Voice 0: 2b,00,ff,0e,00,0b,00,f7,fe,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Synth Drum
+DEBUG	(1, 0, 119): Voice 0: 01,07,f5,b5,00,10,00,54,2f,00,26, offset: -12, Secondary voice: 0, Fine tuning: 128: Reverse Cymbal
+DEBUG	(1, 0, 120): Voice 0: 00,80,b3,3f,00,18,00,af,f0,00,1a, offset: -12, Secondary voice: 0, Fine tuning: 128: Guitar Fret Noise
+DEBUG	(1, 0, 121): Voice 0: 60,40,b1,73,02,ef,00,b2,9b,03,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Breath Noise
+DEBUG	(1, 0, 122): Voice 0: af,40,a1,53,00,b0,00,52,73,00,3e, offset: -12, Secondary voice: 0, Fine tuning: 128: Seashore
+DEBUG	(1, 0, 123): Voice 0: 00,2e,f0,f0,00,07,00,5f,f0,00,1e, offset: -12, Secondary voice: 0, Fine tuning: 128: Bird Tweet
+DEBUG	(1, 0, 124): Voice 0: e5,13,70,0f,00,70,00,62,ff,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: Telephone Ring
+DEBUG	(1, 0, 125): Voice 0: 00,00,68,cf,02,10,00,a5,6b,00,2e, offset: -12, Secondary voice: 0, Fine tuning: 128: Helicopter
+DEBUG	(1, 0, 126): Voice 0: 2b,00,82,0a,00,27,00,77,0a,01,0e, offset: -12, Secondary voice: 0, Fine tuning: 128: Applause
+DEBUG	(1, 0, 127): Voice 0: 00,0b,fa,6f,00,00,00,f6,8f,00,30, offset: -12, Secondary voice: 0, Fine tuning: 128: Gunshot
+DEBUG	(2, 0, 35): Voice 0: 00,01,c9,19,00,00,00,f7,97,01,00, offset: 0, Given note: 21, Secondary voice: 0, Fine tuning: 128: Acoustic Bass Drum
+DEBUG	(2, 0, 36): Voice 0: 00,01,c9,19,00,00,00,f7,97,00,04, offset: 0, Given note: 21, Secondary voice: 0, Fine tuning: 128: Bass Drum 1
+DEBUG	(2, 0, 37): Voice 0: 04,09,a1,21,00,02,00,fa,fa,00,0c, offset: 0, Given note: 48, Secondary voice: 0, Fine tuning: 128: Side Stick
+DEBUG	(2, 0, 38): Voice 0: 0f,00,a1,f1,02,00,00,d7,f7,00,0e, offset: 0, Given note: 32, Secondary voice: 0, Fine tuning: 128: Acoustic Snare
+DEBUG	(2, 0, 39): Voice 0: 00,00,65,05,00,00,00,f7,07,01,0c, offset: 0, Given note: 96, Secondary voice: 0, Fine tuning: 128: Hand Clap
+DEBUG	(2, 0, 40): Voice 0: 03,00,f8,08,00,03,00,f8,f8,01,0e, offset: 0, Given note: 49, Secondary voice: 0, Fine tuning: 128: Electric Snare
+DEBUG	(2, 0, 41): Voice 0: 00,1a,f7,07,00,00,00,f5,05,00,00, offset: 0, Given note: 26, Secondary voice: 0, Fine tuning: 128: Low Floor Tom
+DEBUG	(2, 0, 42): Voice 0: 07,04,f1,21,00,07,00,f8,f8,02,06, offset: 0, Given note: 80, Secondary voice: 0, Fine tuning: 128: Closed Hi Hat
+DEBUG	(2, 0, 43): Voice 0: 00,12,f7,07,00,00,00,f5,05,00,00, offset: 0, Given note: 32, Secondary voice: 0, Fine tuning: 128: High Floor Tom
+DEBUG	(2, 0, 44): Voice 0: 07,06,71,21,00,07,00,77,f7,02,06, offset: 0, Given note: 80, Secondary voice: 0, Fine tuning: 128: Pedal Hi-Hat
+DEBUG	(2, 0, 45): Voice 0: 00,18,f7,07,00,00,00,f5,05,00,00, offset: 0, Given note: 36, Secondary voice: 0, Fine tuning: 128: Low Tom
+DEBUG	(2, 0, 46): Voice 0: 07,05,b4,04,00,07,00,85,f5,02,0a, offset: 0, Given note: 80, Secondary voice: 0, Fine tuning: 128: Open Hi-Hat
+DEBUG	(2, 0, 47): Voice 0: 00,18,f7,07,00,00,00,f6,06,00,00, offset: 0, Given note: 42, Secondary voice: 0, Fine tuning: 128: Low-Mid Tom
+DEBUG	(2, 0, 48): Voice 0: 00,18,f7,07,00,00,00,f6,06,00,00, offset: 0, Given note: 45, Secondary voice: 0, Fine tuning: 128: Hi-Mid Tom
+DEBUG	(2, 0, 49): Voice 0: 0f,1a,f2,f2,00,04,00,f5,f5,03,0e, offset: 0, Given note: 48, Secondary voice: 0, Fine tuning: 128: Crash Cymbal 1
+DEBUG	(2, 0, 50): Voice 0: 00,14,f7,07,00,00,00,f6,06,00,00, offset: 0, Given note: 49, Secondary voice: 0, Fine tuning: 128: High Tom
+DEBUG	(2, 0, 51): Voice 0: 0f,2f,f3,f3,00,04,00,f5,05,03,0e, offset: 0, Given note: 59, Secondary voice: 0, Fine tuning: 128: Ride Cymbal 1
+DEBUG	(2, 0, 52): Voice 0: 0f,20,72,f2,00,05,00,b5,f5,03,0e, offset: 0, Given note: 48, Secondary voice: 0, Fine tuning: 128: Chinese Cymbal
+DEBUG	(2, 0, 53): Voice 0: 03,1a,fe,04,00,02,00,f4,04,02,0a, offset: 0, Given note: 76, Secondary voice: 0, Fine tuning: 128: Ride Bell
+DEBUG	(2, 0, 54): Voice 0: 05,20,93,03,00,05,00,f7,07,00,0e, offset: 0, Given note: 64, Secondary voice: 0, Fine tuning: 128: Tambourine
+DEBUG	(2, 0, 55): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 56): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 57): Voice 0: 0f,1a,f2,f2,00,04,00,f5,f5,03,0e, offset: 0, Given note: 58, Secondary voice: 0, Fine tuning: 128: Crash Cymbal 2
+DEBUG	(2, 0, 58): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 59): Voice 0: 0f,2e,f3,f3,00,04,00,f5,05,03,0e, offset: 0, Given note: 64, Secondary voice: 0, Fine tuning: 128: Ride Cymbal 2
+DEBUG	(2, 0, 60): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 61): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 62): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 63): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 64): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 65): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 66): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 67): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 68): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 69): Voice 0: 00,3f,00,00,00,00,3f,00,00,00,00, offset: 0, Secondary voice: 0, Fine tuning: 128: Null Instrument
+DEBUG	(2, 0, 70): Voice 0: 42,1b,68,1c,03,01,00,d6,45,00,2e, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Maracas
+DEBUG	(2, 0, 71): Voice 0: 40,18,68,19,02,01,00,d6,46,00,2e, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Short Whistle
+DEBUG	(2, 0, 72): Voice 0: 02,07,fa,bb,00,04,00,da,be,00,38, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Long Whistle
+DEBUG	(2, 0, 73): Voice 0: 17,00,f3,f0,02,00,00,f8,b7,00,1e, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Short Guiro
+DEBUG	(2, 0, 74): Voice 0: 01,07,9a,b6,02,05,00,9a,b9,00,3e, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Long Guiro
+DEBUG	(2, 0, 75): Voice 0: 17,00,f1,f0,02,03,00,f7,b7,00,1e, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Claves
+DEBUG	(2, 0, 76): Voice 0: 01,0d,e8,ec,00,01,00,a5,f7,00,16, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Hi Wood Block
+DEBUG	(2, 0, 77): Voice 0: 2f,07,73,c2,00,31,00,c4,b4,00,3a, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Low Wood Block
+DEBUG	(2, 0, 78): Voice 0: 01,0d,e8,ec,01,01,00,a5,f7,00,36, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Mute Cuica
+DEBUG	(2, 0, 79): Voice 0: 13,cd,f5,92,01,10,80,d5,d4,00,2a, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Open Cuica
+DEBUG	(2, 0, 80): Voice 0: 01,0d,e8,ec,00,01,00,a5,f5,00,16, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Mute Triangle
+DEBUG	(2, 0, 81): Voice 0: 3c,0a,73,b1,00,31,40,c4,f3,00,1a, offset: 0, Given note: 4, Secondary voice: 0, Fine tuning: 128: Open Triangle
+INFO	Loaded "GENMIDI.OP2" using Op2FilePlugin.

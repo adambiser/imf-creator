@@ -106,7 +106,7 @@ class AdlibInstrument(object):
 
     def __str__(self):
         print_voice_count = self.num_voices if self.num_voices > 1 and self.use_secondary_voice else 1
-        text = ", ".join([f"Voice {v}: " + ",".join([format(r, "02x") for m, r in self.get_regs(0, v)]) +
+        text = ", ".join([f"Voice {v}: " + ",".join([format(reg, "02x") for _, reg in self.get_regs(0, v)]) +
                           f", offset: {self.note_offset[v]}" for v in range(print_voice_count)])
         if self.use_given_note:
             text += f", Given note: {self.given_note}"

@@ -73,7 +73,7 @@ class WoplFilePlugin(InstrumentFile):
         for index in range(self._entry_count):
             instrument_info = self._get_instrument(index)
             if instrument_info:
-                self.instruments.update([instrument_info])
+                self._add_instrument(*instrument_info)
 
     def _get_instrument(self, index: int) -> (InstrumentId, _adlib.AdlibInstrument):
         entry_offset = self._instrument_entry_start + (index * self._entry_size)
@@ -83,10 +83,7 @@ class WoplFilePlugin(InstrumentFile):
         # Set up the instrument.
         inst_type = InstrumentType.MELODIC if entry_offset < self._percussive_inst_offset \
             else InstrumentType.PERCUSSION
-        name = entry[0:32].decode('utf-8')  # type: str
-        # truncate at null terminator
-        if "\x00" in name:
-            name = name[0: name.index("\x00")]
+        name = entry[0:32].decode('utf-8').rstrip("\x00")  # type: str
         instrument = _adlib.AdlibInstrument(name=name, num_voices=2)
         instrument.note_offset[0] = s16be(entry[32:34]) - 12
         instrument.note_offset[1] = s16be(entry[34:36]) - 12
@@ -106,17 +103,13 @@ class WoplFilePlugin(InstrumentFile):
         bank_entry = self._get_bank_entry(index)
         bank = calculate_msb_lsb(bank_entry.msb, bank_entry.lsb) if bank_entry else 0
         program = index % 128
-        _logging.debug(f"({inst_type}, {bank}, {program}): {instrument}")
         return InstrumentId(inst_type, bank, program), instrument
 
     def _get_bank_entry(self, index) -> _typing.Optional[_BANK_ENTRY]:
         if self._version >= 2:
             bank = index // 128
             self.fp.seek(self._bank_meta_entry_start + (bank * self._bank_meta_entry_size))
-            name = self.fp.read(32).decode("utf-8")  # type: str
-            # truncate at null terminator
-            if "\x00" in name:
-                name = name[0: name.index("\x00")]
+            name = self.fp.read(32).decode('utf-8').rstrip("\x00")   # type: str
             lsb = u8(self.fp.read(1))
             msb = u8(self.fp.read(1))
             return _BANK_ENTRY(name, lsb, msb)

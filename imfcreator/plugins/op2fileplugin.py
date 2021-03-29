@@ -36,7 +36,7 @@ class Op2FilePlugin(InstrumentFile):
         if not Op2FilePlugin.accept(self.fp.read(8), self.file):
             raise ValueError("Bad OP2 file!")
         for index in range(Op2FilePlugin._ENTRY_COUNT):
-            self.instruments.update([self._get_instrument(index)])
+            self._add_instrument(*self._get_instrument(index))
 
     def _get_instrument(self, index: int) -> (InstrumentId, _adlib.AdlibInstrument):
         entry_offset = Op2FilePlugin._ENTRY_START + index * Op2FilePlugin._ENTRY_SIZE
@@ -45,7 +45,7 @@ class Op2FilePlugin(InstrumentFile):
         self.fp.seek(entry_offset)
         entry = self.fp.read(Op2FilePlugin._ENTRY_SIZE)
         self.fp.seek(name_offset)
-        name = self.fp.read(Op2FilePlugin._NAME_SIZE).partition(b'\x00')[0]
+        name = self.fp.read(Op2FilePlugin._NAME_SIZE).decode('utf-8').rstrip("\x00")
         # Set up the instrument.
         instrument = _adlib.AdlibInstrument(name=name, num_voices=2)
         flags = u16le(entry[0:2])
