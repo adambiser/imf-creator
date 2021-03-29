@@ -104,6 +104,18 @@ class AdlibInstrument(object):
         self.feedback = [0] * num_voices  # 8-bit
         self.note_offset = [0] * num_voices  # 16-bit, signed
 
+    def __str__(self):
+        print_voice_count = self.num_voices if self.num_voices > 1 and self.use_secondary_voice else 1
+        text = ", ".join([f"Voice {v}: " + ",".join([format(r, "02x") for m, r in self.get_regs(0, v)]) +
+                          f", offset: {self.note_offset[v]}" for v in range(print_voice_count)])
+        if self.use_given_note:
+            text += f", Given note: {self.given_note}"
+        if self.num_voices > 1:
+            text += f", Secondary voice: {self.use_secondary_voice}"
+            text += f", Fine tuning: {self.fine_tuning}"
+        text += f": {self.name}"
+        return text
+
     def __repr__(self):
         return str(self.__dict__)
 
