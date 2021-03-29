@@ -54,7 +54,7 @@ class LoggingTestCase(unittest.TestCase):
         # Replace absolute file path with the base filename.
         debug_log = debug_log.replace(filename, os.path.basename(filename))
         calling_function = inspect.stack()[1].function
-        result_file = filename + f".{calling_function}.log"
+        result_file = filename + f".{calling_function.replace('test_', '')}.log"
         if os.path.exists(result_file):
             try:
                 with open(result_file, "r") as fp:
@@ -102,12 +102,12 @@ class PluginTestCase(unittest.TestCase):
         self.assertIsNotNone(value, "Could not find plugin for 'imf1' file type.")
 
 
-class InstrumentTestCase(unittest.TestCase):
+class InstrumentTestCase(LoggingTestCase):
     def test_load_wopl(self):
-        # imfcreator.instruments.add_file(os.path.join(_FILES_FOLDER, "GENMIDI.GS.wopl"))
-        # self.assertEqual(imfcreator.instruments.count(), 330)
-        imfcreator.instruments.add_file(os.path.join(_FILES_FOLDER, "Apogee-IMF-90.wopl"))
+        wopl_filename = os.path.join(_FILES_FOLDER, "Apogee-IMF-90.wopl")
+        imfcreator.instruments.add_file(wopl_filename)
         self.assertEqual(imfcreator.instruments.count(), 174)
+        self.validate_log_results(wopl_filename)
 
 
 class SongLoadTestCase(LoggingTestCase):
