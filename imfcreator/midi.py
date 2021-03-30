@@ -59,16 +59,35 @@ class SongEvent:
     def __str__(self):
         text = f"[{self.index}] {self.time:0.3f}: Track {self.track}"
         if self.channel is not None:
-            text += f", ch {self.channel:2d}"
+            text += f", ch {self.channel}"
         text += f": {str(self.type)}"  # - #{self.index}"
+
+        data_keys = sorted(self.data.keys())
+        data = ""
+
         if self.type == EventType.META:
             text += f": {str(self.data['meta_type'])}"
-        # elif self.channel is not None:
-        #     text += f" - ch {self.channel}"
+            data_keys.remove("meta_type")
+        elif self.type == EventType.CONTROLLER_CHANGE:
+            text += f": {str(self.data['controller'])}"
+            data_keys.remove("controller")
+        elif self.type == EventType.NOTE_ON:
+            data = f"{self.data['note']}, v {self.data['velocity']}"
+            data_keys.remove("note")
+            data_keys.remove("velocity")
+        elif self.type == EventType.NOTE_OFF:
+            data = f"{self.data['note']}"  # Don't show velocity for note off.
+            data_keys.remove("note")
+            data_keys.remove("velocity")
 
-        data = ", ".join([f"{k}: {self.data[k]:.5g}" if type(self.data[k]) is float
-                          else f"{k}: {self.data[k]}"
-                          for k in sorted(self.data.keys())])
+        def get_formatted_data(k):
+            return format(self.data[k], ".5g") if type(self.data[k]) is float else str(self.data[k])
+
+        assert len(data_keys) == 0 or not data, f"{data_keys} / {data}"
+        if len(data_keys) == 1:
+            data = get_formatted_data(data_keys[0])
+        elif len(data_keys) > 1:
+            data = ", ".join([f"{k}: {get_formatted_data(k)}" for k in data_keys])
         return f"{text}: {data}"
 
     def __getitem__(self, key):
