@@ -2,7 +2,7 @@ import typing as _typing
 import imfcreator.adlib as _adlib
 import imfcreator.utils as _utils
 from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId, InstrumentType
-from ._binary import u8, u16le, s16le
+from ._binary import u8, u16le, s16le, get_unicode_text
 
 
 @plugin
@@ -45,12 +45,12 @@ class Op2FilePlugin(InstrumentFile):
         self.fp.seek(entry_offset)
         entry = self.fp.read(Op2FilePlugin._ENTRY_SIZE)
         self.fp.seek(name_offset)
-        name = self.fp.read(Op2FilePlugin._NAME_SIZE).decode('utf-8').rstrip("\x00")
+        name = get_unicode_text(self.fp.read(Op2FilePlugin._NAME_SIZE))
         # Set up the instrument.
         instrument = _adlib.AdlibInstrument(name=name, num_voices=2)
         flags = u16le(entry[0:2])
-        instrument.use_secondary_voice = flags & Op2FilePlugin._FLAG_USE_SECONDARY_VOICE
-        instrument.use_given_note = flags & Op2FilePlugin._FLAG_USE_GIVEN_NOTE
+        instrument.use_secondary_voice = bool(flags & Op2FilePlugin._FLAG_USE_SECONDARY_VOICE)
+        instrument.use_given_note = bool(flags & Op2FilePlugin._FLAG_USE_GIVEN_NOTE)
         instrument.fine_tuning = u8(entry[2])
         instrument.given_note = u8(entry[3])
         Op2FilePlugin._read_voice(instrument, 0, entry[4:20])

@@ -3,7 +3,7 @@ import typing as _typing
 import imfcreator.adlib as _adlib
 from collections import namedtuple
 from . import FileTypeInfo, plugin, InstrumentFile, InstrumentId, InstrumentType
-from ._binary import u8, u16le, u16be, s16be
+from ._binary import u8, u16le, u16be, s16be, get_unicode_text
 from ._midiengine import calculate_msb_lsb
 
 
@@ -83,7 +83,7 @@ class WoplFilePlugin(InstrumentFile):
         # Set up the instrument.
         inst_type = InstrumentType.MELODIC if entry_offset < self._percussive_inst_offset \
             else InstrumentType.PERCUSSION
-        name = entry[0:32].decode('utf-8').rstrip("\x00")  # type: str
+        name = get_unicode_text(entry[0:32])
         instrument = _adlib.AdlibInstrument(name=name, num_voices=2)
         instrument.note_offset[0] = s16be(entry[32:34]) - 12
         instrument.note_offset[1] = s16be(entry[34:36]) - 12
@@ -109,7 +109,7 @@ class WoplFilePlugin(InstrumentFile):
         if self._version >= 2:
             bank = index // 128
             self.fp.seek(self._bank_meta_entry_start + (bank * self._bank_meta_entry_size))
-            name = self.fp.read(32).decode('utf-8').rstrip("\x00")   # type: str
+            name = get_unicode_text(self.fp.read(32))  # type: str
             lsb = u8(self.fp.read(1))
             msb = u8(self.fp.read(1))
             return _BANK_ENTRY(name, lsb, msb)

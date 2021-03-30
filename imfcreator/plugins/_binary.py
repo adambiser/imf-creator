@@ -67,3 +67,7 @@ def read_midi_var_length(fp: _typing.IO):
         length = length * 0x80 + (b & 0x7f)
         b = u8(fp.read(1))
     return length * 0x80 + b
+
+
+def get_unicode_text(text: bytes):
+    return text.decode("unicode-escape").rstrip("x\00")
