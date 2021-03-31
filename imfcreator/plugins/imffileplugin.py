@@ -201,7 +201,8 @@ COMMANDS:
                 _logging.error(f"Value out of range! 0x{reg:x}, 0x{value:x}, {delay}, cmd: {len(song._commands)}")
                 raise
             regs[reg] = value
-            _logging.debug(get_repr_adlib_reg(reg, value, delay))
+            # Don't dump the delay to debugging.  It means nothing here because it's set later on the previous command.
+            _logging.debug(get_repr_adlib_reg(reg, value, None))
             song._commands.append((reg, value, delay))
 
         def add_commands(event_time: float, commands):
@@ -433,11 +434,10 @@ COMMANDS:
             _logging.debug(song_event)
 
         # Set up the song and start the midi engine.
-        song._commands = [
-            (0, 0, 0),  # Always start with 0, 0, 0
-            (DRUM_MSG, 0, 0),
-            (COMP_SINE_WAVE_MODE_MSG, 0, 0),
-        ]
+        add_command(0, 0, 0)  # Always start with 0, 0, 0
+        add_command(DRUM_MSG, 0, 0)
+        add_command(COMP_SINE_WAVE_MODE_MSG, 0, 0)
+
         engine.on_tempo_change.add_handler(on_tempo_change)
         engine.on_note_on.add_handler(on_note_on)
         engine.on_note_off.add_handler(on_note_off)
