@@ -73,7 +73,7 @@ class SongEvent:
             text += f": {str(self.data['controller'])}"
             data_keys.remove("controller")
         elif self.type == EventType.NOTE_ON:
-            info = f"{self.data['note']}, v {self.data['velocity']}"
+            info = f"{self.data['note']}, v={self.data['velocity']}"
             data_keys.remove("note")
             data_keys.remove("velocity")
         elif self.type == EventType.NOTE_OFF:
