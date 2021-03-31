@@ -256,16 +256,16 @@ def _check_range(value: int, max_value: int):
         raise ValueError(f"Value should be between 0 and {max_value} inclusive. Got: {value}.")
 
 
-def get_repr_adlib_reg(reg: int, value: int, delay: int):
+def get_repr_adlib_reg(reg: int, value: int, delay: int = None):
     # Do not change anything in here.  Doing so will screw up the tests.
-    text = f"{delay:<5d}: {reg:#04x} <= {value:#04x} ({value:08b}): "
+    text = ("" if delay is None else f"{delay}: ") + f"{reg:#04x} <= {value:#04x}: "  # ({value:08b}): "  # :<5d
 
     def get_operator_str():
         r = reg % 0x20
         try:
-            return f"ch {MODULATORS.index(r)} mod"
+            return f"ch {MODULATORS.index(r)}m"
         except ValueError:
-            return f"ch {CARRIERS.index(r)} car"
+            return f"ch {CARRIERS.index(r)}c"
 
     def get_channel_str():
         return f"ch {reg % 0x10}"
@@ -280,34 +280,36 @@ def get_repr_adlib_reg(reg: int, value: int, delay: int):
     if reg == TEST_MSG:
         text += "TEST"  # f"Test Register / Waveform Select: {get_on_off(5)}"  # (--w-----)"
     elif reg == TIMER_1_COUNT_MSG:
-        text += "TIMER_1_COUNT"  # "Timer 1"
+        text += "Timer 1"
     elif reg == TIMER_2_COUNT_MSG:
-        text += "TIMER_2_COUNT"  # "Timer 2"
+        text += "Timer 2"
     elif reg == IRQ_RESET_MSG:
-        text += "IRQ_RESET"  # "Timer Mask/Control / IRQ Reset"  # (imm---cc)"
+        text += "IRQ Reset"  # "Timer Mask/Control / IRQ Reset"  # (imm---cc)"
     elif reg == COMP_SINE_WAVE_MODE_MSG:
-        text += "CSM_MODE"  # "CSM Mode / Keyboard Split"  # (ck------)"
+        text += "CSM mode"  # "CSM Mode / Keyboard Split"  # (ck------)"
     elif VIBRATO_MSG <= reg <= VIBRATO_MSG + 0x15:
-        text += f"{get_operator_str()}: VIBRATO"
-        # text += f"AM: {get_on_off(7)}, Vibr: {get_on_off(6)}, Env: {get_on_off(5)}, " \
-        #         f"KSR: {get_on_off(5)}, Freq Mult: {get_bits(0, 4)}"  # (avekffff)
+        text += f"{get_operator_str()}: "  # VIBRATO"
+        text += f"AM={get_bits(7)}, Vib={get_bits(6)}, Env={get_bits(5)}, " \
+                f"KSR={get_bits(5)}, FreqMul={get_bits(0, 4)}"  # (avekffff)
     elif VOLUME_MSG <= reg <= VOLUME_MSG + 0x15:
-        text += f"{get_operator_str()}: VOLUME"
-        # text += f"Volume: {get_bits(0, 6)}, KSL: {get_bits(6, 2)}"  # (ssvvvvvv)
+        text += f"{get_operator_str()}: "  # VOLUME"
+        text += f"Vol={get_bits(0, 6)}, KSL={get_bits(6, 2)}"  # (ssvvvvvv)
     elif ATTACK_DECAY_MSG <= reg <= ATTACK_DECAY_MSG + 0x15:
-        text += f"{get_operator_str()}: ATTACK_DECAY"
-        # text += f"Attack: {get_bits(4, 4)},  Decay {get_bits(0, 4)}"  # (aaaadddd)
+        text += f"{get_operator_str()}: "  # ATTACK_DECAY"
+        text += f"Att={get_bits(4, 4)}, Dec={get_bits(0, 4)}"  # (aaaadddd)
     elif SUSTAIN_RELEASE_MSG <= reg <= SUSTAIN_RELEASE_MSG + 0x15:
-        text += f"{get_operator_str()}: SUSTAIN_RELEASE"
-        # text += f"Sustain: {get_bits(4, 4)}, Release {get_bits(0, 4)}"  # (ssssrrrr)
+        text += f"{get_operator_str()}: "  # SUSTAIN_RELEASE"
+        text += f"Sus={get_bits(4, 4)}, Rel={get_bits(0, 4)}"  # (ssssrrrr)
     elif FREQ_MSG <= reg <= FREQ_MSG + 0x08:
-        text += f"{get_channel_str()}: FREQ"
-        # text += f"Freq: {value}"
+        text += f"{get_channel_str()}: "  # FREQ"
+        text += f"Freq={value}"
     elif BLOCK_MSG <= reg <= BLOCK_MSG + 0x08:
-        text += f"{get_channel_str()}: BLOCK, Key {get_on_off(5)}"
-        # text += f"Oct: {get_bits(2, 3)}, Freq (msb): {get_bits(0, 2)}, Key {get_on_off(5)}"  # (--koooff)
+        text += f"{get_channel_str()}: "  # Key {get_on_off(5)}"  # BLOCK,
+        text += f"Oct={get_bits(2, 3)}, FreqHi={get_bits(0, 2)}, Key {get_on_off(5)}"  # (--koooff)
     elif reg == DRUM_MSG:
-        text += f"{get_on_off(5, 'Percussion', 'Melodic')} mode"  # , Trem: {get_bits(7)}, Vibr: {get_bits(6)}"
+        text += f"{get_on_off(5, 'Percussion', 'Melodic')} mode" \
+                f"{get_on_off(7, ', Trm', '')}" \
+                f"{get_on_off(6, ', Vib', '')}"
         drums = "".join([get_on_off(4, ", BD", ""),
                          get_on_off(3, ", SD", ""),
                          get_on_off(2, ", TT", ""),
@@ -316,11 +318,11 @@ def get_repr_adlib_reg(reg: int, value: int, delay: int):
         if drums:
             text += f": {drums}"
     elif FEEDBACK_MSG <= reg <= FEEDBACK_MSG + 0x08:
-        text += f"{get_channel_str()}: FEEDBACK"
-        # text += f"Feedback: {get_bits(1, 3)}, {get_on_off(0, 'Freq Mod', 'Additive')} synthesis"  # (----fffd)
+        text += f"{get_channel_str()}: "  # FEEDBACK"
+        text += f"Fdbk={get_bits(1, 3)}, {get_on_off(0, 'FM', 'Add')}"  # (----fffd)
     elif WAVEFORM_SELECT_MSG <= reg <= WAVEFORM_SELECT_MSG + 0x15:
-        text += f"{get_operator_str()}: WAVEFORM"
-        # text += f"Waveform: {get_bits(0, 2)}"  # (------ww)
+        text += f"{get_operator_str()}: "  # WAVEFORM"
+        text += f"Wav={get_bits(0, 2)}"  # (------ww)
     else:
         text += "UNKNOWN"
     return text

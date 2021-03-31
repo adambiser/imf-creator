@@ -1,4 +1,5 @@
 import logging as _logging
+import typing as _typing
 from enum import IntEnum
 from functools import total_ordering
 
@@ -54,7 +55,7 @@ class SongEvent:
         self.time = time
         self.type = event_type
         self.data = data
-        self.channel = channel  # _typing.Optional[int]
+        self.channel = channel  # type: _typing.Optional[int]
 
     def __str__(self):
         text = f"[{self.index}] {self.time:0.3f}: Track {self.track}"
@@ -63,7 +64,7 @@ class SongEvent:
         text += f": {str(self.type)}"  # - #{self.index}"
 
         data_keys = sorted(self.data.keys())
-        data = ""
+        info = ""
 
         if self.type == EventType.META:
             text += f": {str(self.data['meta_type'])}"
@@ -72,23 +73,23 @@ class SongEvent:
             text += f": {str(self.data['controller'])}"
             data_keys.remove("controller")
         elif self.type == EventType.NOTE_ON:
-            data = f"{self.data['note']}, v {self.data['velocity']}"
+            info = f"{self.data['note']}, v {self.data['velocity']}"
             data_keys.remove("note")
             data_keys.remove("velocity")
         elif self.type == EventType.NOTE_OFF:
-            data = f"{self.data['note']}"  # Don't show velocity for note off.
+            info = f"{self.data['note']}"  # Don't show velocity for note off.
             data_keys.remove("note")
             data_keys.remove("velocity")
 
         def get_formatted_data(k):
             return format(self.data[k], ".5g") if type(self.data[k]) is float else str(self.data[k])
 
-        assert len(data_keys) == 0 or not data, f"{data_keys} / {data}"
+        assert len(data_keys) == 0 or not info, f"{data_keys} / {info}"
         if len(data_keys) == 1:
-            data = get_formatted_data(data_keys[0])
+            info = get_formatted_data(data_keys[0])
         elif len(data_keys) > 1:
-            data = ", ".join([f"{k}: {get_formatted_data(k)}" for k in data_keys])
-        return f"{text}: {data}"
+            info = ", ".join([f"{k}: {get_formatted_data(k)}" for k in data_keys])
+        return text + (f": {info}" if info else "")
 
     def __getitem__(self, key):
         return self.data[key]
