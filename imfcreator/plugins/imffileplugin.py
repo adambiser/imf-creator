@@ -179,9 +179,13 @@ COMMANDS:
             # To reduce rounding errors, calculate the ticks from the last tempo change and subtract the ticks at which
             # the last command took place.
             ticks = calculate_current_ticks(time)
+            assert ticks >= last_command_ticks
+            if ticks == last_command_ticks:
+                return
             # PyCharm has an incorrect warning here.
             # noinspection PyTypeChecker
             song._commands[command_index] = song._commands[command_index][:2] + (ticks - last_command_ticks,)
+            # _logging.debug(f"Delay: {song._commands[command_index][2]}")
             assert 0 <= song._commands[command_index][2] <= 0xffff, \
                 f"{time}, {tempo_start_time}, {ticks_per_beat}, {ticks}, {last_command_ticks}"
             last_command_ticks = ticks
@@ -434,9 +438,11 @@ COMMANDS:
             _logging.debug(song_event)
 
         # Set up the song and start the midi engine.
-        add_command(0, 0, 0)  # Always start with 0, 0, 0
-        add_command(DRUM_MSG, 0, 0)
-        add_command(COMP_SINE_WAVE_MODE_MSG, 0, 0)
+        add_commands(0, [
+            (0, 0),  # Always start with 0, 0, 0
+            (DRUM_MSG, 0),
+            (COMP_SINE_WAVE_MODE_MSG, 0),
+        ])
 
         engine.on_tempo_change.add_handler(on_tempo_change)
         engine.on_note_on.add_handler(on_note_on)
