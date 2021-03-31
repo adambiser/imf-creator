@@ -32,8 +32,13 @@ class LoggingTestCase(unittest.TestCase):
         self.stream = io.StringIO()
         self.handler = logging.StreamHandler(self.stream)
         self.handler.setLevel(logging.DEBUG)
+
+        class DebugFormatter(logging.Formatter):
+            def format(self, record: logging.LogRecord) -> str:
+                return (f'{record.levelname}\t' if record.levelno > logging.DEBUG else '') + str(record.msg)
+
         # self.handler.addFilter(TestFilter())
-        self.handler.setFormatter(logging.Formatter('%(levelname)s\t%(message)s'))
+        self.handler.setFormatter(DebugFormatter())
         logging.getLogger().setLevel(logging.DEBUG)
         for handler in logging.getLogger().handlers:
             logging.getLogger().removeHandler(handler)
@@ -55,21 +60,24 @@ class LoggingTestCase(unittest.TestCase):
         debug_log = debug_log.replace(filename, os.path.basename(filename))
         calling_function = inspect.stack()[1].function.replace('test_', '')
         result_file = filename + f".{calling_function}.log"
+        fail_file = filename + f".{calling_function}.fail.log"
+        if os.path.exists(fail_file):
+            os.remove(fail_file)
         if os.path.exists(result_file):
             try:
                 with open(result_file, "r") as fp:
                     result_info = fp.read().splitlines()
                 debug_lines = debug_log.splitlines()
                 for index in range(min(len(debug_lines), len(result_info))):
-                    self.assertEqual(debug_lines[index], result_info[index],
+                    self.assertEqual(result_info[index], debug_lines[index],
                                      f"First difference found in line {index + 1}.  "
                                      f"File: {os.path.basename(result_file)}")
                 # Do the line count check after making sure everything up to the end of one list is the same.
-                self.assertEqual(len(debug_lines), len(result_info), f"Line count mismatch.  "
+                self.assertEqual(len(result_info), len(debug_lines), f"Line count mismatch.  "
                                                                      f"File: {os.path.basename(result_file)}")
             except AssertionError:
                 # Write the new results to a temp file.
-                with open(filename + f".{calling_function}.fail.log", "w") as fp:
+                with open(fail_file, "w") as fp:
                     fp.write(debug_log)
                 raise
         else:
