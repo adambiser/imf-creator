@@ -193,6 +193,7 @@ class MidiSongFile:
         self.title = None  # type: _typing.Optional[str]
         self.composer = None  # type: _typing.Optional[str]
         self.remarks = None  # type: _typing.Optional[str]
+        self.program = None  # type: _typing.Optional[str]
         self.file = file
         self.tics_per_second = 0
         try:
@@ -287,6 +288,18 @@ class AdlibSongFile:
         self._default_outfile = _os.path.splitext(midi_song.file)[0]
         self._filetype = filetype
 
+    @property
+    def ticks(self):
+        raise NotImplementedError()
+
+    @property
+    def default_extension(self):
+        return next([ft.default_extension for ft in self._get_filetypes() if ft.name == self._filetype], None)
+
+    @property
+    def filetype_description(self):
+        return next([ft.description for ft in self._get_filetypes() if ft.name == self._filetype], None)
+
     @classmethod
     def _get_filetypes(cls) -> _typing.List["FileTypeInfo"]:
         """A list of FileTypeInfo instances representing valid filetypes for the class.
@@ -322,7 +335,7 @@ class AdlibSongFile:
         raise NotImplementedError()
 
     @classmethod
-    def _convert_from(cls, midi_song: MidiSongFile, filetype: str, settings: _typing.Dict) -> "AdlibSongFile":
+    def _convert_from(cls, midi_song: MidiSongFile, filetype: str, **settings) -> "AdlibSongFile":
         """Converts a MIDI song to bytes data for the given file type.
 
         :param midi_song: The MIDI song to convert from.
@@ -347,7 +360,7 @@ class AdlibSongFile:
 
     @classmethod
     def convert_from(cls, midi_song: MidiSongFile, filetype: str,
-                     settings: _typing.Dict = None) -> "AdlibSongFile":
+                     **settings) -> "AdlibSongFile":
         """Converts a MIDI song to bytes data for the given file type.
 
         Implementing classes muse override `_convert_from`.
@@ -358,14 +371,14 @@ class AdlibSongFile:
         :exception ValueError: When the given data is not valid.
         :return: A bytes object containing the converted song data.
         """
-        settings = settings or {}
+        # settings = settings or {}
         filetype_class = cls.get_filetype_class(filetype)
-        valid_settings = [s.name for s in filetype_class._get_filetype_settings(filetype) or []]
-        for setting in settings:
-            if setting not in valid_settings:
-                raise ValueError(f"Unexpected setting: {setting}.  Valid settings are: {', '.join(valid_settings)}")
+        # valid_settings = [s.name for s in filetype_class._get_filetype_settings(filetype) or []]
+        # for setting in settings:
+        #     if setting not in valid_settings:
+        #         raise ValueError(f"Unexpected setting: {setting}.  Valid settings are: {', '.join(valid_settings)}")
         # Validate settings.
-        return filetype_class._convert_from(midi_song, filetype, settings)
+        return filetype_class._convert_from(midi_song, filetype, **settings)
 
     @classmethod
     def get_filetypes(cls) -> _typing.List["FileTypeInfo"]:
@@ -383,6 +396,14 @@ class AdlibSongFile:
             raise ValueError(f"Could not find a song converter for the given file type: {filetype}")
         # _logging.debug(f"Found AdlibSong class for {filetype}: {entry.cls.__name__}")
         return entry.cls
+
+    @classmethod
+    def get_filetype_info(cls, filetype: str) -> FileTypeInfo:
+        # _logging.debug(f"Finding filetype info for {filetype}.")
+        entry = cls._get_filetype_entry(filetype)
+        if not entry:
+            raise ValueError(f"Could not find information for the given file type: {filetype}")
+        return entry.info
 
     @classmethod
     def get_filetype_settings(cls, filetype) -> _typing.List["FileTypeSetting"]:

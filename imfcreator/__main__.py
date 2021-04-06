@@ -11,7 +11,7 @@ from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 import imfcreator.instruments as instruments
 import imfcreator.resources as resources
-from imfcreator.plugins import AdlibSongFile, MidiSongFile, InstrumentFile, load_plugins
+from imfcreator.plugins import AdlibSongFile, MidiSongFile, InstrumentFile, load_plugins, FileTypeInfo
 from imfcreator.player import AdlibPlayer, PlayerState
 
 try:
@@ -28,11 +28,22 @@ except ImportError:
     import tkinter.filedialog as filedialog
     import tkinter.messagebox as messagebox
 
-__version__ = 0.1
+__version__ = 0.2
 load_plugins()
 _ADLIB_FILETYPES = AdlibSongFile.get_filetypes()
 _MIDI_FILETYPES = MidiSongFile.get_filetypes()
 _INSTRUMENT_FILETYPES = InstrumentFile.get_filetypes()
+
+
+def uniquify(seq):
+    seen = set()
+    seen_add = seen.add  # use method ref for faster speed
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
+
+_ADLIB_SETTINGS = uniquify([setting.name
+                            for filetype in AdlibSongFile.get_filetypes()
+                            for setting in AdlibSongFile.get_filetype_settings(filetype.name)])
 
 
 def run_and_exit(args, on_exit_method: callable) -> threading.Thread:
@@ -115,7 +126,7 @@ class InfoFrame(tk.Frame):
         row = 0
         ttk.Label(self, text="Output File Type:").grid(row=row, column=0, sticky=tk.W, **padding)
         self.filetype_combo = ttk.Combobox(self,
-                                           justify="left",
+                                           justify=tk.LEFT,
                                            state="readonly",
                                            values=[filetype.description for filetype in _ADLIB_FILETYPES],
                                            height=8,
@@ -140,6 +151,37 @@ class InfoFrame(tk.Frame):
                                     width=70,
                                     relief=tk.SUNKEN)
         self.bank_label.grid(row=row, column=1, sticky=tk.W, **padding)
+
+        # Settings - unsorted, use the order given by the file type infomartion (as closely as possible...)
+        row += 1
+        self.settings_checkbox = ttk.Checkbutton(self, text="Use meta data from input song",
+                                                 variable=parent.settings.use_meta_data_from_song)
+        self.settings_checkbox.grid(row=row, column=0, columnspan=2, sticky=tk.W, **padding)
+
+        row += 1
+        self.settings_checkbox = ttk.Checkbutton(self, text="Include meta data in converted song",
+                                                 variable=parent.settings.include_meta_data)
+        self.settings_checkbox.grid(row=row, column=0, columnspan=2, sticky=tk.W, **padding)
+
+        def store_meta(meta_name):
+            def _store_meta(*_):
+                # Store in settings if include_meta_data is false.
+                if not parent.settings.use_meta_data_from_song.get():
+                    parent.settings.meta_values[meta_name].set(self.meta_values[meta_name].get())
+            return _store_meta
+
+        self.meta_values = {}
+        for name in _ADLIB_SETTINGS:
+            row += 1
+            print(name)
+            _meta_name = name
+            self.meta_values[name] = tk.StringVar()
+            self.meta_values[name].trace_add("write", store_meta(_meta_name))
+
+            ttk.Label(self, text=f"{name.replace('_', ' ').title()}:").grid(row=row, column=0,
+                                                                            sticky=tk.W, **padding)
+            ttk.Entry(self, textvariable=self.meta_values[name],
+                      justify=tk.LEFT, width=70).grid(row=row, column=1, sticky=tk.W, **padding)
 
         # Set up variable monitoring.
         def monitor_filetype_variable(combo, var):
@@ -279,7 +321,9 @@ class BankEditor:
 
 class Settings:
     _DEFAULT_VALUES = {
-        "bank_file": "genmidi/GENMIDI.OP2"
+        "bank_file": "genmidi/GENMIDI.OP2",
+        "include_meta_data": 0,
+        "use_meta_data_from_song": 0,
     }
 
     def __init__(self):
@@ -288,14 +332,18 @@ class Settings:
         self.bank_file = tk.StringVar()
         self.song_file = tk.StringVar()
         self.filetype = tk.StringVar()
+        self.include_meta_data = tk.IntVar()
+        self.use_meta_data_from_song = tk.IntVar()
         self.bank_editor_path = tk.StringVar()
+        self.meta_values = {name: tk.StringVar() for name in _ADLIB_SETTINGS}
 
     def load(self):
         def monitor_variable(settings_key: str, default):
             def write_setting(*_):
                 self._db[settings_key] = var.get()
 
-            var = getattr(self, settings_key)
+            var = self.meta_values[settings_key[5:]] if settings_key.startswith("meta_") \
+                else getattr(self, settings_key)
             try:
                 var.set(self._db.get(settings_key, default))
             except pickle.UnpicklingError:
@@ -303,12 +351,12 @@ class Settings:
                 var.set(default)
             var.trace_add("write", write_setting)
 
-        for var_name in [k for k, v in self.__dict__.items() if isinstance(v, tk.Variable)]:
+        # These variables should be loaded first.
+        variables = ["include_meta_data", "use_meta_data_from_song"]
+        variables += [f"meta_{k}" for k, v in self.meta_values.items() if isinstance(v, tk.Variable)]
+        variables += [k for k, v in self.__dict__.items() if isinstance(v, tk.Variable) and k not in variables]
+        for var_name in variables:
             monitor_variable(var_name, Settings._DEFAULT_VALUES.get(var_name, ""))
-        # monitor_variable(parent.bank_file, "bank_file", "genmidi/GENMIDI.OP2")
-        # monitor_variable(parent.song_file, "song_file", "")
-        # monitor_variable(parent.filetype, "filetype", "")
-        # monitor_variable(parent.bank_editor_path, "bank_editor_path", "")
 
     def close(self):
         self._db.sync()
@@ -338,6 +386,9 @@ class MainApplication(ttk.Frame):
         self.toolbar.pack(side=tk.TOP, anchor=tk.W)
         self.infoframe.pack(side=tk.TOP, anchor=tk.W)
         self.settings.load()
+        # Hook these after loading settings so they don't call their event methods.
+        self.settings.include_meta_data.trace_add("write", lambda *_: self._convert_song())
+        self.settings.use_meta_data_from_song.trace_add("write", lambda *_: self._load_song_meta_data())
         # self.update()
 
     def set_filetype(self, filetype):
@@ -386,7 +437,18 @@ class MainApplication(ttk.Frame):
         self._midi_song = None
         if self.settings.song_file.get():
             self._midi_song = MidiSongFile.load_file(self.settings.song_file.get())
+            self._load_song_meta_data()
             self._convert_song()
+
+    def _load_song_meta_data(self):
+        if self.settings.use_meta_data_from_song.get():
+            self.infoframe.meta_values["composer"].set(self._midi_song.composer or "")
+            self.infoframe.meta_values["title"].set(self._midi_song.title or "")
+            self.infoframe.meta_values["remarks"].set(self._midi_song.remarks or "")
+            self.infoframe.meta_values["program"].set(self._midi_song.program or "")
+        else:
+            for name in self.infoframe.meta_values.keys():
+                self.infoframe.meta_values[name].set(self.settings.meta_values[name].get() or "")
 
     def _convert_song(self):
         self.player.stop()
@@ -395,7 +457,11 @@ class MainApplication(ttk.Frame):
         self._adlib_song = None
         try:
             if self._midi_song and self.settings.filetype.get():
-                self._adlib_song = AdlibSongFile.convert_from(self._midi_song, self.settings.filetype.get())
+                settings = {key: value.get() for key, value
+                            in self.infoframe.meta_values.items()} if self.settings.include_meta_data.get() else {}
+                # if value.get() and key in valid_settings}
+                self._adlib_song = AdlibSongFile.convert_from(self._midi_song, self.settings.filetype.get(), **settings)
+                self.player.ticks_per_second = self._adlib_song.ticks
                 self.toolbar.play_button["state"] = tk.NORMAL
                 self.toolbar.save_button["state"] = tk.NORMAL
             self.player.set_song(self._adlib_song)
@@ -407,18 +473,19 @@ class MainApplication(ttk.Frame):
         dir_path = os.path.dirname(self.settings.song_file.get()) if self.settings.song_file.get() else None
         file_basename = os.path.splitext(os.path.basename(self.settings.song_file.get()))[0] \
             if self.settings.song_file else None
+        # The save filetype has already been selected in the window.  Use it.
         options = {
             "title": "Save Adlib File",
-            # TODO build filetypes list from plugins
-            "filetypes": [("IMF file", ".imf")],
-            "defaultextension": ".imf",
+            "filetypes": [(self._adlib_song.filetype_description, f"*.{self._adlib_song.default_extension}"),
+                          ("All files", "*.*")],
             "initialdir": dir_path,
-            "initialfile": file_basename + ".imf",
-            "parent": self
+            "initialfile": file_basename,
+            "parent": self,
         }
         dst_song = filedialog.asksaveasfilename(**options)
         if dst_song:
-            self._adlib_song.save_file(dst_song)  # , filetype=self.filetype)
+            self._convert_song()
+            self._adlib_song.save_file(dst_song)
 
     def toggle_play(self):
         if self.player.state == PlayerState.PLAYING:

@@ -32,18 +32,26 @@ class ImfSong(AdlibSongFile):
         "imf0wlf": 700,
         "imf1": 700,
     }
+    # , title: str = None,
+    #                  composer: str = None, remarks: str = None, program: str = None, **_
 
-    def __init__(self, midi_song: MidiSongFile, filetype: str = "imf1", ticks: int = None, title: str = None,
-                 composer: str = None, remarks: str = None, program: str = None):
+    def __init__(self, midi_song: MidiSongFile, filetype: str = "imf1", ticks: int = None, **meta_data):
         super().__init__(midi_song, filetype)
         self._ticks = None
         self.ticks = ticks if ticks else ImfSong._DEFAULT_TICKS[filetype]
-        self.title = title
-        self.composer = composer
-        self.remarks = remarks
-        self.program = program if program else "PyImf" if (self.title or self.composer or self.remarks) else None
-        if (self.title or self.composer or self.remarks or self.program) and filetype not in ["imf1"]:
-            _logging.warning(f"The title, composer, remarks, and program settings are not used by type '{filetype}'.")
+        # TODO? Move into AdlibSongFile?
+        self.title = None
+        self.composer = None
+        self.remarks = None
+        self.program = None
+        if filetype == "imf1":
+            self.title = meta_data.pop("title", None)
+            self.composer = meta_data.pop("composer", None)
+            self.remarks = meta_data.pop("remarks", None)
+            self.program = meta_data.pop("program", None)
+        if meta_data:
+            _logging.warning(f"The '{filetype}' file type does not support the following meta data: "
+                             f"{', '.join([k for k, v in meta_data.items() if v])}")
         self._commands = []  # type: _typing.List[_typing.Tuple[int, int, int]]  # reg, value, delay
         self._ignored_notes = []  # type: _typing.List[_midiengine.NoteEvent]
         self._active_ignored_notes = []  # type: _typing.List[_midiengine.NoteEvent]
@@ -100,8 +108,7 @@ COMMANDS:
                 FileTypeSetting("title", "The song title.  Limited to 255 characters."),
                 FileTypeSetting("composer", "The song composer.  Limited to 255 characters."),
                 FileTypeSetting("remarks", "The song remarks.  Limited to 255 characters."),
-                FileTypeSetting("program", "The program used to make the song.  Limited to 8 characters.  "
-                                           "Defaults to 'PyImf' if title, composer, or remarks are set."),
+                FileTypeSetting("program", "The program used to make the song.  Limited to 8 characters."),
             ]
         return None
 
@@ -145,7 +152,7 @@ COMMANDS:
             fp.write(b"\x00")
 
     @classmethod
-    def _convert_from(cls, midi_song: MidiSongFile, filetype: str, settings: _typing.Dict) -> "ImfSong":
+    def _convert_from(cls, midi_song: MidiSongFile, filetype: str, **settings) -> "ImfSong":
         # Load settings.
         song = cls(midi_song, filetype, **settings)
         # Set up variables.

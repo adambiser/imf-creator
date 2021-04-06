@@ -92,7 +92,7 @@ def main():
         instruments.add_file(bank)
     settings = {}
     midi_song = MidiSongFile.load_file(args.infile)
-    adlib_song = AdlibSongFile.convert_from(midi_song, args.type, settings)
+    adlib_song = AdlibSongFile.convert_from(midi_song, args.type, **settings)
     adlib_song.save_file(args.outfile)
 
 
