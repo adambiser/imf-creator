@@ -109,7 +109,16 @@ class MidiFile(MidiSongFile):
                                    _midi.MetaType.CUE_POINT,
                                    _midi.MetaType.PROGRAM_NAME,
                                    _midi.MetaType.DEVICE_NAME]:
-                    builder.add_meta_text_event(meta_type, _binary.get_unicode_text(self.fp.read(data_length)))
+                    text = _binary.get_unicode_text(self.fp.read(data_length))
+                    builder.add_meta_text_event(meta_type, text)
+                    # Set some song fields.
+                    if meta_type == _midi.MetaType.COPYRIGHT and not self.composer:
+                        self.composer = text
+                    if meta_type == _midi.MetaType.TRACK_NAME and not self.title:
+                        self.title = text
+                    if meta_type == _midi.MetaType.TEXT_EVENT and not self.remarks:
+                        if builder.current_time == 0 and track_number == 0:
+                            self.remarks = text
                 elif meta_type == _midi.MetaType.CHANNEL_PREFIX:
                     if data_length != 1:
                         raise ValueError("MetaType.CHANNEL_PREFIX events should have a data length of 1.")
