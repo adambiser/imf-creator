@@ -173,7 +173,6 @@ class InfoFrame(tk.Frame):
         self.meta_values = {}
         for name in _ADLIB_SETTINGS:
             row += 1
-            print(name)
             _meta_name = name
             self.meta_values[name] = tk.StringVar()
             self.meta_values[name].trace_add("write", store_meta(_meta_name))
