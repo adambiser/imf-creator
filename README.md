@@ -17,22 +17,16 @@ Clone or download this repository.
 #### Windows
 While running the command prompt as system administrator:
 
-    pip install watchdog
+    pip install -r requirements.txt
 
 ##### PyAudio
-	
-PyAudio also needs to be installed and if you have Python 3.6, you can use
 
-    pip install PyAudio
+On Windows, `pip` can fail to install PyAudio depending on what version of Python you're using.
 
-However, for Python 3.7 or later use the wheel for your version from here:
-https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
+To fix this, run the following as system administrator:
 
-Example:
-
-    pip install PyAudio-0.2.11-cp37-cp37m-win32.whl.whl
-
-For convenience, compiled versions can also be found in the base folder of this project.
+    pip install pipwin
+    pipwin install pyaudio
 
 #### Linux
 On Linux you will need to install some dependencies to run this.
