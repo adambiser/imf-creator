@@ -1,2 +1,2 @@
 # noinspection PyProtectedMember,PyUnresolvedReferences
-from _portaudio._portaudio import *
+from _portaudio_w32._portaudio import *

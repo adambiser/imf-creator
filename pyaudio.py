@@ -110,10 +110,14 @@ __version__ = "0.2.11"
 __docformat__ = "restructuredtext en"
 
 import sys
+import platform
 
 # attempt to import PortAudio
 try:
-    import _portaudio as pa
+    if platform.system() == "Windows":
+        import _portaudio_w32 as pa
+    else:
+        import _portaudio as pa
 except ImportError:
     print("Could not import the PyAudio C module '_portaudio'.")
     raise
