@@ -294,11 +294,11 @@ class AdlibSongFile:
 
     @property
     def default_extension(self):
-        return next([ft.default_extension for ft in self._get_filetypes() if ft.name == self._filetype], None)
+        return next((ft.default_extension for ft in self._get_filetypes() if ft.name == self._filetype), None)
 
     @property
     def filetype_description(self):
-        return next([ft.description for ft in self._get_filetypes() if ft.name == self._filetype], None)
+        return next((ft.description for ft in self._get_filetypes() if ft.name == self._filetype), None)
 
     @classmethod
     def _get_filetypes(cls) -> _typing.List["FileTypeInfo"]:
