@@ -339,11 +339,11 @@ class ControllerType(IntEnum):
             return None
         if isinstance(value, int) and 0 <= value <= 127:
             _logging.warning(f"Found undefined controller value {value}.  Creating definition.")
-            return cls._create_pseudo_member_(value)
+            return cls.create_pseudo_member(value)
         return None
 
     @classmethod
-    def _create_pseudo_member_(cls, value):
+    def create_pseudo_member(cls, value):
         pseudo_member = cls._value2member_map_.get(value, None)
         if pseudo_member is None:
             pseudo_member = int.__new__(cls)
